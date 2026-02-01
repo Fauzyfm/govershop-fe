@@ -105,7 +105,8 @@ export default function AdminOrders() {
                 </div>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            {/* Desktop Table */}
+            <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm text-slate-400">
                         <thead className="bg-slate-950 text-slate-200 uppercase font-medium">
@@ -180,6 +181,76 @@ export default function AdminOrders() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+                {loading ? (
+                    <div className="text-center py-8 text-slate-500">Loading orders...</div>
+                ) : orders.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">No orders found.</div>
+                ) : (
+                    orders.map((order) => (
+                        <div key={order.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                            {/* Header: Ref ID & Status */}
+                            <div className="flex justify-between items-start">
+                                <span className="font-mono text-xs text-slate-500">#{order.ref_id}</span>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                    {order.status}
+                                </span>
+                            </div>
+
+                            {/* Product & Price */}
+                            <div className="flex justify-between items-start gap-4">
+                                <h3 className="font-medium text-white line-clamp-2">{order.product_name}</h3>
+                                <div className="text-right shrink-0">
+                                    <div className="text-emerald-400 font-bold">Rp {order.selling_price?.toLocaleString()}</div>
+                                </div>
+                            </div>
+
+                            {/* Customer Info */}
+                            <div className="bg-slate-950/50 p-2.5 rounded-lg text-sm space-y-1">
+                                <div className="flex justify-between">
+                                    <span className="text-slate-500">Customer</span>
+                                    <span className="text-slate-200 font-mono">{order.customer_no}</span>
+                                </div>
+                                {order.customer_phone && (
+                                    <div className="flex justify-between text-xs">
+                                        <span className="text-slate-600">Phone</span>
+                                        <span className="text-slate-400">{order.customer_phone}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Digiflazz Status / SN */}
+                            {(order.digiflazz_status || order.serial_number || order.message) && (
+                                <div className="text-xs space-y-1 border-t border-slate-800 pt-2">
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">Provider</span>
+                                        <span className={`${order.digiflazz_status === "Sukses" ? "text-emerald-500" : "text-slate-400"} font-medium`}>
+                                            {order.digiflazz_status || "-"}
+                                        </span>
+                                    </div>
+                                    {order.serial_number && (
+                                        <div className="bg-slate-950 p-1.5 rounded font-mono text-slate-300 break-all">
+                                            SN: {order.serial_number}
+                                        </div>
+                                    )}
+                                    {order.message && (
+                                        <div className="text-red-400 italic">
+                                            {order.message}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Footer: Date */}
+                            <div className="text-xs text-slate-600 pt-1 text-right">
+                                {new Date(order.created_at).toLocaleString()}
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );
