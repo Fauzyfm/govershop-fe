@@ -9,7 +9,8 @@ import {
     LogOut,
     CreditCard,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Image
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -48,31 +49,34 @@ export default function AdminSidebar({ isCollapsed, toggleSidebar }: AdminSideba
             icon: ShoppingCart,
             href: "/admin/orders",
         },
+        {
+            label: "Kelola Content",
+            icon: Image,
+            href: "/admin/content",
+        },
     ];
 
     return (
         <aside
-            className={`bg-slate-900 border-r border-slate-800 h-screen flex flex-col transition-all duration-300 shrink-0 ${isCollapsed ? "w-20" : "w-64"}`}
+            className={`bg-slate-900 border-r border-slate-800 h-screen flex flex-col transition-all duration-300 shrink-0 relative overflow-visible ${isCollapsed ? "w-20" : "w-64"}`}
         >
-            <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                {!isCollapsed && (
+            {/* Collapse Toggle Button - Always Visible */}
+            <button
+                onClick={toggleSidebar}
+                className="absolute -right-3 top-8 z-50 bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 text-slate-400 hover:text-white transition-colors shadow-lg"
+            >
+                {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+
+            <div className="p-6 border-b border-slate-800 flex items-center justify-center">
+                {!isCollapsed ? (
                     <h1 className="text-xl font-bold text-white flex items-center gap-2 whitespace-nowrap">
                         <CreditCard className="w-6 h-6 text-blue-500" />
                         Govershop<span className="text-blue-500">Admin</span>
                     </h1>
+                ) : (
+                    <CreditCard className="w-8 h-8 text-blue-500" />
                 )}
-                {isCollapsed && (
-                    <div className="w-full flex justify-center">
-                        <CreditCard className="w-8 h-8 text-blue-500" />
-                    </div>
-                )}
-
-                <button
-                    onClick={toggleSidebar}
-                    className={`text-slate-400 hover:text-white transition-colors ${isCollapsed ? "absolute -right-3 top-8 bg-slate-800 rounded-full p-1 border border-slate-700" : ""}`}
-                >
-                    {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-5 h-5" />}
-                </button>
             </div>
 
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden">

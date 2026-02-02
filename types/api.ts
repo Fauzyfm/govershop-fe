@@ -59,6 +59,7 @@ export type OrderStatus =
   | 'processing' 
   | 'success' 
   | 'failed' 
+  | 'expired'
   | 'cancelled' 
   | 'refunded';
 
@@ -77,6 +78,7 @@ export interface OrderResponse {
 // Order status response from GET /orders/{id}/status
 export interface OrderStatusResponse {
   order_id: string;
+  ref_id?: string;
   status: OrderStatus;
   status_label: string;
   serial_number?: string;

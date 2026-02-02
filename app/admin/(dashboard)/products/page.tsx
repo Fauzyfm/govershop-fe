@@ -229,16 +229,12 @@ export default function AdminProducts() {
                     </button>
 
                     <button
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors font-medium text-sm"
-                        onClick={() => {
-                            // Trigger sync (mock or real)
-                            api.post("/admin/sync/products").then(() => {
-                                fetchProducts();
-                            });
-                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setIsSyncModalOpen(true)}
+                        disabled={syncing}
                     >
-                        <RefreshCw className="w-4 h-4" />
-                        Sync Digiflazz
+                        <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+                        {syncing ? "Syncing..." : "Sync Digiflazz"}
                     </button>
                 </div>
             </div>
@@ -320,9 +316,13 @@ export default function AdminProducts() {
                                         </td>
                                         <td className="px-6 py-4 align-top whitespace-nowrap">
                                             <div className="flex flex-col">
-                                                <span className="text-emerald-400 font-medium">Rp {product.selling_price?.toLocaleString()}</span>
-                                                {product.discount_price && (
-                                                    <span className="text-xs text-slate-500 line-through">Rp {(product.selling_price + 1000).toLocaleString()}</span>
+                                                {product.discount_price && product.discount_price > 0 ? (
+                                                    <>
+                                                        <span className="text-xs text-slate-500 line-through">Rp {product.selling_price?.toLocaleString()}</span>
+                                                        <span className="text-yellow-400 font-medium">Rp {product.discount_price.toLocaleString()}</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-emerald-400 font-medium">Rp {product.selling_price?.toLocaleString()}</span>
                                                 )}
                                             </div>
                                         </td>
@@ -445,14 +445,28 @@ export default function AdminProducts() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1">Discount/Fix Price</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">
+                                Harga Jual Diskon (Rp)
+                            </label>
                             <input
                                 type="number"
                                 value={formData.discount_price}
                                 onChange={(e) => setFormData({ ...formData, discount_price: e.target.value })}
                                 className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-600 outline-none"
-                                placeholder="0"
+                                placeholder={editingProduct ? `Kosongkan untuk pakai harga normal: Rp ${editingProduct.selling_price?.toLocaleString()}` : "0"}
                             />
+                            <p className="text-xs text-slate-500 mt-1">
+                                {editingProduct && (
+                                    <>
+                                        Harga normal: <span className="text-emerald-400">Rp {editingProduct.selling_price?.toLocaleString()}</span>
+                                        {formData.discount_price && parseFloat(formData.discount_price) > 0 && (
+                                            <span className="ml-2">
+                                                → Diskon: <span className="text-yellow-400">Rp {parseFloat(formData.discount_price).toLocaleString()}</span>
+                                            </span>
+                                        )}
+                                    </>
+                                )}
+                            </p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-400 mb-1">Markup Percent (%)</label>
@@ -516,6 +530,66 @@ export default function AdminProducts() {
                         </button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Sync Confirmation Modal */}
+            <Modal
+                isOpen={isSyncModalOpen}
+                onClose={() => !syncing && setIsSyncModalOpen(false)}
+                title="Konfirmasi Sync Produk"
+            >
+                <div className="space-y-4">
+                    <p className="text-slate-300">
+                        Apakah Anda yakin ingin melakukan sinkronisasi produk dari Digiflazz?
+                    </p>
+                    <p className="text-sm text-slate-500">
+                        Proses ini akan mengambil data produk terbaru dan mungkin membutuhkan waktu beberapa menit.
+                    </p>
+
+                    {syncing && (
+                        <div className="flex items-center gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                            <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />
+                            <span className="text-blue-400">Sedang melakukan sync...</span>
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                        <button
+                            type="button"
+                            onClick={() => setIsSyncModalOpen(false)}
+                            disabled={syncing}
+                            className="px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-50"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            disabled={syncing}
+                            onClick={async () => {
+                                setSyncing(true);
+                                try {
+                                    await api.post("/admin/sync/products");
+                                    await fetchProducts();
+                                    setIsSyncModalOpen(false);
+                                } catch (error) {
+                                    console.error("Sync failed:", error);
+                                } finally {
+                                    setSyncing(false);
+                                }
+                            }}
+                            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {syncing ? (
+                                <>
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                    Syncing...
+                                </>
+                            ) : (
+                                "Ya, Sync Sekarang"
+                            )}
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );

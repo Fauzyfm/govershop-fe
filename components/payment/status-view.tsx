@@ -22,6 +22,8 @@ export default function StatusView({ orderId }: StatusViewProps) {
     const [error, setError] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState<string>("");
     const [expired, setExpired] = useState(false);
+    const [cancellingExpired, setCancellingExpired] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
 
     // Fetch Status
     const fetchStatus = async (isManual = false) => {
@@ -38,6 +40,23 @@ export default function StatusView({ orderId }: StatusViewProps) {
         } finally {
             setLoading(false);
             if (isManual) setRefreshing(false);
+        }
+    };
+
+    // User-initiated Cancel Order
+    const handleCancelOrder = async () => {
+        if (!confirm("Apakah Anda yakin ingin membatalkan pesanan ini?")) return;
+
+        setCancelling(true);
+        try {
+            await api.post(`/orders/${orderId}/cancel`);
+            alert("Pesanan berhasil dibatalkan");
+            fetchStatus(true);
+        } catch (err: any) {
+            console.error("Failed to cancel order:", err);
+            alert("Gagal membatalkan pesanan. Silakan coba lagi.");
+        } finally {
+            setCancelling(false);
         }
     };
 
@@ -82,6 +101,28 @@ export default function StatusView({ orderId }: StatusViewProps) {
 
         return () => clearInterval(timer);
     }, [order]);
+
+    // Auto-cancel expired orders (only if order is still cancellable)
+    useEffect(() => {
+        const cancelExpiredOrder = async () => {
+            // Only try to cancel if expired AND order is still in cancellable state
+            const isCancellable = order?.status === 'pending' || order?.status === 'waiting_payment';
+
+            if (expired && order && !cancellingExpired && isCancellable) {
+                setCancellingExpired(true);
+                try {
+                    await api.post(`/orders/${orderId}/cancel`);
+                    console.log('Expired order cancelled');
+                    // Refresh to get updated status
+                    fetchStatus(false);
+                } catch (err) {
+                    // Silently handle - order may already be cancelled/expired
+                    console.log('Order already processed or cancelled');
+                }
+            }
+        };
+        cancelExpiredOrder();
+    }, [expired, order, orderId, cancellingExpired]);
 
     // Determine status display
     const getStatusConfig = (status: OrderStatus) => {
@@ -130,6 +171,14 @@ export default function StatusView({ orderId }: StatusViewProps) {
                     icon: AlertCircle,
                     label: 'Dibatalkan',
                     description: 'Transaksi telah dibatalkan.'
+                };
+            case 'expired':
+                return {
+                    color: 'text-orange-400',
+                    bg: 'bg-orange-500/10',
+                    icon: Clock,
+                    label: 'Kadaluwarsa',
+                    description: 'Waktu pembayaran telah habis. Silakan buat pesanan baru.'
                 };
             default: // pending
                 return {
@@ -295,6 +344,16 @@ export default function StatusView({ orderId }: StatusViewProps) {
                             {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                             Cek Status Pembayaran
                         </button>
+
+                        {/* Cancel Order Button */}
+                        <button
+                            onClick={handleCancelOrder}
+                            disabled={cancelling}
+                            className="w-full py-3 border border-red-500/30 hover:bg-red-500/10 text-red-400 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                        >
+                            {cancelling ? <Loader2 className="animate-spin w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                            Batalkan Pesanan
+                        </button>
                     </>
                 )}
 
@@ -361,6 +420,11 @@ export default function StatusView({ orderId }: StatusViewProps) {
                 <p className="text-xs text-muted-foreground">
                     Order ID: <span className="font-mono">{order.order_id}</span>
                 </p>
+                {order.ref_id && (
+                    <p className="text-xs text-muted-foreground">
+                        Ref ID: <span className="font-mono font-medium text-primary">{order.ref_id}</span>
+                    </p>
+                )}
             </div>
         </div>
     );
