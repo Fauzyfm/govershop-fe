@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import api from "@/lib/api";
 import {
     Product,
@@ -22,6 +22,8 @@ interface OrderFormProps {
     initialProducts: Product[];
     paymentMethods: PaymentMethod[];
 }
+
+const INITIAL_PRODUCT_LIMIT = 15;
 
 export default function OrderForm({ brand, initialProducts, paymentMethods }: OrderFormProps) {
     const router = useRouter();
@@ -46,6 +48,10 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     const [submitting, setSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("Semua");
 
+    // Collapsible and Show More states
+    const [nominalExpanded, setNominalExpanded] = useState(true);
+    const [showAllProducts, setShowAllProducts] = useState(false);
+
     // Derived Logic
     const isML = brand.toUpperCase() === "MOBILE LEGENDS";
     const fullCustomerNo = isML ? `${customerNo}${zoneId}` : customerNo;
@@ -58,7 +64,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     const bestSellers = initialProducts.filter(p => p.is_best_seller);
 
     // 3. Filtered Products for Grid
-    const filteredProducts = initialProducts.filter(p => {
+    const allFilteredProducts = initialProducts.filter(p => {
         if (activeTab === "Semua") return true;
         return p.tags?.includes(activeTab);
     }).sort((a, b) => {
@@ -70,6 +76,14 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
         // For tags, sort by price (or default)
         return a.price - b.price;
     });
+
+    // Apply limit to filteredProducts
+    const filteredProducts = showAllProducts
+        ? allFilteredProducts
+        : allFilteredProducts.slice(0, INITIAL_PRODUCT_LIMIT);
+
+    const remainingCount = allFilteredProducts.length - INITIAL_PRODUCT_LIMIT;
+    const hasMoreProducts = remainingCount > 0 && !showAllProducts;
 
     // Effects
     useEffect(() => {
@@ -170,116 +184,168 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column: Form Steps */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-6">
 
-                {/* Step 1: Select Product (Nominals) */}
-                <section className="glass rounded-xl p-6 border border-white/5 space-y-6">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center">1</div>
-                        <h2 className="text-xl font-bold">Pilih Nominal</h2>
-                    </div>
-
-                    {/* Best Seller Section */}
-                    {bestSellers.length > 0 && (
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="animate-pulse relative flex h-3 w-3">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
-                                </span>
-                                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-wider">🔥 Paling Laris</h3>
+                {/* Step 1: Select Product (Nominals) - Collapsible */}
+                <section className="glass rounded-xl border border-white/5 overflow-hidden">
+                    {/* Collapsible Header */}
+                    <button
+                        onClick={() => setNominalExpanded(!nominalExpanded)}
+                        className="w-full flex items-center justify-between p-5 hover:bg-white/5 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center text-sm">1</div>
+                            <div className="text-left">
+                                <h2 className="text-lg font-bold">Pilih Nominal</h2>
+                                {selectedSku && !nominalExpanded && (
+                                    <p className="text-xs text-primary mt-0.5">
+                                        {initialProducts.find(p => p.buyer_sku_code === selectedSku)?.product_name}
+                                    </p>
+                                )}
                             </div>
-                            <ProductGrid
-                                products={bestSellers}
-                                selectedSku={selectedSku}
-                                onSelect={setSelectedSku}
-                            />
-                            <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-4" />
                         </div>
-                    )}
+                        <ChevronDown className={cn(
+                            "w-5 h-5 text-muted-foreground transition-transform duration-200",
+                            nominalExpanded && "rotate-180"
+                        )} />
+                    </button>
 
-                    {/* Tabs */}
-                    {tabs.length > 0 && (
-                        <ProductTabs
-                            tabs={tabs}
-                            activeTab={activeTab}
-                            onTabChange={setActiveTab}
-                        />
-                    )}
+                    {/* Collapsible Content */}
+                    <div className={cn(
+                        "grid transition-all duration-300 ease-in-out",
+                        nominalExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                    )}>
+                        <div className="overflow-hidden">
+                            <div className="px-5 pb-5 pt-0 space-y-5">
+                                {/* Best Seller Section */}
+                                {bestSellers.length > 0 && (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className="animate-pulse relative flex h-2.5 w-2.5">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
+                                            </span>
+                                            <h3 className="text-xs font-bold text-yellow-500 uppercase tracking-wider">🔥 Paling Laris</h3>
+                                        </div>
+                                        <ProductGrid
+                                            products={bestSellers}
+                                            selectedSku={selectedSku}
+                                            onSelect={setSelectedSku}
+                                        />
+                                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-3" />
+                                    </div>
+                                )}
 
-                    {/* Main Grid (Filtered) */}
-                    <div>
-                        <ProductGrid
-                            products={filteredProducts}
-                            selectedSku={selectedSku}
-                            onSelect={setSelectedSku}
-                        />
+                                {/* Tabs */}
+                                {tabs.length > 0 && (
+                                    <ProductTabs
+                                        tabs={tabs}
+                                        activeTab={activeTab}
+                                        onTabChange={(tab) => {
+                                            setActiveTab(tab);
+                                            setShowAllProducts(false); // Reset when changing tab
+                                        }}
+                                    />
+                                )}
+
+                                {/* Main Grid (Filtered & Limited) */}
+                                <div className="space-y-4">
+                                    <ProductGrid
+                                        products={filteredProducts}
+                                        selectedSku={selectedSku}
+                                        onSelect={setSelectedSku}
+                                    />
+
+                                    {/* Show More Button */}
+                                    {hasMoreProducts && (
+                                        <button
+                                            onClick={() => setShowAllProducts(true)}
+                                            className="w-full py-3 border border-white/10 hover:border-primary/50 hover:bg-primary/5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 group"
+                                        >
+                                            <ChevronDown className="w-4 h-4 group-hover:animate-bounce" />
+                                            Tampilkan {remainingCount} Lainnya
+                                        </button>
+                                    )}
+
+                                    {/* Show Less Button */}
+                                    {showAllProducts && allFilteredProducts.length > INITIAL_PRODUCT_LIMIT && (
+                                        <button
+                                            onClick={() => setShowAllProducts(false)}
+                                            className="w-full py-3 border border-white/10 hover:border-white/20 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <ChevronUp className="w-4 h-4" />
+                                            Tampilkan Lebih Sedikit
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
                 {/* Step 2: User Data */}
-                <section className="glass rounded-xl p-6 border border-white/5 space-y-4">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center">2</div>
-                        <h2 className="text-xl font-bold">Masukkan User ID</h2>
+                <section className="glass rounded-xl p-5 border border-white/5 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center text-sm">2</div>
+                        <h2 className="text-lg font-bold">Masukkan Data</h2>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className={cn("space-y-2", isML ? "col-span-1" : "col-span-2")}>
-                            <label className="text-sm text-muted-foreground">User ID</label>
+                            <label className="text-xs text-muted-foreground font-medium">User ID</label>
                             <input
                                 type="text"
                                 value={customerNo}
                                 onChange={e => setCustomerNo(e.target.value)}
-                                placeholder="Ketuk untuk memasukkan ID"
-                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none"
+                                placeholder="Masukkan User ID"
+                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
                             />
                         </div>
                         {isML && (
                             <div className="space-y-2">
-                                <label className="text-sm text-muted-foreground">Zone ID</label>
+                                <label className="text-xs text-muted-foreground font-medium">Zone ID</label>
                                 <input
                                     type="text"
                                     value={zoneId}
                                     onChange={e => setZoneId(e.target.value)}
                                     placeholder="(1234)"
-                                    className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none"
+                                    className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
                                 />
                             </div>
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-sm text-muted-foreground">Email (Opsional)</label>
+                            <label className="text-xs text-muted-foreground font-medium">Email (Opsional)</label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                placeholder="Alamat Email"
-                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none"
+                                placeholder="email@contoh.com"
+                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm text-muted-foreground">No. Handphone (Wajib)</label>
+                            <label className="text-xs text-muted-foreground font-medium">No. WhatsApp <span className="text-red-400">*</span></label>
                             <input
                                 type="tel"
                                 value={phone}
                                 onChange={e => setPhone(e.target.value)}
                                 placeholder="08xxxxxxxxxx"
-                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none"
+                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
                             />
                         </div>
                     </div>
                 </section>
 
                 {/* Step 3: Payment Method */}
-                <section className="glass rounded-xl p-6 border border-white/5 space-y-4">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center">3</div>
-                        <h2 className="text-xl font-bold">Pilih Pembayaran</h2>
+                <section className="glass rounded-xl p-5 border border-white/5 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center text-sm">3</div>
+                        <h2 className="text-lg font-bold">Pilih Pembayaran</h2>
                     </div>
 
                     <PaymentSelector
@@ -293,30 +359,30 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
             {/* Right Column: Sticky Summary */}
             <div className="lg:col-span-1">
                 <div className="sticky top-24 space-y-4">
-                    <div className="glass rounded-xl p-6 border border-white/5">
-                        <h3 className="font-bold text-lg mb-4">Rincian Pembelian</h3>
+                    <div className="glass rounded-xl p-5 border border-white/5">
+                        <h3 className="font-bold text-base mb-4">Rincian Pembelian</h3>
 
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between items-start">
-                                <span className="text-muted-foreground">Item</span>
-                                <span className="font-medium text-right w-32 break-words text-sm ml-2">
+                                <span className="text-muted-foreground text-xs">Item</span>
+                                <span className="font-medium text-right w-40 break-words text-xs ml-2">
                                     {initialProducts.find(p => p.buyer_sku_code === selectedSku)?.product_name || "-"}
                                 </span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between text-xs">
                                 <span className="text-muted-foreground">Harga Produk</span>
                                 <span>Rp {priceDetails?.product_price.toLocaleString() || "-"}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between text-xs">
                                 <span className="text-muted-foreground">Biaya Admin</span>
                                 <span>Rp {priceDetails?.admin_fee.toLocaleString() || "-"}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between text-xs">
                                 <span className="text-muted-foreground">Biaya Transaksi</span>
                                 <span>Rp {priceDetails?.payment_fee.toLocaleString() || "-"}</span>
                             </div>
 
-                            <div className="flex justify-between text-primary font-bold text-lg pt-2 border-t border-white/10">
+                            <div className="flex justify-between text-primary font-bold text-base pt-3 border-t border-white/10">
                                 <span>Total</span>
                                 <span>Rp {priceDetails?.total_price.toLocaleString() || "-"}</span>
                             </div>
@@ -325,9 +391,9 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                         <button
                             onClick={handlePreSubmit}
                             disabled={submitting || !selectedSku || !selectedPayment || !customerNo || !phone}
-                            className="w-full mt-6 py-3 bg-primary hover:bg-primary/90 text-black font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full mt-5 py-3 bg-primary hover:bg-primary/90 text-black font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                         >
-                            {submitting ? <Loader2 className="animate-spin" /> : "Pesan Sekarang"}
+                            {submitting ? <Loader2 className="animate-spin w-4 h-4" /> : "Beli Sekarang"}
                         </button>
                     </div>
                 </div>
@@ -336,10 +402,10 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
             {/* Validation Modal */}
             {showValidationModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <div className="bg-[#1a1b26] border border-white/10 rounded-2xl w-full max-w-md p-6 space-y-6 relative">
-                        <h3 className="text-xl font-bold text-center">Konfirmasi Pesanan</h3>
+                    <div className="bg-[#1a1b26] border border-white/10 rounded-2xl w-full max-w-md p-6 space-y-5 relative">
+                        <h3 className="text-lg font-bold text-center">Konfirmasi Pesanan</h3>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3 text-sm">
                             <div className="flex justify-between border-b border-white/10 pb-2">
                                 <span className="text-muted-foreground">User ID</span>
                                 <span className="font-medium">{fullCustomerNo}</span>
@@ -363,21 +429,21 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                 </span>
                             </div>
                             <div className="flex justify-between border-b border-white/10 pb-2">
-                                <span className="text-muted-foreground">Metode Pembayaran</span>
+                                <span className="text-muted-foreground">Pembayaran</span>
                                 <span className="font-medium">
                                     {paymentMethods.find(m => m.code === selectedPayment)?.name}
                                 </span>
                             </div>
-                            <div className="flex justify-between items-center text-lg font-bold text-primary pt-2">
+                            <div className="flex justify-between items-center text-base font-bold text-primary pt-2">
                                 <span>Total Bayar</span>
                                 <span>Rp {priceDetails?.total_price.toLocaleString()}</span>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/10">
                             <button
                                 onClick={() => setShowValidationModal(false)}
-                                className="py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors font-medium"
+                                className="py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors font-medium text-sm"
                                 disabled={submitting}
                             >
                                 Batal
@@ -385,9 +451,9 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting || isValidating || !!validationError}
-                                className="py-3 rounded-xl bg-primary hover:bg-primary/90 text-black font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="py-3 rounded-xl bg-primary hover:bg-primary/90 text-black font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                             >
-                                {submitting ? <Loader2 className="animate-spin" /> : "Bayar Sekarang"}
+                                {submitting ? <Loader2 className="animate-spin w-4 h-4" /> : "Bayar Sekarang"}
                             </button>
                         </div>
                     </div>

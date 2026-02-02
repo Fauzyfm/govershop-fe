@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 import { APIResponse, Product, PaymentMethod } from "@/types/api";
-import OrderForm from "@/components/order/order-form";
+import OrderPageClient from "@/components/order/order-page-client";
 
 // Helper to fetch products for a brand
 async function getProducts(brand: string) {
@@ -27,6 +27,19 @@ async function getPaymentMethods() {
     }
 }
 
+// Helper to fetch brand images from content
+async function getBrandImages(): Promise<Record<string, string>> {
+    try {
+        const res = await api.get<any, APIResponse<{ brand_images: Record<string, string> }>>('/content/brands');
+        if (res.success && res.data) {
+            return res.data.brand_images || {};
+        }
+        return {};
+    } catch (error) {
+        return {};
+    }
+}
+
 interface OrderPageProps {
     params: Promise<{
         brand: string;
@@ -36,30 +49,31 @@ interface OrderPageProps {
 export default async function OrderPage({ params }: OrderPageProps) {
     const resolvedParams = await params;
     const brand = decodeURIComponent(resolvedParams.brand);
-    const [products, paymentMethods] = await Promise.all([
+
+    // Fetch products, payment methods, and brand images in parallel
+    const [products, paymentMethods, brandImages] = await Promise.all([
         getProducts(brand),
-        getPaymentMethods()
+        getPaymentMethods(),
+        getBrandImages()
     ]);
 
-    return (
-        <div className="max-w-6xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="flex items-center gap-6 glass p-6 rounded-2xl">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center text-3xl font-bold shadow-2xl shadow-primary/20">
-                    {brand.substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                    <h1 className="text-3xl font-bold">{brand}</h1>
-                    <p className="text-muted-foreground">Top Up {brand} Termurah & Terpercaya</p>
-                </div>
-            </div>
+    // Lookup brand image (try exact match first, then case-insensitive)
+    let brandImage = brandImages[brand];
+    if (!brandImage) {
+        // Try finding case-insensitive match
+        const brandLower = brand.toLowerCase();
+        const foundKey = Object.keys(brandImages).find(k => k.toLowerCase() === brandLower);
+        if (foundKey) {
+            brandImage = brandImages[foundKey];
+        }
+    }
 
-            {/* Main Order Form */}
-            <OrderForm
-                brand={brand}
-                initialProducts={products}
-                paymentMethods={paymentMethods}
-            />
-        </div>
+    return (
+        <OrderPageClient
+            brand={brand}
+            products={products}
+            paymentMethods={paymentMethods}
+            brandImage={brandImage}
+        />
     );
 }
