@@ -415,8 +415,13 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                 <span className="font-medium flex items-center gap-2">
                                     {isValidating ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : validationResult ? (
+                                    ) : validationResult?.account_name ? (
                                         <span className="text-green-500">{validationResult.account_name}</span>
+                                    ) : validationResult?.message ? (
+                                        <div className="flex flex-col">
+                                            <span className="text-yellow-500 text-xs font-medium">Validasi Manual</span>
+                                            <span className="text-xs text-muted-foreground mt-1">{validationResult.message}</span>
+                                        </div>
                                     ) : validationError ? (
                                         <span className="text-red-500">Invalid ID</span>
                                     ) : "-"}

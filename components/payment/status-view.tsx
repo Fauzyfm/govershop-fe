@@ -125,7 +125,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
     }, [expired, order, orderId, cancellingExpired]);
 
     // Determine status display
-    const getStatusConfig = (status: OrderStatus) => {
+    const getStatusConfig = (status: OrderStatus, customMessage?: string) => {
         if (expired && (status === 'pending' || status === 'waiting_payment')) {
             return {
                 color: 'text-red-400',
@@ -161,7 +161,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                     bg: 'bg-red-500/10',
                     icon: AlertCircle,
                     label: 'Gagal',
-                    description: 'Transaksi gagal. Silakan hubungi support.'
+                    description: customMessage ? `Proses Gagal dikarenakan : ${customMessage}` : 'Transaksi gagal. Silakan hubungi admin.'
                 };
             case 'cancelled':
             case 'refunded':
@@ -233,7 +233,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
 
     if (!order) return null;
 
-    const statusConfig = getStatusConfig(order.status);
+    const statusConfig = getStatusConfig(order.status, order.message);
     const StatusIcon = statusConfig.icon;
     const isWaitingPayment = !expired && (order.status === 'pending' || order.status === 'waiting_payment');
     const payment = order.payment;
@@ -411,6 +411,33 @@ export default function StatusView({ orderId }: StatusViewProps) {
                         >
                             Refresh Status
                         </button>
+                    </div>
+                )}
+                {/* Failed State */}
+                {order.status === 'failed' && (
+                    <div className="text-center py-6 space-y-4">
+                        <div className="w-20 h-20 mx-auto bg-red-500/20 rounded-full flex items-center justify-center">
+                            <AlertCircle className="w-10 h-10 text-red-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold mb-2">Transaksi Gagal</h3>
+                            <p className="text-muted-foreground text-sm px-4">
+                                {order.message || "Terjadi kesalahan pada sistem."}
+                            </p>
+                        </div>
+
+                        <a
+                            href={`https://wa.me/6283114014648?text=${encodeURIComponent(`Halo Admin, saya mengalami kendala gagal order dengan Order ID: ${order.order_id} dan ref-id : ${order.ref_id || '-'}, Mohon bantuannya.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full py-3 bg-primary text-black font-bold rounded-xl mt-4 hover:bg-primary/90 transition-colors"
+                        >
+                            Hubungi Admin (WhatsApp)
+                        </a>
+
+                        <Link href="/" className="block w-full py-3 bg-secondary hover:bg-secondary/80 text-white font-bold rounded-xl mt-2 transition-colors">
+                            Coba Lagi
+                        </Link>
                     </div>
                 )}
             </div>

@@ -2,6 +2,8 @@ import api from "@/lib/api";
 import HomeContent from "@/components/home-content";
 import { APIResponse, Brand } from "@/types/api";
 
+export const revalidate = 60; // Revalidate every 60 seconds (ISR)
+
 // Types for content API
 interface CarouselItem {
   id: number;
