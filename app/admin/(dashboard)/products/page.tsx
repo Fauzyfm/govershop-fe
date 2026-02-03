@@ -13,8 +13,9 @@ import Modal from "@/components/ui/modal";
 export default function AdminProducts() {
     const [products, setProducts] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false); // New state to track if search has been performed
 
     // Pagination
     const [limit, setLimit] = useState(20);
@@ -23,23 +24,27 @@ export default function AdminProducts() {
     // Filters
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("all");
+    const [brandStr, setBrandStr] = useState("all");
     const [typeStr, setTypeStr] = useState("all");
     const [status, setStatus] = useState("all");
-    const [debouncedSearch, setDebouncedSearch] = useState("");
 
-    // Dynamic Filter Options
+    // REMOVED: debouncedSearch (we will use manual trigger or specific filter changes)
+
+    // Dynamic Filter Options (keep existing)
     const [filterOptions, setFilterOptions] = useState({
         categories: [] as string[],
+        brands: [] as string[],
         types: [] as string[],
     });
 
-    // Fetch Filter Options
+    // Fetch Filter Options (keep existing)
     useEffect(() => {
         const fetchFilters = async () => {
             try {
                 const response: any = await api.get("/admin/products/filters");
                 setFilterOptions({
                     categories: response.data.categories || [],
+                    brands: response.data.brands || [],
                     types: response.data.types || [],
                 });
             } catch (error) {
@@ -49,29 +54,32 @@ export default function AdminProducts() {
         fetchFilters();
     }, []);
 
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(search);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [search]);
+    // REMOVED: Debounce search useEffect
 
     // Data Fetching
     const fetchProducts = async () => {
         setLoading(true);
+        setHasSearched(true); // Mark that we have attempted a search
         try {
             const offset = (page - 1) * limit;
             const params = new URLSearchParams();
             params.append("limit", limit.toString());
             params.append("offset", offset.toString());
-            if (debouncedSearch) params.append("search", debouncedSearch);
+            if (search) params.append("search", search);
             if (category !== "all") params.append("category", category);
+            if (brandStr !== "all") params.append("brand", brandStr);
             if (typeStr !== "all") params.append("type", typeStr);
             if (status !== "all") params.append("status", status);
 
             const response: any = await api.get(`/admin/products?${params.toString()}`);
-            setProducts(response.data.products || []);
+            const fetchedProducts = response.data.products || [];
+
+            // Sort Client-Side by SKU ASC
+            fetchedProducts.sort((a: any, b: any) => {
+                return a.buyer_sku_code.localeCompare(b.buyer_sku_code, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            setProducts(fetchedProducts);
             setTotal(response.data.total || 0);
         } catch (error) {
             console.error("Failed to fetch products:", error);
@@ -80,11 +88,55 @@ export default function AdminProducts() {
         }
     };
 
+    // 1. Auto-Fetch Trigger (Pagination / Filters)
+    // We EXCLUDE 'search' here to prevent fetching on every keystroke
     useEffect(() => {
-        fetchProducts();
-    }, [page, limit, debouncedSearch, category, typeStr, status]);
+        const isFilterActive = category !== "all" || brandStr !== "all" || typeStr !== "all" || status !== "all";
 
-    // Modal States
+        // Only fetch if we have explicit filters active OR if we have already established a search context
+        // and just changing pages/limits.
+        if (hasSearched || isFilterActive) {
+            // Exception: If search input is currently empty and filters are all 'all', DO NOT fetch.
+            // This is handled by the reset effect below.
+            if (!search && !isFilterActive) return;
+
+            fetchProducts();
+        }
+    }, [page, limit, category, brandStr, typeStr, status]);
+
+    // 2. Auto-Reset Trigger (Criteria Cleared)
+    // Runs when search term or filters change to detect "Empty State"
+    useEffect(() => {
+        const isFilterActive = category !== "all" || brandStr !== "all" || typeStr !== "all" || status !== "all";
+        const isSearchActive = search.trim() !== "";
+
+        if (!isFilterActive && !isSearchActive) {
+            setProducts([]);
+            setTotal(0);
+            setHasSearched(false);
+        }
+    }, [category, brandStr, typeStr, status, search]);
+
+    // Handle Search Submit (Enter key or Button)
+    const handleSearch = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+
+        const isFilterActive = category !== "all" || brandStr !== "all" || typeStr !== "all" || status !== "all";
+        const isSearchActive = search.trim() !== "";
+
+        if (!isFilterActive && !isSearchActive) {
+            setProducts([]);
+            setTotal(0);
+            setHasSearched(false);
+            return;
+        }
+
+        setPage(1);
+        fetchProducts();
+    };
+
+
+    // ... (Modal states keep existing)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -98,12 +150,13 @@ export default function AdminProducts() {
         is_best_seller: false,
     });
 
+    // ... (handleSync, openEditModal, handleSaveProduct keep existing)
     const handleSync = async () => {
         setSyncing(true);
         try {
             await api.post("/admin/sync/products");
             alert("Sync completed successfully!");
-            fetchProducts();
+            if (hasSearched) fetchProducts(); // Only refresh if currently viewing logic
             setIsSyncModalOpen(false);
         } catch (error) {
             console.error("Sync failed:", error);
@@ -161,22 +214,26 @@ export default function AdminProducts() {
                 <div>
                     <h1 className="text-2xl font-bold text-white">Product Management</h1>
                     <div className="text-sm text-slate-500">
-                        Total Products: <span className="text-white font-bold">{total}</span>
+                        {hasSearched ? (
+                            <>Found <span className="text-white font-bold">{total}</span> Products</>
+                        ) : (
+                            "Search or filter to view products"
+                        )}
                     </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    {/* Search */}
-                    <div className="relative">
+                    {/* Search Form */}
+                    <form onSubmit={handleSearch} className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                         <input
                             type="text"
-                            placeholder="Search by name, SKU, brand..."
+                            placeholder="Name, SKU..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-full md:w-64 transition-colors"
+                            className="bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-full md:w-48 transition-colors"
                         />
-                    </div>
+                    </form>
 
                     {/* Filters */}
                     <select
@@ -187,9 +244,23 @@ export default function AdminProducts() {
                         }}
                         className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer max-w-[150px]"
                     >
-                        <option value="all">All Categories</option>
+                        <option value="all">Category: All</option>
                         {filterOptions.categories.map((cat) => (
                             <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={brandStr}
+                        onChange={(e) => {
+                            setBrandStr(e.target.value);
+                            setPage(1);
+                        }}
+                        className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer max-w-[150px]"
+                    >
+                        <option value="all">Brand: All</option>
+                        {filterOptions.brands.map((b) => (
+                            <option key={b} value={b}>{b}</option>
                         ))}
                     </select>
 
@@ -201,7 +272,7 @@ export default function AdminProducts() {
                         }}
                         className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer max-w-[150px]"
                     >
-                        <option value="all">All Types</option>
+                        <option value="all">Type: All</option>
                         {filterOptions.types.map((type) => (
                             <option key={type} value={type}>{type}</option>
                         ))}
@@ -215,15 +286,16 @@ export default function AdminProducts() {
                         }}
                         className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer"
                     >
-                        <option value="all">All Status</option>
-                        <option value="active">Active (Buyer)</option>
-                        <option value="inactive">Inactive (Buyer)</option>
+                        <option value="all">Status: All</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
                     </select>
 
                     <button
-                        onClick={fetchProducts}
-                        className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
-                        title="Refresh Data"
+                        onClick={() => fetchProducts()}
+                        disabled={!hasSearched && category === 'all' && typeStr === 'all' && status === 'all' && !search}
+                        className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors disabled:opacity-50"
+                        title="Search / Refresh"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                     </button>
@@ -240,7 +312,7 @@ export default function AdminProducts() {
             </div>
 
             {/* Product Table */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden min-h-[400px]">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs text-slate-400">
                         <thead className="bg-slate-950 text-slate-200 uppercase font-medium">
@@ -259,9 +331,30 @@ export default function AdminProducts() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800">
-                            {loading ? (
+                            {!hasSearched && !loading ? (
                                 <tr>
-                                    <td colSpan={11} className="px-6 py-8 text-center">Loading products...</td>
+                                    <td colSpan={11} className="px-6 py-20 text-center">
+                                        <div className="flex flex-col items-center justify-center text-slate-500 gap-4">
+                                            <div className="p-4 bg-slate-800/50 rounded-full">
+                                                <Search className="w-8 h-8 opacity-50" />
+                                            </div>
+                                            <div className="max-w-md">
+                                                <p className="text-lg font-medium text-slate-400 mb-1">Cari Produk</p>
+                                                <p className="text-sm">
+                                                    Silakan gunakan kolom pencarian atau filter di atas untuk menemukan produk yang ingin Anda kelola.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : loading ? (
+                                <tr>
+                                    <td colSpan={11} className="px-6 py-20 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
+                                            <span className="text-slate-400">Loading data...</span>
+                                        </div>
+                                    </td>
                                 </tr>
                             ) : products.length === 0 ? (
                                 <tr>

@@ -27,16 +27,49 @@ async function getPaymentMethods() {
     }
 }
 
-// Helper to fetch brand images from content
-async function getBrandImages(): Promise<Record<string, string>> {
+interface TopupStep {
+    step: number;
+    title: string;
+    desc: string;
+}
+
+interface BrandDetails {
+    brand_name: string;
+    image_url: string;
+    is_best_seller: boolean;
+    status: string;
+    topup_steps?: TopupStep[];
+    description?: string;
+}
+
+interface BrandPublicData {
+    brand_name: string;
+    image_url: string;
+    is_best_seller: boolean;
+    status: string;
+}
+
+async function getBrandImages(): Promise<Record<string, BrandPublicData>> {
     try {
-        const res = await api.get<any, APIResponse<{ brand_images: Record<string, string> }>>('/content/brands');
+        const res = await api.get<any, APIResponse<{ brand_images: Record<string, BrandPublicData> }>>('/content/brands');
         if (res.success && res.data) {
             return res.data.brand_images || {};
         }
         return {};
     } catch (error) {
         return {};
+    }
+}
+
+async function getBrandDetails(brand: string): Promise<BrandDetails | null> {
+    try {
+        const res = await api.get<any, APIResponse<BrandDetails>>(`/brands/${encodeURIComponent(brand)}`);
+        if (res.success && res.data) {
+            return res.data;
+        }
+        return null;
+    } catch (error) {
+        return null;
     }
 }
 
@@ -50,23 +83,35 @@ export default async function OrderPage({ params }: OrderPageProps) {
     const resolvedParams = await params;
     const brand = decodeURIComponent(resolvedParams.brand);
 
-    // Fetch products, payment methods, and brand images in parallel
-    const [products, paymentMethods, brandImages] = await Promise.all([
+    // Fetch products, payment methods, brand details, AND global brand images in parallel
+    const [products, paymentMethods, brandDetails, brandImages] = await Promise.all([
         getProducts(brand),
         getPaymentMethods(),
+        getBrandDetails(brand),
         getBrandImages()
     ]);
 
-    // Lookup brand image (try exact match first, then case-insensitive)
-    let brandImage = brandImages[brand];
+    // Determine brand image:
+    // 1. Try from specific brand details
+    let brandImage = brandDetails?.image_url;
+
+    // 2. If not found, try from global brand map (fallback)
     if (!brandImage) {
-        // Try finding case-insensitive match
-        const brandLower = brand.toLowerCase();
-        const foundKey = Object.keys(brandImages).find(k => k.toLowerCase() === brandLower);
-        if (foundKey) {
-            brandImage = brandImages[foundKey];
+        let brandData = brandImages[brand];
+        if (!brandData) {
+            // Case-insensitive lookup
+            const brandLower = brand.toLowerCase();
+            const foundKey = Object.keys(brandImages).find(k => k.toLowerCase() === brandLower);
+            if (foundKey) {
+                brandData = brandImages[foundKey];
+            }
         }
+        brandImage = brandData?.image_url || "";
     }
+
+    // Get dynamic content
+    const dynamicSteps = brandDetails?.topup_steps || [];
+    const description = brandDetails?.description || "";
 
     return (
         <OrderPageClient
@@ -74,6 +119,8 @@ export default async function OrderPage({ params }: OrderPageProps) {
             products={products}
             paymentMethods={paymentMethods}
             brandImage={brandImage}
+            dynamicSteps={dynamicSteps}
+            description={description}
         />
     );
 }

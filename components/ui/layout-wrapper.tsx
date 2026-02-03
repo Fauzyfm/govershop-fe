@@ -11,7 +11,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     return (
         <div className="min-h-screen flex flex-col antialiased">
             {!isAdmin && <Navbar />}
-            <main className={`flex-1 ${!isAdmin ? "container mx-auto px-4 py-8" : ""}`}>
+            <main className={`flex-1 ${!isAdmin ? "container mx-auto px-4 md:px-8 lg:px-12 py-8" : ""}`}>
                 {children}
             </main>
             {!isAdmin && <Footer />}

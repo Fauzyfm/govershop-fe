@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import {
     Product,
@@ -15,6 +16,7 @@ import ProductTabs from "./product-tabs";
 import ProductGrid from "./product-grid";
 import PaymentSelector from "./payment-selector";
 import MobileOrderSummary from "./mobile-order-summary";
+import ServerTabs, { ServerTabInfo, buildServerTabs, filterProductsByTab, findTabByUrlKey } from "./server-tabs";
 import { cn } from "@/lib/utils";
 
 interface OrderFormProps {
@@ -27,6 +29,10 @@ const INITIAL_PRODUCT_LIMIT = 15;
 
 export default function OrderForm({ brand, initialProducts, paymentMethods }: OrderFormProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Get server from URL (if exists) - now uses urlKey (lowercase)
+    const serverFromUrl = searchParams.get("server");
 
     // State
     const [customerNo, setCustomerNo] = useState("");
@@ -48,6 +54,10 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     const [submitting, setSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("Semua");
 
+    // Server selection state (now using ServerTabInfo)
+    const [activeServerTab, setActiveServerTab] = useState<ServerTabInfo | null>(null);
+    const [serverLoading, setServerLoading] = useState(false);
+
     // Collapsible and Show More states
     const [nominalExpanded, setNominalExpanded] = useState(true);
     const [showAllProducts, setShowAllProducts] = useState(false);
@@ -56,15 +66,58 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     const isML = brand.toUpperCase() === "MOBILE LEGENDS";
     const fullCustomerNo = isML ? `${customerNo}${zoneId}` : customerNo;
 
-    // 1. Get Unique Tags for Tabs
-    const uniqueTags = Array.from(new Set(initialProducts.flatMap(p => p.tags || []))).sort();
+    // Build dynamic server tabs from products
+    const serverTabs = useMemo(() => buildServerTabs(initialProducts), [initialProducts]);
+
+    // Set default server tab on mount (or from URL)
+    useEffect(() => {
+        if (serverTabs.length > 0 && !activeServerTab) {
+            // Check if there's a server in URL (using urlKey)
+            if (serverFromUrl) {
+                const matchingTab = findTabByUrlKey(serverTabs, serverFromUrl);
+                if (matchingTab) {
+                    setActiveServerTab(matchingTab);
+                    return;
+                }
+            }
+            // Default to first tab
+            setActiveServerTab(serverTabs[0]);
+        }
+    }, [serverTabs, activeServerTab, serverFromUrl]);
+
+    // Handle server tab change with loading animation and URL update
+    const handleServerTabChange = (tab: ServerTabInfo) => {
+        if (tab.urlKey === activeServerTab?.urlKey) return;
+
+        setServerLoading(true);
+        setActiveServerTab(tab);
+        setActiveTab("Semua"); // Reset tag tab
+        setShowAllProducts(false); // Reset pagination
+        setSelectedSku(null); // Clear selection
+
+        // Update URL with server query parameter (using urlKey for clean URL)
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("server", tab.urlKey);
+        router.replace(`?${params.toString()}`, { scroll: false });
+
+        // Simulate loading for smoother transition
+        setTimeout(() => setServerLoading(false), 300);
+    };
+
+    // Filter products by selected server tab
+    const serverFilteredProducts = useMemo(() => {
+        return filterProductsByTab(initialProducts, activeServerTab);
+    }, [initialProducts, activeServerTab]);
+
+    // 1. Get Unique Tags for Tabs (from server-filtered products)
+    const uniqueTags = Array.from(new Set(serverFilteredProducts.flatMap(p => p.tags || []))).sort();
     const tabs = uniqueTags;
 
-    // 2. Best Sellers
-    const bestSellers = initialProducts.filter(p => p.is_best_seller);
+    // 2. Best Sellers (from server-filtered products)
+    const bestSellers = serverFilteredProducts.filter(p => p.is_best_seller);
 
-    // 3. Filtered Products for Grid
-    const allFilteredProducts = initialProducts.filter(p => {
+    // 3. Filtered Products for Grid (from server-filtered products)
+    const allFilteredProducts = serverFilteredProducts.filter(p => {
         if (activeTab === "Semua") return true;
         return p.tags?.includes(activeTab);
     }).sort((a, b) => {
@@ -84,6 +137,13 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
 
     const remainingCount = allFilteredProducts.length - INITIAL_PRODUCT_LIMIT;
     const hasMoreProducts = remainingCount > 0 && !showAllProducts;
+
+    // Get price of selected product (for PayPal minimum check)
+    const selectedProductPrice = useMemo(() => {
+        if (!selectedSku) return undefined;
+        const product = initialProducts.find(p => p.buyer_sku_code === selectedSku);
+        return product?.price;
+    }, [selectedSku, initialProducts]);
 
     // Effects
     useEffect(() => {
@@ -219,67 +279,106 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                     )}>
                         <div className="overflow-hidden">
                             <div className="px-5 pb-5 pt-0 space-y-5">
-                                {/* Best Seller Section */}
-                                {bestSellers.length > 0 && (
+                                {/* Server Selection Tabs */}
+                                {serverTabs.length > 1 && activeServerTab && (
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <span className="animate-pulse relative flex h-2.5 w-2.5">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
-                                            </span>
-                                            <h3 className="text-xs font-bold text-yellow-500 uppercase tracking-wider">🔥 Paling Laris</h3>
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">🌐 Pilih Server</span>
                                         </div>
-                                        <ProductGrid
-                                            products={bestSellers}
-                                            selectedSku={selectedSku}
-                                            onSelect={setSelectedSku}
+                                        <ServerTabs
+                                            tabs={serverTabs}
+                                            activeTab={activeServerTab}
+                                            onTabChange={handleServerTabChange}
+                                            loading={serverLoading}
                                         />
-                                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-3" />
                                     </div>
                                 )}
 
-                                {/* Tabs */}
-                                {tabs.length > 0 && (
-                                    <ProductTabs
-                                        tabs={tabs}
-                                        activeTab={activeTab}
-                                        onTabChange={(tab) => {
-                                            setActiveTab(tab);
-                                            setShowAllProducts(false); // Reset when changing tab
-                                        }}
-                                    />
-                                )}
+                                {/* Animated Content Container */}
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={activeServerTab?.urlKey}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="space-y-5"
+                                    >
+                                        {/* Loading State */}
+                                        {serverLoading ? (
+                                            <div className="flex items-center justify-center py-12">
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                                                    <span className="text-sm text-muted-foreground">Memuat produk...</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {/* Best Seller Section */}
+                                                {bestSellers.length > 0 && (
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="animate-pulse relative flex h-2.5 w-2.5">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
+                                                            </span>
+                                                            <h3 className="text-xs font-bold text-yellow-500 uppercase tracking-wider">🔥 Paling Laris</h3>
+                                                        </div>
+                                                        <ProductGrid
+                                                            products={bestSellers}
+                                                            selectedSku={selectedSku}
+                                                            onSelect={setSelectedSku}
+                                                        />
+                                                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-3" />
+                                                    </div>
+                                                )}
 
-                                {/* Main Grid (Filtered & Limited) */}
-                                <div className="space-y-4">
-                                    <ProductGrid
-                                        products={filteredProducts}
-                                        selectedSku={selectedSku}
-                                        onSelect={setSelectedSku}
-                                    />
+                                                {/* Tabs */}
+                                                {tabs.length > 0 && (
+                                                    <ProductTabs
+                                                        tabs={tabs}
+                                                        activeTab={activeTab}
+                                                        onTabChange={(tab) => {
+                                                            setActiveTab(tab);
+                                                            setShowAllProducts(false); // Reset when changing tab
+                                                        }}
+                                                    />
+                                                )}
 
-                                    {/* Show More Button */}
-                                    {hasMoreProducts && (
-                                        <button
-                                            onClick={() => setShowAllProducts(true)}
-                                            className="w-full py-3 border border-white/10 hover:border-primary/50 hover:bg-primary/5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 group"
-                                        >
-                                            <ChevronDown className="w-4 h-4 group-hover:animate-bounce" />
-                                            Tampilkan {remainingCount} Lainnya
-                                        </button>
-                                    )}
+                                                {/* Main Grid (Filtered & Limited) */}
+                                                <div className="space-y-4">
+                                                    <ProductGrid
+                                                        products={filteredProducts}
+                                                        selectedSku={selectedSku}
+                                                        onSelect={setSelectedSku}
+                                                    />
 
-                                    {/* Show Less Button */}
-                                    {showAllProducts && allFilteredProducts.length > INITIAL_PRODUCT_LIMIT && (
-                                        <button
-                                            onClick={() => setShowAllProducts(false)}
-                                            className="w-full py-3 border border-white/10 hover:border-white/20 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <ChevronUp className="w-4 h-4" />
-                                            Tampilkan Lebih Sedikit
-                                        </button>
-                                    )}
-                                </div>
+                                                    {/* Show More Button */}
+                                                    {hasMoreProducts && (
+                                                        <button
+                                                            onClick={() => setShowAllProducts(true)}
+                                                            className="w-full py-3 border border-white/10 hover:border-primary/50 hover:bg-primary/5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 group"
+                                                        >
+                                                            <ChevronDown className="w-4 h-4 group-hover:animate-bounce" />
+                                                            Tampilkan {remainingCount} Lainnya
+                                                        </button>
+                                                    )}
+
+                                                    {/* Show Less Button */}
+                                                    {showAllProducts && allFilteredProducts.length > INITIAL_PRODUCT_LIMIT && (
+                                                        <button
+                                                            onClick={() => setShowAllProducts(false)}
+                                                            className="w-full py-3 border border-white/10 hover:border-white/20 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+                                                        >
+                                                            <ChevronUp className="w-4 h-4" />
+                                                            Tampilkan Lebih Sedikit
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+                                    </motion.div>
+                                </AnimatePresence>
                             </div>
                         </div>
                     </div>
@@ -352,6 +451,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                         methods={paymentMethods}
                         selectedMethod={selectedPayment}
                         onSelect={setSelectedPayment}
+                        productPrice={selectedProductPrice}
                     />
                 </section>
             </div>

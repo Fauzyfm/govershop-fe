@@ -27,7 +27,7 @@ export interface Product {
 export interface PaymentMethod {
   code: string;
   name: string;
-  type: 'qris' | 'va';
+  type: 'qris' | 'va' | 'paypal';
   icon_url?: string;
 }
 

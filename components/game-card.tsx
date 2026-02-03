@@ -1,51 +1,82 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
 interface GameCardProps {
     name: string;
-    image?: string;
+    image: string;
     href: string;
+    status?: string; // 'active', 'coming_soon', 'maintenance'
 }
 
-export default function GameCard({ name, image, href }: GameCardProps) {
-    // Generate a placeholder color based on name length for visual variety if no image
-    const placeholderHue = (name.length * 20) % 360;
+export default function GameCard({ name, image, href, status = 'active' }: GameCardProps) {
+    const isComingSoon = status === 'coming_soon';
+    const isMaintenance = status === 'maintenance';
+    const isDisabled = isComingSoon || isMaintenance;
+
+    const Content = (
+        <div className={`
+            group relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-slate-900 border border-white/5 shadow-2xl transition-all duration-500
+            ${isDisabled ? "grayscale opacity-80 cursor-not-allowed" : "hover:border-primary/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:-translate-y-1"}
+        `}>
+            {/* Image */}
+            <div className="absolute inset-0">
+                <img
+                    src={image}
+                    alt={name}
+                    className={`w-full h-full object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110"}`}
+                    loading="lazy"
+                />
+
+                {/* Gradient Overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 ${isDisabled ? "opacity-90" : "group-hover:opacity-90 transition-opacity"}`} />
+            </div>
+
+            {/* Content */}
+            <div className="absolute inset-x-0 bottom-0 p-4 transform transition-all duration-300">
+                <h3 className="text-white font-bold text-lg md:text-xl truncate drop-shadow-md">
+                    {name}
+                </h3>
+
+                {isDisabled ? (
+                    <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
+                        <span className="text-xs font-medium text-white/80">
+                            {isComingSoon ? "Segera Hadir" : "Maintenance"}
+                        </span>
+                    </div>
+                ) : (
+                    <div className="w-8 h-1 bg-gradient-to-r from-primary to-emerald-400 mt-2 rounded-full transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                )}
+            </div>
+
+            {/* Glow effect on hover (only active) */}
+            {!isDisabled && (
+                <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 group-hover:ring-primary/50 transition-all pointer-events-none" />
+            )}
+
+            {/* Status Overlay for visual clarity */}
+            {isComingSoon && (
+                <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500/90 backdrop-blur-md text-black text-xs font-bold rounded-full shadow-lg">
+                    COMING SOON
+                </div>
+            )}
+            {isMaintenance && (
+                <div className="absolute top-3 right-3 px-3 py-1 bg-red-500/90 backdrop-blur-md text-white text-xs font-bold rounded-full shadow-lg">
+                    MAINTENANCE
+                </div>
+            )}
+        </div>
+    );
+
+    if (isDisabled) {
+        return (
+            <div className="block select-none pointer-events-none">
+                {Content}
+            </div>
+        );
+    }
 
     return (
-        <Link
-            href={href}
-            className="group relative overflow-hidden rounded-xl glass-card transition-all duration-300 hover:scale-[1.02] hover:bg-secondary/60 hover:border-primary/50"
-        >
-            <div className="aspect-[4/5] w-full relative bg-secondary/50 flex items-center justify-center overflow-hidden">
-                {image ? (
-                    <img
-                        src={image}
-                        alt={name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                ) : (
-                    <div
-                        className="w-full h-full flex items-center justify-center text-4xl font-bold text-white/10 select-none group-hover:text-white/20 transition-colors"
-                        style={{ background: `linear-gradient(45deg, hsl(${placeholderHue}, 50%, 10%), hsl(${placeholderHue}, 50%, 20%))` }}
-                    >
-                        {name.substring(0, 2).toUpperCase()}
-                    </div>
-                )}
-
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="font-bold text-lg text-white group-hover:text-primary transition-colors truncate">
-                        {name}
-                    </h3>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity delay-75 mt-1">
-                        <span>Top Up Sekarang</span>
-                        <ArrowRight className="w-3 h-3" />
-                    </div>
-                </div>
-            </div>
+        <Link href={href} className="block">
+            {Content}
         </Link>
     );
 }

@@ -59,9 +59,16 @@ async function getCarousel(): Promise<CarouselItem[]> {
   }
 }
 
-async function getBrandImages(): Promise<Record<string, string>> {
+interface BrandPublicData {
+  brand_name: string;
+  image_url: string;
+  is_best_seller: boolean;
+  status: string;
+}
+
+async function getBrandImages(): Promise<Record<string, BrandPublicData>> {
   try {
-    const res = await api.get<any, APIResponse<{ brand_images: Record<string, string> }>>('/content/brands');
+    const res = await api.get<any, APIResponse<{ brand_images: Record<string, BrandPublicData> }>>('/content/brands');
     if (res.success && res.data) {
       return res.data.brand_images || {};
     }

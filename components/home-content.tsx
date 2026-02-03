@@ -5,6 +5,7 @@ import GameCard from "@/components/game-card";
 import SearchInput from "@/components/ui/search-input";
 import { Brand } from "@/types/api";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Types
 export interface CategoryWithBrands {
@@ -27,21 +28,31 @@ interface PopupItem {
     link_url?: string;
 }
 
+interface BrandPublicData {
+    brand_name: string;
+    image_url: string;
+    is_best_seller: boolean;
+    status: string;
+}
+
 interface HomeContentProps {
     categoryData: CategoryWithBrands[];
     carousel?: CarouselItem[];
-    brandImages?: Record<string, string>;
+    brandImages?: Record<string, BrandPublicData>;
     popup?: PopupItem | null;
 }
 
 export default function HomeContent({ categoryData, carousel = [], brandImages = {}, popup }: HomeContentProps) {
     const [search, setSearch] = useState("");
-    const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+    const [categoryLimits, setCategoryLimits] = useState<Record<string, number>>({});
     const [currentSlide, setCurrentSlide] = useState(0);
     const [showPopup, setShowPopup] = useState(false);
     const [isPopupClosing, setIsPopupClosing] = useState(false);
 
-    const MAX_VISIBLE = 6;
+    const INITIAL_LIMIT = 5; // Desktop: 1 row, Mobile: 2.5 rows (trigger Load More for 7 items)
+    const LOAD_MORE_STEP = 10; // Divisible by 2, 5. Good balance.
+
+    // ... (useEffect for popup and carousel remain same)
 
     // Check if popup should be shown (once per session)
     useEffect(() => {
@@ -63,6 +74,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     }, [carousel.length]);
 
     const closePopup = () => {
+        // ... (remains same)
         setIsPopupClosing(true);
         setTimeout(() => {
             if (popup) {
@@ -70,7 +82,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             }
             setShowPopup(false);
             setIsPopupClosing(false);
-        }, 300); // Match animation duration
+        }, 300);
     };
 
     const getBrandName = (brand: Brand | string) => {
@@ -78,20 +90,35 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         return brand.name;
     };
 
-    const getBrandImage = (brand: Brand | string) => {
+    const getBrandMeta = (brand: Brand | string) => {
         const name = getBrandName(brand);
-        // Only use custom image from Kelola Content
-        // Do NOT use brand.image_url from products (that's for product items, not game cards)
         if (brandImages[name]) {
             return brandImages[name];
         }
-        return undefined; // Will use placeholder
+        return undefined;
     };
 
-    const toggleCategory = (category: string) => {
-        setExpandedCategories(prev => ({
+    const getBrandImage = (brand: Brand | string) => {
+        return getBrandMeta(brand)?.image_url;
+    };
+
+    const getBrandStatus = (brand: Brand | string) => {
+        return getBrandMeta(brand)?.status || 'active';
+    };
+
+    // ... (loadMore, showLess remain same)
+
+    const loadMore = (category: string) => {
+        setCategoryLimits(prev => ({
             ...prev,
-            [category]: !prev[category]
+            [category]: (prev[category] || INITIAL_LIMIT) + LOAD_MORE_STEP
+        }));
+    };
+
+    const showLess = (category: string) => {
+        setCategoryLimits(prev => ({
+            ...prev,
+            [category]: INITIAL_LIMIT
         }));
     };
 
@@ -107,11 +134,24 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     // Flatten all brands for "all" view when searching
     const allFilteredBrands = filteredCategoryData.flatMap(c => c.brands);
 
+    // Get Best Sellers (Unique list)
+    const bestSellerBrands = Array.from(new Set(
+        categoryData.flatMap(c => c.brands)
+            .filter(b => getBrandMeta(b)?.is_best_seller)
+            .map(b => getBrandName(b))
+    ));
+
+    // Convert back to Brand objects (finding first occurrence)
+    const bestSellerItems = bestSellerBrands.map(name => {
+        return categoryData.flatMap(c => c.brands).find(b => getBrandName(b) === name)!;
+    });
+
     const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % carousel.length);
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + carousel.length) % carousel.length);
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 max-w-6xl mx-auto text-left">
+            {/* ... (Popup and Carousel remain same) */}
             {/* Popup */}
             {showPopup && popup && (
                 <div
@@ -121,11 +161,12 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 >
                     <div
                         className={`relative max-w-md w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${isPopupClosing
-                                ? "opacity-0 scale-95 translate-y-4"
-                                : "opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95"
+                            ? "opacity-0 scale-95 translate-y-4"
+                            : "opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95"
                             }`}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {/* ... popup content */}
                         <button
                             onClick={closePopup}
                             className="absolute top-3 right-3 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
@@ -157,7 +198,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 </div>
             )}
 
-            {/* Carousel */}
+            {/* Carousel logic ... */}
             {carousel.length > 0 && (
                 <section className="relative rounded-2xl overflow-hidden">
                     <div className="relative aspect-[21/9] md:aspect-[3/1]">
@@ -237,6 +278,41 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 <SearchInput value={search} onChange={setSearch} />
             </section>
 
+            {/* Best Seller Section (Only when not searching) */}
+            {!search && bestSellerItems.length > 0 && (
+                <section className="w-full animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards">
+                    <div className="flex items-center gap-3 mb-8 px-1">
+                        <div className="w-1.5 h-8 bg-gradient-to-b from-amber-400 to-orange-600 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
+                        <h2 className="text-2xl font-bold text-white tracking-tight">
+                            Paling Laris 🔥
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+                        {bestSellerItems.map((brand, idx) => {
+                            const name = getBrandName(brand);
+                            const image = getBrandImage(brand);
+                            const status = getBrandStatus(brand);
+                            return (
+                                <motion.div
+                                    key={`bestseller-${name}`}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                >
+                                    <GameCard
+                                        name={name}
+                                        href={`/order/${encodeURIComponent(name)}`}
+                                        image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
+                                        status={status}
+                                    />
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
+
             {/* Category Sections */}
             {search ? (
                 // When searching, show flat results
@@ -248,17 +324,24 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                     </div>
 
                     {allFilteredBrands.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             {allFilteredBrands.map((brand, idx) => {
                                 const name = getBrandName(brand);
                                 const image = getBrandImage(brand);
+                                const status = getBrandStatus(brand);
                                 return (
-                                    <GameCard
+                                    <div
                                         key={`${name}-${idx}`}
-                                        name={name}
-                                        href={`/order/${encodeURIComponent(name)}`}
-                                        image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
-                                    />
+                                        className="animate-in fade-in zoom-in-95 duration-500 fill-mode-backwards"
+                                        style={{ animationDelay: `${(idx % 10) * 50}ms` }}
+                                    >
+                                        <GameCard
+                                            name={name}
+                                            href={`/order/${encodeURIComponent(name)}`}
+                                            image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
+                                            status={status}
+                                        />
+                                    </div>
                                 );
                             })}
                         </div>
@@ -270,59 +353,100 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 </section>
             ) : (
                 // Normal view: show by category
-                filteredCategoryData.map((catData) => {
-                    const isExpanded = expandedCategories[catData.category] || false;
-                    const visibleBrands = isExpanded ? catData.brands : catData.brands.slice(0, MAX_VISIBLE);
-                    const hasMore = catData.brands.length > MAX_VISIBLE;
+                filteredCategoryData.map((catData, categoryIdx) => {
+                    const limit = categoryLimits[catData.category] || INITIAL_LIMIT;
+                    const visibleBrands = catData.brands.slice(0, limit);
+                    const hasMore = catData.brands.length > limit;
+                    const isExpanded = limit > INITIAL_LIMIT;
 
                     return (
-                        <section key={catData.category}>
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold border-l-4 border-primary pl-3">
-                                    {catData.category}
-                                </h2>
-                                {hasMore && (
-                                    <span className="text-sm text-muted-foreground">
-                                        {catData.brands.length} item
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                {visibleBrands.map((brand, idx) => {
-                                    const name = getBrandName(brand);
-                                    const image = getBrandImage(brand);
-                                    return (
-                                        <GameCard
-                                            key={`${catData.category}-${name}-${idx}`}
-                                            name={name}
-                                            href={`/order/${encodeURIComponent(name)}`}
-                                            image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
-                                        />
-                                    );
-                                })}
-                            </div>
-
-                            {hasMore && (
-                                <div className="mt-4 text-center">
-                                    <button
-                                        onClick={() => toggleCategory(catData.category)}
-                                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                    >
-                                        {isExpanded ? (
-                                            <>
-                                                <ChevronUp className="w-4 h-4" />
-                                                Tampilkan Lebih Sedikit
-                                            </>
-                                        ) : (
-                                            <>
-                                                <ChevronDown className="w-4 h-4" />
-                                                Tampilkan Lebih Banyak ({catData.brands.length - MAX_VISIBLE} lainnya)
-                                            </>
-                                        )}
-                                    </button>
+                        <section
+                            key={catData.category}
+                            className={`w-full`}
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: categoryIdx * 0.1, duration: 0.5 }}
+                                className="flex items-center justify-between mb-8 px-1"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-8 bg-gradient-to-b from-primary to-emerald-600 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+                                    <h2 className="text-2xl font-bold text-white tracking-tight">
+                                        {catData.category}
+                                    </h2>
                                 </div>
-                            )}
+                                <span className="text-xs md:text-sm font-medium px-3 py-1 rounded-full bg-secondary/50 border border-white/5 text-muted-foreground backdrop-blur-sm">
+                                    {catData.brands.length} Games
+                                </span>
+                            </motion.div>
+
+                            <motion.div
+                                layout
+                                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"
+                            >
+                                <AnimatePresence mode="popLayout">
+                                    {visibleBrands.map((brand, idx) => {
+                                        const name = getBrandName(brand);
+                                        const image = getBrandImage(brand);
+                                        const status = getBrandStatus(brand);
+                                        return (
+                                            <motion.div
+                                                layout
+                                                key={`${catData.category}-${name}`}
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <GameCard
+                                                    name={name}
+                                                    href={`/order/${encodeURIComponent(name)}`}
+                                                    image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
+                                                    status={status}
+                                                />
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
+                            </motion.div>
+
+                            <div className="mt-10 flex justify-center gap-6">
+                                <AnimatePresence>
+                                    {hasMore && (
+                                        <motion.button
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.8 }}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => loadMore(catData.category)}
+                                            className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:shadow-primary/20 group overflow-hidden"
+                                            title="Load More"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <ChevronDown className="w-6 h-6 text-primary group-hover:translate-y-0.5 transition-transform" />
+                                        </motion.button>
+                                    )}
+
+                                    {isExpanded && (
+                                        <motion.button
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.8 }}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => showLess(catData.category)}
+                                            className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:bg-white/5 group"
+                                            title="Show Less"
+                                        >
+                                            <ChevronUp className="w-6 h-6 text-muted-foreground group-hover:text-white transition-colors" />
+                                        </motion.button>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </section>
                     );
                 })

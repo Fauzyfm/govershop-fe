@@ -7,15 +7,23 @@ import { APIResponse, Product, PaymentMethod } from "@/types/api";
 import OrderForm from "@/components/order/order-form";
 import { cn } from "@/lib/utils";
 
+interface TopupStep {
+    step: number;
+    title: string;
+    desc: string;
+}
+
 interface OrderPageClientProps {
     brand: string;
     products: Product[];
     paymentMethods: PaymentMethod[];
     brandImage?: string;
+    dynamicSteps?: TopupStep[];
+    description?: string;
 }
 
-// Step-by-step guide data based on brand
-const getTopUpSteps = (brand: string) => {
+// Default fallback logic using hardcoded data
+const getDefaultTopUpSteps = (brand: string): TopupStep[] => {
     const brandUpper = brand.toUpperCase();
 
     if (brandUpper === "MOBILE LEGENDS") {
@@ -26,7 +34,7 @@ const getTopUpSteps = (brand: string) => {
             { step: 4, title: "Selesaikan Pembayaran", desc: "Bayar sesuai nominal dan diamond masuk otomatis" },
         ];
     }
-
+    // ... (rest of logic can be same or simplified)
     if (brandUpper === "FREE FIRE" || brandUpper === "FREE FIRE MAX") {
         return [
             { step: 1, title: "Masukkan Player ID", desc: "Buka game, tap profil, dan salin Player ID" },
@@ -45,9 +53,17 @@ const getTopUpSteps = (brand: string) => {
     ];
 };
 
-export default function OrderPageClient({ brand, products, paymentMethods, brandImage }: OrderPageClientProps) {
-    const [showSteps, setShowSteps] = useState(false);
-    const steps = getTopUpSteps(brand);
+export default function OrderPageClient({ brand, products, paymentMethods, brandImage, dynamicSteps, description }: OrderPageClientProps) {
+    const [showSteps, setShowSteps] = useState(description ? true : false); // Auto-open if description exists? Maybe default false.
+
+    // Use dynamic steps if available and not empty, otherwise fallback
+    const steps = (dynamicSteps && dynamicSteps.length > 0) ? dynamicSteps : getDefaultTopUpSteps(brand);
+
+    // Sort products by buyer_sku_code ASC (Smallest to Largest) - Client Side
+    const sortedProducts = [...products].sort((a, b) => {
+        // Natural sort for mixed alphanumeric strings (pre2 < pre10)
+        return a.buyer_sku_code.localeCompare(b.buyer_sku_code, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
@@ -113,6 +129,11 @@ export default function OrderPageClient({ brand, products, paymentMethods, brand
                 )}>
                     <div className="overflow-hidden">
                         <div className="px-4 pb-4 pt-0">
+                            {description && (
+                                <div className="mb-4 text-sm text-muted-foreground bg-white/5 p-3 rounded-lg border border-white/5 whitespace-pre-line">
+                                    {description}
+                                </div>
+                            )}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                 {steps.map((step) => (
                                     <div
@@ -137,7 +158,7 @@ export default function OrderPageClient({ brand, products, paymentMethods, brand
             {/* Main Order Form */}
             <OrderForm
                 brand={brand}
-                initialProducts={products}
+                initialProducts={sortedProducts}
                 paymentMethods={paymentMethods}
             />
         </div>
