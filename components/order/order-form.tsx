@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
+import { getGameConfig, sanitizeUserId, buildCustomerNo } from "@/lib/game-input-config";
 import {
     Product,
     PaymentMethod,
@@ -17,6 +18,7 @@ import ProductGrid from "./product-grid";
 import PaymentSelector from "./payment-selector";
 import MobileOrderSummary from "./mobile-order-summary";
 import ServerTabs, { ServerTabInfo, buildServerTabs, filterProductsByTab, findTabByUrlKey } from "./server-tabs";
+import ZoneIdInput from "./zone-id-input";
 import { cn } from "@/lib/utils";
 
 interface OrderFormProps {
@@ -62,9 +64,14 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     const [nominalExpanded, setNominalExpanded] = useState(true);
     const [showAllProducts, setShowAllProducts] = useState(false);
 
-    // Derived Logic
-    const isML = brand.toUpperCase() === "MOBILE LEGENDS";
-    const fullCustomerNo = isML ? `${customerNo}${zoneId}` : customerNo;
+    // Game-specific config (flexible untuk game apapun)
+    const gameConfig = useMemo(() => getGameConfig(brand), [brand]);
+
+    // Build sanitized customer number
+    const fullCustomerNo = useMemo(
+        () => buildCustomerNo(brand, customerNo, zoneId),
+        [brand, customerNo, zoneId]
+    );
 
     // Build dynamic server tabs from products
     const serverTabs = useMemo(() => buildServerTabs(initialProducts), [initialProducts]);
@@ -392,27 +399,30 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className={cn("space-y-2", isML ? "col-span-1" : "col-span-2")}>
-                            <label className="text-xs text-muted-foreground font-medium">User ID</label>
+                        <div className={cn("space-y-2", gameConfig.hasZoneId ? "col-span-1" : "col-span-2")}>
+                            <label className="text-xs text-muted-foreground font-medium">
+                                {gameConfig.userIdLabel || "User ID"}
+                            </label>
                             <input
                                 type="text"
                                 value={customerNo}
-                                onChange={e => setCustomerNo(e.target.value)}
-                                placeholder="Masukkan User ID"
+                                onChange={e => setCustomerNo(sanitizeUserId(e.target.value))}
+                                onPaste={e => {
+                                    e.preventDefault();
+                                    const pastedText = e.clipboardData.getData('text');
+                                    setCustomerNo(sanitizeUserId(pastedText));
+                                }}
+                                placeholder={gameConfig.userIdPlaceholder || "Masukkan User ID"}
                                 className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
                             />
                         </div>
-                        {isML && (
-                            <div className="space-y-2">
-                                <label className="text-xs text-muted-foreground font-medium">Zone ID</label>
-                                <input
-                                    type="text"
-                                    value={zoneId}
-                                    onChange={e => setZoneId(e.target.value)}
-                                    placeholder="(1234)"
-                                    className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
-                                />
-                            </div>
+                        {gameConfig.hasZoneId && (
+                            <ZoneIdInput
+                                value={zoneId}
+                                onChange={setZoneId}
+                                label={gameConfig.zoneIdLabel}
+                                placeholder={gameConfig.zoneIdPlaceholder}
+                            />
                         )}
                     </div>
 

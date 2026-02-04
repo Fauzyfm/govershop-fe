@@ -5,19 +5,78 @@ import {
     Search,
     ExternalLink,
     RefreshCw,
-    AlertCircle
+    AlertCircle,
+    Download,
+    Calendar,
+    TrendingUp,
+    DollarSign,
+    ShoppingCart,
+    RotateCcw,
+    X,
+    Shield
 } from "lucide-react";
 import api from "@/lib/api";
 import Link from "next/link";
+import * as XLSX from 'xlsx';
+
+interface OrderSummary {
+    total_revenue: number;
+    total_cost: number;
+    total_profit: number;
+    successful_orders: number;
+    admin_fee_rate: number;
+}
+
+interface Order {
+    id: string;
+    ref_id: string;
+    buyer_sku_code: string;
+    product_name: string;
+    customer_no: string;
+    customer_email?: string;
+    customer_phone?: string;
+    buy_price: number;
+    selling_price: number;
+    profit: number;
+    status: string;
+    status_label: string;
+    payment_status: string;
+    digiflazz_status?: string;
+    serial_number?: string;
+    message?: string;
+    created_at: string;
+    order_source: string;
+    admin_notes?: string;
+}
 
 export default function AdminOrders() {
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState("all");
+    const [paymentFilter, setPaymentFilter] = useState("all");
+    const [digiflazzFilter, setDigiflazzFilter] = useState("all");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [checkingStatus, setCheckingStatus] = useState<string | null>(null);
+
+    // Manual Topup Modal
+    const [manualTopupOrder, setManualTopupOrder] = useState<Order | null>(null);
+    const [totpCode, setTotpCode] = useState("");
+    const [newCustomerNo, setNewCustomerNo] = useState("");
+    const [manualTopupLoading, setManualTopupLoading] = useState(false);
+
+    // Date filter - default to today
+    const [dateFrom, setDateFrom] = useState(() => new Date().toISOString().split('T')[0]);
+    const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+
+    // Summary stats
+    const [summary, setSummary] = useState<OrderSummary>({
+        total_revenue: 0,
+        total_cost: 0,
+        total_profit: 0,
+        successful_orders: 0,
+        admin_fee_rate: 10
+    });
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -31,11 +90,17 @@ export default function AdminOrders() {
         try {
             const params = new URLSearchParams();
             if (debouncedSearch) params.append("search", debouncedSearch);
-            if (statusFilter !== "all") params.append("status", statusFilter);
+            if (paymentFilter !== "all") params.append("payment_status", paymentFilter);
+            if (digiflazzFilter !== "all") params.append("digiflazz_status", digiflazzFilter);
+            if (dateFrom) params.append("date_from", dateFrom);
+            if (dateTo) params.append("date_to", dateTo);
 
             const response: any = await api.get(`/admin/orders?${params.toString()}`);
             setOrders(response.data.orders || []);
             setTotal(response.data.total || 0);
+            if (response.data.summary) {
+                setSummary(response.data.summary);
+            }
         } catch (error) {
             console.error("Failed to fetch orders:", error);
             alert("Gagal mengambil data order");
@@ -46,7 +111,7 @@ export default function AdminOrders() {
 
     useEffect(() => {
         fetchOrders();
-    }, [debouncedSearch, statusFilter]);
+    }, [debouncedSearch, paymentFilter, digiflazzFilter, dateFrom, dateTo]);
 
     const handleCheckStatus = async (orderId: string) => {
         setCheckingStatus(orderId);
@@ -64,6 +129,74 @@ export default function AdminOrders() {
         } finally {
             setCheckingStatus(null);
         }
+    };
+
+    const handleManualTopup = async () => {
+        if (!manualTopupOrder) return;
+
+        setManualTopupLoading(true);
+        try {
+            const response: any = await api.post(`/admin/orders/${manualTopupOrder.id}/manual-topup`, {
+                totp_code: totpCode,
+                customer_no: newCustomerNo || undefined
+            });
+            alert(response.message || "Manual topup berhasil!");
+            setManualTopupOrder(null);
+            setTotpCode("");
+            setNewCustomerNo("");
+            fetchOrders();
+        } catch (error: any) {
+            alert(error?.response?.data?.message || "Gagal melakukan manual topup");
+        } finally {
+            setManualTopupLoading(false);
+        }
+    };
+
+    const canManualTopup = (order: Order) => {
+        return order.status === "failed" && order.payment_status === "completed";
+    };
+
+    const handleExportExcel = () => {
+        if (orders.length === 0) {
+            alert("Tidak ada data untuk diexport");
+            return;
+        }
+
+        const excelData = orders.map(o => ({
+            "Ref ID": o.ref_id,
+            "SKU": o.buyer_sku_code,
+            "Customer No": o.customer_no,
+            "Phone": o.customer_phone || "-",
+            "Email": o.customer_email || "-",
+            "Product": o.product_name,
+            "Modal (Rp)": o.buy_price,
+            "Harga Jual (Rp)": o.selling_price,
+            "Profit (Rp)": o.profit,
+            "Status": o.status_label || o.status,
+            "Payment": o.payment_status,
+            "Digiflazz": o.digiflazz_status || "-",
+            "SN": o.serial_number || "-",
+            "Tanggal": new Date(o.created_at).toLocaleString('id-ID'),
+            "Source": o.order_source || "website",
+            "Notes": o.admin_notes || "-"
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Orders");
+
+        // Add summary row
+        const summaryData = [
+            {},
+            { "Ref ID": "=== SUMMARY ===" },
+            { "Ref ID": "Total Revenue", "SKU": `Rp ${summary.total_revenue.toLocaleString()}` },
+            { "Ref ID": "Total Modal", "SKU": `Rp ${summary.total_cost.toLocaleString()}` },
+            { "Ref ID": "Total Profit", "SKU": `Rp ${summary.total_profit.toLocaleString()}` },
+            { "Ref ID": "Transaksi Sukses", "SKU": summary.successful_orders.toString() },
+        ];
+        XLSX.utils.sheet_add_json(ws, summaryData, { skipHeader: true, origin: -1 });
+
+        XLSX.writeFile(wb, `orders_${dateFrom}_to_${dateTo}.xlsx`);
     };
 
     const getOrderStatusColor = (status: string) => {
@@ -108,68 +241,150 @@ export default function AdminOrders() {
 
     return (
         <div className="space-y-6">
+            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white">Order Management</h1>
                     <div className="text-sm text-slate-500">
                         Total Orders: <span className="text-white font-bold">{total}</span>
+                        <span className="mx-2">•</span>
+                        <span className="text-slate-400">{dateFrom === dateTo ? dateFrom : `${dateFrom} - ${dateTo}`}</span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                        <input
-                            type="text"
-                            placeholder="Cari ref_id, no hp, email..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-full md:w-72 transition-colors"
-                        />
+                {/* Export Button */}
+                <button
+                    onClick={handleExportExcel}
+                    disabled={orders.length === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium transition-colors"
+                >
+                    <Download className="w-4 h-4" />
+                    Export Excel
+                </button>
+            </div>
+
+            {/* Summary Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                        <DollarSign className="w-4 h-4" />
+                        Total Revenue
                     </div>
-
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer pr-10 hover:bg-slate-800 transition-colors"
-                    >
-                        <option value="all">Semua Status</option>
-                        <option value="success">Sukses</option>
-                        <option value="processing">Processing</option>
-                        <option value="pending">Pending</option>
-                        <option value="expired">Kadaluwarsa</option>
-                        <option value="failed">Gagal</option>
-                    </select>
-
-                    <button
-                        onClick={fetchOrders}
-                        className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
-                        title="Refresh"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-                    </button>
+                    <div className="text-xl font-bold text-white">
+                        Rp {summary.total_revenue.toLocaleString()}
+                    </div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                        <ShoppingCart className="w-4 h-4" />
+                        Total Pembelian Dari Supplier
+                    </div>
+                    <div className="text-xl font-bold text-orange-400">
+                        Rp {summary.total_cost.toLocaleString()}
+                    </div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                        <TrendingUp className="w-4 h-4" />
+                        Total Profit
+                    </div>
+                    <div className="text-xl font-bold text-emerald-400">
+                        Rp {summary.total_profit.toLocaleString()}
+                    </div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                        <Calendar className="w-4 h-4" />
+                        Transaksi Sukses
+                    </div>
+                    <div className="text-xl font-bold text-blue-400">
+                        {summary.successful_orders}
+                    </div>
                 </div>
             </div>
 
-            {/* Search Info */}
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-sm text-blue-400">
-                <p><strong>Pencarian:</strong> Ref ID, No HP, Email, Customer No, Serial Number, Product Name</p>
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+                {/* Search */}
+                <div className="relative flex-1 w-full md:w-auto">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input
+                        type="text"
+                        placeholder="Cari ref_id, no hp, email..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-full md:w-72 transition-colors"
+                    />
+                </div>
+
+                {/* Date Range */}
+                <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-500" />
+                    <input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                        className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                    />
+                    <span className="text-slate-500">-</span>
+                    <input
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                        className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                    />
+                </div>
+
+                {/* Payment Status Filter */}
+                <select
+                    value={paymentFilter}
+                    onChange={(e) => setPaymentFilter(e.target.value)}
+                    className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer pr-10 hover:bg-slate-800 transition-colors"
+                >
+                    <option value="all">Payment: Semua</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="expired">Expired</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+
+                {/* Digiflazz Status Filter */}
+                <select
+                    value={digiflazzFilter}
+                    onChange={(e) => setDigiflazzFilter(e.target.value)}
+                    className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer pr-10 hover:bg-slate-800 transition-colors"
+                >
+                    <option value="all">Digiflazz: Semua</option>
+                    <option value="Sukses">Sukses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Gagal">Gagal</option>
+                </select>
+
+                {/* Refresh */}
+                <button
+                    onClick={fetchOrders}
+                    className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
+                    title="Refresh"
+                >
+                    <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                </button>
             </div>
 
-            {/* Desktop Table */}
-            <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            {/* Table - Horizontal Scroll on Mobile */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-400">
+                    <table className="w-full text-left text-sm text-slate-400 min-w-[1200px]">
                         <thead className="bg-slate-950 text-slate-200 uppercase font-medium text-xs">
                             <tr>
                                 <th className="px-4 py-3 whitespace-nowrap">Ref ID</th>
                                 <th className="px-4 py-3 whitespace-nowrap">SKU</th>
                                 <th className="px-4 py-3 min-w-[150px]">Customer</th>
                                 <th className="px-4 py-3 min-w-[180px]">Product</th>
-                                <th className="px-4 py-3 whitespace-nowrap">Price</th>
-                                <th className="px-4 py-3 whitespace-nowrap">Order Status</th>
-                                <th className="px-4 py-3 whitespace-nowrap">Payment Status</th>
-                                <th className="px-4 py-3 min-w-[150px]">Digiflazz</th>
+                                <th className="px-4 py-3 whitespace-nowrap">Pembelian</th>
+                                <th className="px-4 py-3 whitespace-nowrap">Harga Jual</th>
+                                <th className="px-4 py-3 whitespace-nowrap">Profit</th>
+                                <th className="px-4 py-3 whitespace-nowrap">Payment</th>
+                                <th className="px-4 py-3 min-w-[200px]">Digiflazz</th>
                                 <th className="px-4 py-3 whitespace-nowrap">Date</th>
                                 <th className="px-4 py-3 whitespace-nowrap">Actions</th>
                             </tr>
@@ -177,35 +392,64 @@ export default function AdminOrders() {
                         <tbody className="divide-y divide-slate-800">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={10} className="px-4 py-8 text-center">Loading orders...</td>
+                                    <td colSpan={11} className="px-4 py-8 text-center">Loading orders...</td>
                                 </tr>
                             ) : orders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={10} className="px-4 py-8 text-center text-slate-500">
-                                        No orders found.
+                                    <td colSpan={11} className="px-4 py-8 text-center text-slate-500">
+                                        No orders found for selected filters.
                                     </td>
                                 </tr>
                             ) : (
                                 orders.map((order) => (
                                     <tr key={order.id} className="hover:bg-slate-800/50 transition-colors">
-                                        <td className="px-4 py-3 font-mono text-xs align-top whitespace-nowrap">{order.ref_id}</td>
-                                        <td className="px-4 py-3 font-mono text-xs align-top whitespace-nowrap text-slate-500">{order.buyer_sku_code}</td>
+                                        <td className="px-4 py-3 font-medium text-white align-top">
+                                            {order.ref_id}
+                                            {order.order_source?.startsWith("admin_") && (
+                                                <span className={`block text-[10px] w-fit px-1.5 py-0.5 mt-1 rounded ${order.order_source === "admin_gift"
+                                                    ? "bg-pink-500/20 text-pink-400 border border-pink-500/30"
+                                                    : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                                    }`}>
+                                                    {order.order_source === "admin_gift" ? "GIFT" : "CASH"}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 font-mono text-xs align-top">
+                                            <span className="bg-slate-800 px-1 py-0.5 rounded text-slate-300">
+                                                {order.buyer_sku_code}
+                                            </span>
+                                        </td>
                                         <td className="px-4 py-3 align-top">
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-white font-medium text-xs">{order.customer_no}</span>
-                                                {order.customer_phone && <span className="text-xs text-slate-500">{order.customer_phone}</span>}
+                                            <div className="flex flex-col text-xs gap-0.5">
+                                                <span className="text-white font-mono break-all">{order.customer_no}</span>
+                                                {order.customer_email && <span className="text-slate-400">{order.customer_email}</span>}
+                                                {order.customer_phone && <span className="text-slate-500">{order.customer_phone}</span>}
+                                                {order.admin_notes && (
+                                                    <div className="mt-1 p-1 bg-yellow-500/10 border border-yellow-500/20 rounded text-yellow-500 text-[10px] italic">
+                                                        📝 {order.admin_notes}
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 align-top">
                                             <span className="text-white text-xs break-words block">{order.product_name}</span>
                                         </td>
-                                        <td className="px-4 py-3 text-emerald-400 font-medium align-top whitespace-nowrap text-xs">
+                                        <td className="px-4 py-3 text-orange-400 font-medium align-top whitespace-nowrap text-xs">
+                                            Rp {order.buy_price?.toLocaleString()}
+                                        </td>
+                                        <td className="px-4 py-3 text-white font-medium align-top whitespace-nowrap text-xs">
                                             Rp {order.selling_price?.toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3 align-top">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getOrderStatusColor(order.status)} whitespace-nowrap`}>
-                                                {order.status_label || order.status}
-                                            </span>
+                                        <td className={`px-4 py-3 font-bold align-top whitespace-nowrap text-xs ${order.status === 'failed' || order.status === 'cancelled' || order.status === 'expired'
+                                            ? 'text-red-500 line-through opacity-60'
+                                            : order.status === 'success' || order.status === 'processing' || order.status === 'paid'
+                                                ? 'text-emerald-400'
+                                                : 'text-slate-500'
+                                            }`}>
+                                            {order.status === 'failed' || order.status === 'cancelled' || order.status === 'expired'
+                                                ? '-'
+                                                : `+Rp ${order.profit?.toLocaleString()}`
+                                            }
                                         </td>
                                         <td className="px-4 py-3 align-top">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.payment_status)} whitespace-nowrap`}>
@@ -213,19 +457,31 @@ export default function AdminOrders() {
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 align-top">
-                                            <div className="flex flex-col text-xs gap-0.5">
-                                                <span className={`${order.digiflazz_status === "Sukses" ? "text-emerald-500" : "text-slate-400"} whitespace-nowrap font-medium`}>
+                                            <div className="flex flex-col text-xs gap-1">
+                                                <span className={`${order.digiflazz_status === "Sukses"
+                                                    ? "text-emerald-500"
+                                                    : order.digiflazz_status === "Gagal"
+                                                        ? "text-red-500"
+                                                        : order.digiflazz_status === "Pending"
+                                                            ? "text-yellow-500"
+                                                            : "text-slate-400"
+                                                    } whitespace-nowrap font-medium`}>
                                                     {order.digiflazz_status || "-"}
                                                 </span>
                                                 {order.serial_number && (
-                                                    <span className="text-slate-300 font-mono text-[10px] break-all py-0.5 px-1 bg-slate-950 rounded">
+                                                    <span className="text-emerald-300 font-mono text-[10px] break-all py-0.5 px-1 bg-emerald-950/50 rounded">
                                                         SN: {order.serial_number}
+                                                    </span>
+                                                )}
+                                                {order.message && order.digiflazz_status === "Gagal" && (
+                                                    <span className="text-red-400 text-[10px] break-all py-0.5 px-1 bg-red-950/50 rounded">
+                                                        ❌ {order.message}
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 text-xs align-top whitespace-nowrap text-slate-500">
-                                            {new Date(order.created_at).toLocaleString()}
+                                            {new Date(order.created_at).toLocaleString('id-ID')}
                                         </td>
                                         <td className="px-4 py-3 align-top">
                                             <div className="flex flex-col gap-1.5">
@@ -251,6 +507,18 @@ export default function AdminOrders() {
                                                         Check
                                                     </button>
                                                 )}
+                                                {canManualTopup(order) && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setManualTopupOrder(order);
+                                                            setNewCustomerNo(order.customer_no);
+                                                        }}
+                                                        className="flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 transition-colors"
+                                                    >
+                                                        <RotateCcw className="w-3 h-3" />
+                                                        Retry
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -261,83 +529,110 @@ export default function AdminOrders() {
                 </div>
             </div>
 
-            {/* Mobile Card View */}
-            <div className="md:hidden space-y-4">
-                {loading ? (
-                    <div className="text-center py-8 text-slate-500">Loading orders...</div>
-                ) : orders.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500">No orders found.</div>
-                ) : (
-                    orders.map((order) => (
-                        <div key={order.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <span className="font-mono text-xs text-slate-500">#{order.ref_id}</span>
-                                    <span className="text-[10px] text-slate-600 block">{order.buyer_sku_code}</span>
-                                </div>
-                                <div className="flex gap-1">
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getOrderStatusColor(order.status)}`}>
-                                        {order.status}
-                                    </span>
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getPaymentStatusColor(order.payment_status)}`}>
-                                        {order.payment_status}
-                                    </span>
-                                </div>
-                            </div>
+            {/* Info Note */}
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-sm text-blue-400">
+                <p><strong>💡 Info:</strong> Profit = Harga Jual - Modal</p>
+                <p className="mt-1 text-xs text-blue-400/70">Pencarian: Ref ID, No HP, Email, Customer No, Serial Number, Product Name</p>
+            </div>
 
-                            <div className="flex justify-between items-start gap-4">
-                                <h3 className="font-medium text-white text-sm line-clamp-2">{order.product_name}</h3>
-                                <div className="text-emerald-400 font-bold text-sm shrink-0">
-                                    Rp {order.selling_price?.toLocaleString()}
-                                </div>
-                            </div>
+            {/* Manual Topup Modal */}
+            {manualTopupOrder && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-md w-full space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                <Shield className="w-5 h-5 text-orange-400" />
+                                Manual Topup
+                            </h3>
+                            <button
+                                onClick={() => {
+                                    setManualTopupOrder(null);
+                                    setTotpCode("");
+                                    setNewCustomerNo("");
+                                }}
+                                className="text-slate-400 hover:text-white"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
 
-                            <div className="bg-slate-950/50 p-2 rounded-lg text-xs space-y-1">
-                                <div className="flex justify-between">
-                                    <span className="text-slate-500">Customer</span>
-                                    <span className="text-slate-200 font-mono">{order.customer_no}</span>
-                                </div>
-                                {order.customer_phone && (
-                                    <div className="flex justify-between">
-                                        <span className="text-slate-600">Phone</span>
-                                        <span className="text-slate-400">{order.customer_phone}</span>
-                                    </div>
-                                )}
+                        {/* Order Info */}
+                        <div className="bg-slate-800 rounded-lg p-3 space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-slate-400">Order ID:</span>
+                                <span className="text-white font-mono text-xs">{manualTopupOrder.ref_id}</span>
                             </div>
-
-                            <div className="flex justify-between items-center border-t border-slate-800 pt-2">
-                                <span className="text-[10px] text-slate-600">
-                                    {new Date(order.created_at).toLocaleString()}
-                                </span>
-                                <div className="flex gap-3">
-                                    <Link
-                                        href={`/payment/${order.id}`}
-                                        target="_blank"
-                                        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
-                                    >
-                                        <ExternalLink className="w-3 h-3" />
-                                        Payment
-                                    </Link>
-                                    {canCheckStatus(order.status) && (
-                                        <button
-                                            onClick={() => handleCheckStatus(order.id)}
-                                            disabled={checkingStatus === order.id}
-                                            className="flex items-center gap-1 text-xs text-yellow-400 hover:text-yellow-300 disabled:opacity-50"
-                                        >
-                                            {checkingStatus === order.id ? (
-                                                <RefreshCw className="w-3 h-3 animate-spin" />
-                                            ) : (
-                                                <AlertCircle className="w-3 h-3" />
-                                            )}
-                                            Check
-                                        </button>
-                                    )}
-                                </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-400">Product:</span>
+                                <span className="text-white">{manualTopupOrder.product_name}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-400">SKU:</span>
+                                <span className="text-blue-400 font-mono">{manualTopupOrder.buyer_sku_code}</span>
                             </div>
                         </div>
-                    ))
-                )}
-            </div>
+
+                        {/* Customer No (editable) */}
+                        <div className="space-y-2">
+                            <label className="text-sm text-slate-400">Customer No / User ID</label>
+                            <input
+                                type="text"
+                                value={newCustomerNo}
+                                onChange={(e) => setNewCustomerNo(e.target.value)}
+                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                            />
+                            {newCustomerNo !== manualTopupOrder.customer_no && (
+                                <p className="text-xs text-yellow-400">⚠️ Customer no berbeda dari aslinya: {manualTopupOrder.customer_no}</p>
+                            )}
+                        </div>
+
+                        {/* TOTP Code */}
+                        <div className="space-y-2">
+                            <label className="text-sm text-slate-400">Kode TOTP (6 digit)</label>
+                            <input
+                                type="text"
+                                value={totpCode}
+                                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                                placeholder="000000"
+                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-blue-500"
+                                maxLength={6}
+                            />
+                            <p className="text-xs text-slate-500">Masukkan kode dari Google Authenticator</p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setManualTopupOrder(null);
+                                    setTotpCode("");
+                                    setNewCustomerNo("");
+                                }}
+                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleManualTopup}
+                                disabled={manualTopupLoading || totpCode.length !== 6 || !newCustomerNo}
+                                className="flex-1 bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {manualTopupLoading ? (
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <RotateCcw className="w-4 h-4" />
+                                )}
+                                Retry Topup
+                            </button>
+                        </div>
+
+                        {/* Warning */}
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-400">
+                            ⚠️ Aksi ini akan mengirim topup ke Digiflazz. Pastikan data sudah benar.
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

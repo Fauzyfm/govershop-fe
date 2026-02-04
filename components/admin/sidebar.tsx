@@ -10,7 +10,8 @@ import {
     CreditCard,
     ChevronLeft,
     ChevronRight,
-    Image
+    Image,
+    Zap
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -48,6 +49,11 @@ export default function AdminSidebar({ isCollapsed, toggleSidebar }: AdminSideba
             label: "Orders",
             icon: ShoppingCart,
             href: "/admin/orders",
+        },
+        {
+            label: "Custom Topup",
+            icon: Zap,
+            href: "/admin/topup/custom",
         },
         {
             label: "Kelola Content",
