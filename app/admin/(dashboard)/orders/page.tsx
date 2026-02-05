@@ -303,23 +303,23 @@ export default function AdminOrders() {
                 </div>
             </div>
 
+            {/* Search */}
+            <div className="relative flex-1 mdw-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input
+                    type="text"
+                    placeholder="Cari ref_id, no hp, email..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-full transition-colors"
+                />
+            </div>
             {/* Filters */}
             <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                {/* Search */}
-                <div className="relative flex-1 w-full md:w-auto">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                    <input
-                        type="text"
-                        placeholder="Cari ref_id, no hp, email..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-full md:w-72 transition-colors"
-                    />
-                </div>
 
                 {/* Date Range */}
-                <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-slate-500" />
+                <div className="flex flex-wrap items-center gap-2">
+                <Calendar className="w-4 h-4 text-slate-500 " />
                     <input
                         type="date"
                         value={dateFrom}
@@ -359,6 +359,7 @@ export default function AdminOrders() {
                     <option value="Pending">Pending</option>
                     <option value="Gagal">Gagal</option>
                 </select>
+
 
                 {/* Refresh */}
                 <button

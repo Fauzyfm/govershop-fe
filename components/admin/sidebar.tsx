@@ -11,7 +11,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Image,
-    Zap
+    Zap,
+    Activity
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -59,6 +60,11 @@ export default function AdminSidebar({ isCollapsed, toggleSidebar }: AdminSideba
             label: "Kelola Content",
             icon: Image,
             href: "/admin/content",
+        },
+        {
+            label: "System Logs",
+            icon: Activity,
+            href: "/admin/logs",
         },
     ];
 

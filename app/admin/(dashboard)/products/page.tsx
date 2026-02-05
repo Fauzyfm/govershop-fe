@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import Modal from "@/components/ui/modal";
+import Notification from "@/components/ui/notification";
 
 export default function AdminProducts() {
     const [products, setProducts] = useState<any[]>([]);
@@ -16,6 +17,10 @@ export default function AdminProducts() {
     const [loading, setLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [hasSearched, setHasSearched] = useState(false); // New state to track if search has been performed
+    const [notification, setNotification] = useState<{ message: string | null; type: "success" | "error" | "info" | null }>({
+        message: null,
+        type: null
+    });
 
     // Pagination
     const [limit, setLimit] = useState(20);
@@ -154,13 +159,20 @@ export default function AdminProducts() {
     const handleSync = async () => {
         setSyncing(true);
         try {
-            await api.post("/admin/sync/products");
-            alert("Sync completed successfully!");
-            if (hasSearched) fetchProducts(); // Only refresh if currently viewing logic
+            const response: any = await api.post("/admin/sync/products");
+            setNotification({
+                message: response.message || "Product sudah diperbarui dengan Digiflazz!",
+                type: "success"
+            });
+            await fetchProducts();
             setIsSyncModalOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Sync failed:", error);
-            alert("Sync failed. Check console for details.");
+            const errorMessage = error.response?.data?.message || error.message || "Gagal melakukan sinkronisasi dengan Digiflazz.";
+            setNotification({
+                message: `Gagal Sync: ${errorMessage}`,
+                type: "error"
+            });
         } finally {
             setSyncing(false);
         }
@@ -196,12 +208,12 @@ export default function AdminProducts() {
             };
 
             await api.put(`/admin/products/${editingProduct.buyer_sku_code}`, payload);
-            alert("Produk berhasil diupdate!");
+            setNotification({ message: "Produk berhasil diupdate!", type: "success" });
             setIsEditModalOpen(false);
             fetchProducts();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to update product:", error);
-            alert("Gagal update produk.");
+            setNotification({ message: error?.response?.data?.message || "Gagal update produk.", type: "error" });
         }
     };
 
@@ -210,6 +222,11 @@ export default function AdminProducts() {
 
     return (
         <div className="space-y-6">
+            <Notification
+                message={notification.message}
+                type={notification.type}
+                onClose={() => setNotification({ message: null, type: null })}
+            />
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white">Product Management</h1>
@@ -472,34 +489,7 @@ export default function AdminProducts() {
                 </div>
             </div>
 
-            {/* Sync Confirm Modal */}
-            <Modal
-                isOpen={isSyncModalOpen}
-                onClose={() => setIsSyncModalOpen(false)}
-                title="Konfirmasi Sync"
-            >
-                <div className="space-y-4">
-                    <p className="text-slate-300">
-                        Apakah Anda yakin ingin melakukan sinkronisasi ulang dengan Digiflazz?
-                        Proses ini akan memperbarui harga dasar dan status produk, tetapi
-                        <b> tidak akan mengubah</b> data custom (Nama Display, Tags, Gambar).
-                    </p>
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button
-                            onClick={() => setIsSyncModalOpen(false)}
-                            className="px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            onClick={handleSync}
-                            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors"
-                        >
-                            Start Sync
-                        </button>
-                    </div>
-                </div>
-            </Modal>
+
 
             {/* Edit Product Modal */}
             <Modal
@@ -658,18 +648,7 @@ export default function AdminProducts() {
                         <button
                             type="button"
                             disabled={syncing}
-                            onClick={async () => {
-                                setSyncing(true);
-                                try {
-                                    await api.post("/admin/sync/products");
-                                    await fetchProducts();
-                                    setIsSyncModalOpen(false);
-                                } catch (error) {
-                                    console.error("Sync failed:", error);
-                                } finally {
-                                    setSyncing(false);
-                                }
-                            }}
+                            onClick={handleSync}
                             className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50 flex items-center gap-2"
                         >
                             {syncing ? (
