@@ -32,7 +32,7 @@ export default function Notification({ message, type, onClose, duration = 3000 }
     };
 
     return (
-        <div className={`fixed top-6 right-6 z-[100] flex items-start gap-3 px-4 py-3 rounded-xl border backdrop-blur-md transition-all animate-in slide-in-from-top-5 duration-300 max-w-sm ${styles[type]}`}>
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg border backdrop-blur-md transition-all duration-300 transform ${message ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"} ${styles[type]}`}>
             <div className="mt-0.5 shrink-0">
                 {icons[type]}
             </div>

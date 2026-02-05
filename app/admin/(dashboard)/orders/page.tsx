@@ -319,7 +319,7 @@ export default function AdminOrders() {
 
                 {/* Date Range */}
                 <div className="flex flex-wrap items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-500 " />
+                    <Calendar className="w-4 h-4 text-slate-500 " />
                     <input
                         type="date"
                         value={dateFrom}
@@ -433,7 +433,7 @@ export default function AdminOrders() {
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 align-top">
-                                            <span className="text-white text-xs break-words block">{order.product_name}</span>
+                                            <span className="text-white text-xs break-all block">{order.product_name}</span>
                                         </td>
                                         <td className="px-4 py-3 text-orange-400 font-medium align-top whitespace-nowrap text-xs">
                                             Rp {order.buy_price?.toLocaleString()}

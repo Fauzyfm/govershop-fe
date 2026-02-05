@@ -388,7 +388,7 @@ export default function AdminProducts() {
                                                 <div className="flex items-start gap-2">
                                                     <span className="line-clamp-2 leading-relaxed" title={product.product_name}>{product.product_name}</span>
                                                     {product.is_best_seller && (
-                                                        <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] font-bold border border-yellow-500/20 whitespace-nowrap">
+                                                        <span className="shrink-0 px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] font-bold border border-yellow-500/20 whitespace-nowrap">
                                                             BEST SELLER
                                                         </span>
                                                     )}
