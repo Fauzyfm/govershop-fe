@@ -135,7 +135,7 @@ export default function AdminCustomTopup() {
                     <input
                         type="text"
                         value={sku}
-                        onChange={(e) => setSku(e.target.value.toUpperCase())}
+                        onChange={(e) => setSku(e.target.value)}
                         placeholder="Contoh: xl10"
                         className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-blue-500"
                     />
