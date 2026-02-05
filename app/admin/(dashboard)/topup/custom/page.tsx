@@ -12,7 +12,8 @@ import {
     Key,
     UserCheck,
     X,
-    Info
+    Info,
+    RefreshCw
 } from "lucide-react";
 import api from "@/lib/api";
 import Link from "next/link";
@@ -48,6 +49,36 @@ export default function AdminCustomTopup() {
     // Final Result State
     const [resultModalOpen, setResultModalOpen] = useState(false);
     const [finalResult, setFinalResult] = useState<any>(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    // Refresh Status Logic
+    const handleRefreshStatus = async () => {
+        if (!finalResult?.order_id) return;
+
+        setRefreshing(true);
+        try {
+            const response = await api.get(`/orders/${finalResult.order_id}`);
+            const order = response.data;
+
+            // Update finalResult with new data
+            setFinalResult((prev: any) => ({
+                ...prev,
+                status: order.status,
+                serial_number: order.serial_number,
+                message: order.message,
+                ref_id: order.ref_id // Ensure latest ref_id if changed
+            }));
+
+            if (order.status === "success" || order.status === "failed") {
+                // Optional: maybe auto close or show success toast? 
+                // For now just updating the modal is enough.
+            }
+        } catch (error) {
+            console.error("Failed to refresh status", error);
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
     // Step 1: Pre-check Product and Open Modal
     // Step 1: Pre-check Product and Open Modal
@@ -467,12 +498,24 @@ export default function AdminCustomTopup() {
                         </div>
                     )}
 
-                    <button
-                        onClick={() => setResultModalOpen(false)}
-                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors"
-                    >
-                        Tutup
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setResultModalOpen(false)}
+                            className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors"
+                        >
+                            Tutup
+                        </button>
+
+                        {finalResult?.status === "processing" && (
+                            <button
+                                onClick={handleRefreshStatus}
+                                disabled={refreshing}
+                                className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                            >
+                                {refreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} Refresh Status
+                            </button>
+                        )}
+                    </div>
                 </div>
             </Modal>
         </div>
