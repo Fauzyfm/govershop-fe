@@ -16,6 +16,7 @@ interface BrandSetting {
     slug: string;
     custom_image_url: string;
     is_best_seller: boolean;
+    is_visible: boolean;
     status: string; // 'active', 'coming_soon', 'maintenance'
     topup_steps?: TopupStep[];
     description?: string;
@@ -58,6 +59,7 @@ export default function BrandSettingsView() {
                     slug: brandName.toLowerCase().replace(/\s+/g, "-"),
                     custom_image_url: "",
                     is_best_seller: false,
+                    is_visible: true,
                     status: "active",
                     topup_steps: [],
                     description: ""
@@ -139,6 +141,19 @@ export default function BrandSettingsView() {
                             </div>
 
                             <div className="space-y-4">
+                                {/* Visibility Toggle */}
+                                <div className="flex items-center justify-between p-2 bg-slate-900 rounded-lg">
+                                    <span className="text-xs text-slate-400 font-medium">Tampilkan di Beranda</span>
+                                    <button
+                                        onClick={() => updateBrand(brand, { is_visible: !brand.is_visible })}
+                                        className={`w-10 h-5 rounded-full transition-colors relative ${brand.is_visible ? "bg-emerald-600" : "bg-slate-700"
+                                            }`}
+                                    >
+                                        <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-transform ${brand.is_visible ? "left-6" : "left-1"
+                                            }`} />
+                                    </button>
+                                </div>
+
                                 {/* Best Seller Toggle */}
                                 <div className="flex items-center justify-between p-2 bg-slate-900 rounded-lg">
                                     <span className="text-xs text-slate-400 font-medium">Best Seller</span>

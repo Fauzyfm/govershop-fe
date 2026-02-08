@@ -32,6 +32,7 @@ interface BrandPublicData {
     brand_name: string;
     image_url: string;
     is_best_seller: boolean;
+    is_visible: boolean;
     status: string;
 }
 
@@ -106,6 +107,13 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         return getBrandMeta(brand)?.status || 'active';
     };
 
+    // Check if brand is visible (default to true if not in brandImages)
+    const isBrandVisible = (brand: Brand | string) => {
+        const meta = getBrandMeta(brand);
+        // If brand has meta data, check is_visible; otherwise default to true
+        return meta?.is_visible !== false;
+    };
+
     // ... (loadMore, showLess remain same)
 
     const loadMore = (category: string) => {
@@ -122,11 +130,14 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         }));
     };
 
-    // Filter brands across all categories based on search
+    // Filter brands across all categories based on search AND visibility
     const filteredCategoryData = categoryData.map(catData => ({
         ...catData,
         brands: catData.brands.filter((brand) => {
             const name = getBrandName(brand);
+            // Check visibility first
+            if (!isBrandVisible(brand)) return false;
+            // Then check search
             return name?.toLowerCase().includes(search.toLowerCase());
         })
     })).filter(catData => catData.brands.length > 0);
@@ -134,10 +145,10 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     // Flatten all brands for "all" view when searching
     const allFilteredBrands = filteredCategoryData.flatMap(c => c.brands);
 
-    // Get Best Sellers (Unique list)
+    // Get Best Sellers (Unique list) - also filter by visibility
     const bestSellerBrands = Array.from(new Set(
         categoryData.flatMap(c => c.brands)
-            .filter(b => getBrandMeta(b)?.is_best_seller)
+            .filter(b => isBrandVisible(b) && getBrandMeta(b)?.is_best_seller)
             .map(b => getBrandName(b))
     ));
 

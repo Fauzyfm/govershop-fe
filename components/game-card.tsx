@@ -1,4 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import PageLoading from "@/components/ui/page-loading";
 
 interface GameCardProps {
     name: string;
@@ -8,9 +13,19 @@ interface GameCardProps {
 }
 
 export default function GameCard({ name, image, href, status = 'active' }: GameCardProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
     const isComingSoon = status === 'coming_soon';
     const isMaintenance = status === 'maintenance';
     const isDisabled = isComingSoon || isMaintenance;
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (isDisabled) return;
+        e.preventDefault();
+        setIsLoading(true);
+        router.push(href);
+    };
 
     const Content = (
         <div className={`
@@ -75,8 +90,11 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
     }
 
     return (
-        <Link href={href} className="block">
-            {Content}
-        </Link>
+        <>
+            <PageLoading isVisible={isLoading} gameName={name} gameImage={image} />
+            <Link href={href} onClick={handleClick} className="block">
+                {Content}
+            </Link>
+        </>
     );
 }
