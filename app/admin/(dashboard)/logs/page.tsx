@@ -110,13 +110,16 @@ export default function LogsPage() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">System Logs</h1>
-                    <p className="text-slate-400">Monitor webhook events and product synchronization history</p>
+                    <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                        <span className="w-1.5 h-8 bg-primary rounded-full shadow-[0_0_10px_var(--primary)]" />
+                        System Logs
+                    </h1>
+                    <p className="text-white/50 text-sm mt-1 ml-4">Monitor webhook events and product synchronization history</p>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={fetchLogs}
-                        className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-white/70 transition-colors border border-white/5"
                         title="Refresh"
                     >
                         <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
@@ -125,117 +128,116 @@ export default function LogsPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 border-b border-slate-700">
+            <div className="flex gap-2 border-b border-white/10 pb-2">
                 <button
                     onClick={() => handleTabChange("webhook")}
-                    className={`pb-3 px-2 flex items-center gap-2 font-medium transition-colors relative ${activeTab === "webhook"
-                        ? "text-blue-400"
-                        : "text-slate-400 hover:text-slate-200"
+                    className={`pb-2 px-4 flex items-center gap-2 font-medium transition-all relative rounded-t-xl border-b-2 ${activeTab === "webhook"
+                        ? "text-white border-primary bg-white/5"
+                        : "text-white/40 border-transparent hover:text-white hover:bg-white/5"
                         }`}
                 >
-                    <Webhook className="w-4 h-4" />
+                    <Webhook className={`w-4 h-4 ${activeTab === "webhook" ? "text-primary" : ""}`} />
                     Webhook Logs
-                    {activeTab === "webhook" && (
-                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 rounded-t-full" />
-                    )}
                 </button>
                 <button
                     onClick={() => handleTabChange("sync")}
-                    className={`pb-3 px-2 flex items-center gap-2 font-medium transition-colors relative ${activeTab === "sync"
-                        ? "text-emerald-400"
-                        : "text-slate-400 hover:text-slate-200"
+                    className={`pb-2 px-4 flex items-center gap-2 font-medium transition-all relative rounded-t-xl border-b-2 ${activeTab === "sync"
+                        ? "text-white border-emerald-500 bg-emerald-500/5"
+                        : "text-white/40 border-transparent hover:text-white hover:bg-white/5"
                         }`}
                 >
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className={`w-4 h-4 ${activeTab === "sync" ? "text-emerald-500" : ""}`} />
                     Sync Logs
-                    {activeTab === "sync" && (
-                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-400 rounded-t-full" />
-                    )}
                 </button>
             </div>
 
             {/* Content */}
-            <div className="bg-slate-800/50 rounded-xl border border-white/5 overflow-hidden">
+            <div className="glass-card rounded-2xl border border-white/10 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+                        <thead className="text-xs text-white/40 uppercase bg-white/5 border-b border-white/5">
                             <tr>
                                 {activeTab === "webhook" ? (
                                     <>
-                                        <th className="px-6 py-3">ID</th>
-                                        <th className="px-6 py-3">Source</th>
-                                        <th className="px-6 py-3">Payload</th>
-                                        <th className="px-6 py-3">Status</th>
-                                        <th className="px-6 py-3">Time</th>
-                                        <th className="px-6 py-3 text-right">Action</th>
+                                        <th className="px-6 py-4 font-semibold">ID</th>
+                                        <th className="px-6 py-4 font-semibold">Source</th>
+                                        <th className="px-6 py-4 font-semibold">Payload</th>
+                                        <th className="px-6 py-4 font-semibold">Status</th>
+                                        <th className="px-6 py-4 font-semibold">Time</th>
+                                        <th className="px-6 py-4 text-right font-semibold">Action</th>
                                     </>
                                 ) : (
                                     <>
-                                        <th className="px-6 py-3">ID</th>
-                                        <th className="px-6 py-3">Type</th>
-                                        <th className="px-6 py-3">Stats</th>
-                                        <th className="px-6 py-3">Status</th>
-                                        <th className="px-6 py-3">Duration</th>
-                                        <th className="px-6 py-3 text-right">Started At</th>
+                                        <th className="px-6 py-4 font-semibold">ID</th>
+                                        <th className="px-6 py-4 font-semibold">Type</th>
+                                        <th className="px-6 py-4 font-semibold">Stats</th>
+                                        <th className="px-6 py-4 font-semibold">Status</th>
+                                        <th className="px-6 py-4 font-semibold">Duration</th>
+                                        <th className="px-6 py-4 text-right font-semibold">Started At</th>
                                     </>
                                 )}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-700/50">
+                        <tbody className="divide-y divide-white/5">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-white/30">
+                                        <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-primary" />
                                         Loading logs...
                                     </td>
                                 </tr>
                             ) : activeTab === "webhook" ? (
                                 webhookLogs.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
+                                        <td colSpan={6} className="px-6 py-12 text-center text-white/30">
+                                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+                                                <Webhook className="w-6 h-6 opacity-50" />
+                                            </div>
                                             No webhook logs found
                                         </td>
                                     </tr>
                                 ) : (
                                     webhookLogs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-slate-700/30 transition-colors">
-                                            <td className="px-6 py-4 text-slate-300">#{log.id}</td>
+                                        <tr key={log.id} className="hover:bg-white/5 transition-colors group">
+                                            <td className="px-6 py-4 text-white/70 group-hover:text-white font-mono text-xs">#{log.id}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${log.source === "pakasir"
-                                                    ? "bg-purple-500/10 text-purple-400"
-                                                    : "bg-orange-500/10 text-orange-400"
+                                                <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${log.source === "pakasir"
+                                                    ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                                                    : "bg-orange-500/10 text-orange-400 border-orange-500/20"
                                                     }`}>
                                                     {log.source}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-400 font-mono text-xs max-w-xs truncate">
+                                            <td className="px-6 py-4 text-white/40 font-mono text-[10px] max-w-xs truncate">
                                                 {log.payload.substring(0, 50)}...
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
                                                     {log.processed ? (
-                                                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-medium border border-emerald-500/20">
+                                                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
                                                             <CheckCircle className="w-3 h-3" /> Processed
                                                         </span>
                                                     ) : (
-                                                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-500 text-[10px] font-medium border border-slate-500/20">
+                                                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 text-white/50 text-[10px] font-medium border border-white/10">
                                                             <Clock className="w-3 h-3" /> Pending
                                                         </span>
                                                     )}
                                                     {log.error_message && (
                                                         <button
                                                             onClick={() => setErrorDetail(log.error_message || "")}
-                                                            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-medium border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                                                            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[10px] font-medium border border-red-500/20 hover:bg-red-500/20 transition-colors shadow-[0_0_10px_rgba(248,113,113,0.1)]"
                                                         >
-                                                            <XCircle className="w-3 h-3" /> Detail Error
+                                                            <XCircle className="w-3 h-3" /> Error
                                                         </button>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-400">{formatDate(log.created_at)}</td>
+                                            <td className="px-6 py-4 text-white/60 text-xs">{formatDate(log.created_at)}</td>
                                             <td className="px-6 py-4 text-right">
                                                 <button
                                                     onClick={() => setSelectedLog(log)}
-                                                    className="p-1.5 hover:bg-slate-700 rounded text-slate-400 hover:text-white transition-colors"
+                                                    className="p-2 hover:bg-primary/20 rounded-full text-white/40 hover:text-primary transition-colors"
+                                                    title="View Detail"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
@@ -247,34 +249,37 @@ export default function LogsPage() {
                                 // Sync Logs
                                 syncLogs.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
+                                        <td colSpan={6} className="px-6 py-12 text-center text-white/30">
+                                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+                                                <RefreshCw className="w-6 h-6 opacity-50" />
+                                            </div>
                                             No sync logs found
                                         </td>
                                     </tr>
                                 ) : (
                                     syncLogs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-slate-700/30 transition-colors">
-                                            <td className="px-6 py-4 text-slate-300">#{log.id}</td>
+                                        <tr key={log.id} className="hover:bg-white/5 transition-colors group">
+                                            <td className="px-6 py-4 text-white/70 group-hover:text-white font-mono text-xs">#{log.id}</td>
                                             <td className="px-6 py-4">
-                                                <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-xs font-mono">
+                                                <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-wider border border-blue-500/20">
                                                     {log.sync_type}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-xs">
-                                                <div className="flex gap-3 text-slate-400">
-                                                    <span title="Total">Total: <span className="text-white">{log.total_products}</span></span>
-                                                    <span title="New" className="text-emerald-400">+{log.new_products}</span>
-                                                    <span title="Updated" className="text-blue-400">~{log.updated_products}</span>
-                                                    <span title="Failed" className="text-red-400">!{log.failed_products}</span>
+                                            <td className="px-6 py-4 text-xs font-mono">
+                                                <div className="flex gap-3 text-white/40">
+                                                    <span title="Total">T: <span className="text-white">{log.total_products}</span></span>
+                                                    <span title="New" className="text-emerald-400">+<span className="text-emerald-400/80">{log.new_products}</span></span>
+                                                    <span title="Updated" className="text-blue-400">~<span className="text-blue-400/80">{log.updated_products}</span></span>
+                                                    <span title="Failed" className="text-red-400">!<span className="text-red-400/80">{log.failed_products}</span></span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`flex w-fit items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border ${log.status === "success"
-                                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                                    <span className={`flex w-fit items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border shadow-[0_0_10px_rgba(0,0,0,0.1)] ${log.status === "success"
+                                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                                                         : log.status === "running"
-                                                            ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                                                            : "bg-red-500/10 text-red-500 border-red-500/20"
+                                                            ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                                            : "bg-red-500/10 text-red-400 border-red-500/20"
                                                         }`}>
                                                         {log.status === "success" ? <CheckCircle className="w-3 h-3" /> :
                                                             log.status === "running" ? <RefreshCw className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
@@ -285,15 +290,15 @@ export default function LogsPage() {
                                                             onClick={() => setErrorDetail(log.error_message || "")}
                                                             className="p-1 px-2 rounded-full bg-red-500/10 text-red-400 text-[10px] hover:bg-red-500/20 transition-colors border border-red-500/20"
                                                         >
-                                                            Detail Error
+                                                            Detail
                                                         </button>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-400 text-xs font-mono">
+                                            <td className="px-6 py-4 text-white/60 text-xs font-mono">
                                                 {getDuration(log.started_at, log.completed_at)}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-400 text-right">
+                                            <td className="px-6 py-4 text-white/60 text-xs text-right">
                                                 {formatDate(log.started_at)}
                                             </td>
                                         </tr>
@@ -305,22 +310,22 @@ export default function LogsPage() {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-700/50 bg-slate-900/30">
-                    <span className="text-sm text-slate-400">
+                <div className="flex items-center justify-between px-6 py-4 border-t border-white/5 bg-black/20">
+                    <span className="text-xs text-white/40">
                         Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} entries
                     </span>
                     <div className="flex gap-2">
                         <button
                             disabled={page === 1 || loading}
                             onClick={() => setPage(p => p - 1)}
-                            className="px-3 py-1 text-sm rounded bg-slate-800 disabled:opacity-50 hover:bg-slate-700 text-slate-300 transition-colors"
+                            className="px-3 py-1.5 text-xs rounded-lg bg-white/5 disabled:opacity-30 hover:bg-white/10 text-white/70 hover:text-white transition-colors border border-white/5"
                         >
                             Previous
                         </button>
                         <button
                             disabled={page * limit >= total || loading}
                             onClick={() => setPage(p => p + 1)}
-                            className="px-3 py-1 text-sm rounded bg-slate-800 disabled:opacity-50 hover:bg-slate-700 text-slate-300 transition-colors"
+                            className="px-3 py-1.5 text-xs rounded-lg bg-white/5 disabled:opacity-30 hover:bg-white/10 text-white/70 hover:text-white transition-colors border border-white/5"
                         >
                             Next
                         </button>
@@ -334,43 +339,43 @@ export default function LogsPage() {
                 onClose={() => setSelectedLog(null)}
                 title={`Webhook Log #${selectedLog?.id}`}
             >
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-4 text-sm bg-white/5 p-4 rounded-xl border border-white/5">
                         <div>
-                            <span className="block text-slate-400 text-xs">Source</span>
-                            <span className="text-white font-medium">{selectedLog?.source}</span>
+                            <span className="block text-white/40 text-xs mb-1">Source</span>
+                            <span className="text-white font-mono text-xs px-2 py-0.5 rounded bg-white/5 border border-white/5 inline-block">{selectedLog?.source}</span>
                         </div>
                         <div>
-                            <span className="block text-slate-400 text-xs">Time</span>
-                            <span className="text-white font-medium">{selectedLog && formatDate(selectedLog.created_at)}</span>
+                            <span className="block text-white/40 text-xs mb-1">Time</span>
+                            <span className="text-white font-medium text-xs">{selectedLog && formatDate(selectedLog.created_at)}</span>
                         </div>
                         <div>
-                            <span className="block text-slate-400 text-xs">Status</span>
-                            <span className={selectedLog?.processed ? "text-emerald-400" : "text-amber-400"}>
+                            <span className="block text-white/40 text-xs mb-1">Status</span>
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded inline-block ${selectedLog?.processed ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"}`}>
                                 {selectedLog?.processed ? "Processed" : "Pending"}
                             </span>
                         </div>
                         {selectedLog?.error_message && (
-                            <div className="col-span-2">
-                                <span className="block text-slate-400 text-xs">Error</span>
-                                <span className="text-red-400">{selectedLog.error_message}</span>
+                            <div className="col-span-2 mt-2 pt-2 border-t border-white/5">
+                                <span className="block text-red-400/80 text-xs mb-1">Error</span>
+                                <span className="text-red-400 text-xs bg-red-500/5 p-2 rounded block">{selectedLog.error_message}</span>
                             </div>
                         )}
                     </div>
 
                     <div>
-                        <span className="block text-slate-400 text-xs mb-2">Payload</span>
-                        <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 overflow-auto max-h-[300px]">
-                            <pre className="text-xs text-slate-300 font-mono whitespace-pre-wrap break-all">
+                        <span className="block text-white/40 text-xs mb-2 pl-1">Payload</span>
+                        <div className="bg-black/40 p-4 rounded-xl border border-white/10 overflow-auto max-h-[300px] custom-scrollbar">
+                            <pre className="text-[10px] text-emerald-400 font-mono whitespace-pre-wrap break-all leading-relaxed">
                                 {selectedLog?.payload ? JSON.stringify(JSON.parse(selectedLog.payload), null, 2) : "-"}
                             </pre>
                         </div>
                     </div>
 
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end pt-2 border-t border-white/5">
                         <button
                             onClick={() => setSelectedLog(null)}
-                            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition-colors"
+                            className="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors text-sm font-medium"
                         >
                             Close
                         </button>
@@ -385,13 +390,13 @@ export default function LogsPage() {
                 title="Error Detail"
             >
                 <div className="space-y-4">
-                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10 text-red-400 text-sm font-mono overflow-auto max-h-[300px]">
                         {errorDetail}
                     </div>
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end pt-2 border-t border-white/5">
                         <button
                             onClick={() => setErrorDetail(null)}
-                            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition-colors"
+                            className="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors text-sm font-medium"
                         >
                             Close
                         </button>

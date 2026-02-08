@@ -45,7 +45,7 @@ export default function AdminLayout({
     }
 
     return (
-        <div className="flex bg-slate-950 h-screen overflow-hidden relative">
+        <div className="flex bg-[#280905] h-screen overflow-hidden relative">
             {/* Desktop Sidebar */}
             <div className="hidden md:block h-full">
                 <AdminSidebar

@@ -282,8 +282,8 @@ export default function ServerTabs({ tabs, activeTab, onTabChange, loading }: Se
                                 className="relative z-10 rounded-sm object-cover"
                             />
 
-                            {/* Tab Label */}
-                            <span className="relative z-10">{tab.displayName}</span>
+                            {/* Tab Label - Hidden on mobile, visible on desktop */}
+                            <span className="relative z-10 hidden md:inline">{tab.displayName}</span>
                         </button>
                     );
                 })}

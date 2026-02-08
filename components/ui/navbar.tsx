@@ -2,43 +2,55 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, ShoppingBag } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <nav className="sticky top-0 z-50 w-full glass border-b border-white/5">
+        <nav className="sticky top-0 z-50 w-full glass border-b border-primary/20 backdrop-blur-md">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary tracking-tight">
-                    <ShoppingBag className="w-6 h-6" />
-                    <span>GOVERSHOP</span>
+                <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight group">
+                    <span className="text-foreground neon-glow group-hover:text-primary transition-colors text-2xl">
+                        GOVERSHOP
+                    </span>
                 </Link>
 
                 {/* Desktop Menu */}
                 <div className="hidden md:flex items-center gap-8">
-                    <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Beranda</Link>
-                    <Link href="/track" className="text-sm font-medium hover:text-primary transition-colors">Lacak Pesanan</Link>
-                    <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">Tentang Kami</Link>
+                    <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(195,17,12,0.5)]">
+                        Beranda
+                    </Link>
+                    <Link href="/track" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(195,17,12,0.5)]">
+                        Lacak Pesanan
+                    </Link>
+                    <Link href="/about" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(195,17,12,0.5)]">
+                        Tentang Kami
+                    </Link>
                 </div>
 
                 {/* Mobile Toggle */}
                 <button
-                    className="md:hidden p-2 text-foreground hover:bg-secondary/50 rounded-md"
+                    className="md:hidden p-2 text-foreground hover:bg-white/5 rounded-lg transition-colors"
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    {isOpen ? <X className="w-6 h-6 text-primary" /> : <Menu className="w-6 h-6 text-primary" />}
                 </button>
             </div>
 
             {/* Mobile Menu */}
             {isOpen && (
-                <div className="md:hidden absolute top-16 left-0 w-full bg-background border-b border-border p-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
-                    <Link href="/" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Beranda</Link>
-                    <Link href="/track" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Lacak Pesanan</Link>
-                    <Link href="/about" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Tentang Kami</Link>
+                <div className="md:hidden absolute top-16 left-0 w-full glass border-b border-primary/20 p-4 flex flex-col gap-4 animate-in slide-in-from-top-2 z-50">
+                    <Link href="/" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 border-b border-white/5">
+                        Beranda
+                    </Link>
+                    <Link href="/track" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 border-b border-white/5">
+                        Lacak Pesanan
+                    </Link>
+                    <Link href="/about" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2">
+                        Tentang Kami
+                    </Link>
                 </div>
             )}
         </nav>

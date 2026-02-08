@@ -140,7 +140,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
             case 'success':
                 return {
                     color: 'text-green-400',
-                    bg: 'bg-green-500/10',
+                    bg: 'bg-green-500/10 border border-green-500/20',
                     icon: CheckCircle,
                     label: 'Berhasil',
                     description: 'Top up berhasil! Item sudah masuk ke akun kamu.'
@@ -149,7 +149,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
             case 'processing':
                 return {
                     color: 'text-blue-400',
-                    bg: 'bg-blue-500/10',
+                    bg: 'bg-blue-500/10 border border-blue-500/20',
                     icon: Loader2,
                     label: 'Diproses',
                     description: 'Pembayaran diterima, sedang memproses top up...',
@@ -182,8 +182,8 @@ export default function StatusView({ orderId }: StatusViewProps) {
                 };
             default: // pending
                 return {
-                    color: 'text-yellow-400',
-                    bg: 'bg-yellow-500/10',
+                    color: 'text-orange-400',
+                    bg: 'bg-orange-500/10 border border-orange-500/20',
                     icon: Clock,
                     label: 'Menunggu Pembayaran',
                     description: 'Silakan lakukan pembayaran sebelum waktu habis.'
@@ -243,7 +243,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
             {/* Status Header */}
             <div className="text-center space-y-3">
                 <div className={cn(
-                    "inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-lg font-semibold",
+                    "inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-lg font-semibold shadow-[0_0_15px_rgba(0,0,0,0.5)]",
                     statusConfig.bg,
                     statusConfig.color
                 )}>
@@ -261,7 +261,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
             </div>
 
             {/* Payment Card */}
-            <div className="glass p-6 rounded-2xl border border-white/10 space-y-6">
+            <div className="glass p-6 rounded-2xl border border-primary/15 space-y-6">
 
                 {/* Show QR/VA only when waiting for payment */}
                 {isWaitingPayment && payment && (
@@ -308,7 +308,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                         )}
 
                         {/* Amount */}
-                        <div className="border-t border-white/10 pt-4">
+                        <div className="border-t border-primary/10 pt-4">
                             <div className="flex justify-between items-center mb-2 text-sm text-muted-foreground">
                                 <span>Harga</span>
                                 <span>Rp {payment.amount?.toLocaleString('id-ID')}</span>
@@ -339,7 +339,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                         <button
                             onClick={() => fetchStatus(true)}
                             disabled={refreshing}
-                            className="w-full py-3 bg-secondary hover:bg-secondary/80 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                            className="arcade-btn w-full py-3 text-primary-foreground rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
                         >
                             {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                             Cek Status Pembayaran
@@ -362,7 +362,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                     <div className="text-center py-6">
                         <Link
                             href="/"
-                            className="inline-block px-6 py-3 bg-primary text-black font-bold rounded-xl"
+                            className="arcade-btn inline-block px-6 py-3 text-primary-foreground font-bold rounded-xl"
                         >
                             Buat Pesanan Baru
                         </Link>
@@ -387,7 +387,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                                 <p className="font-mono text-sm">{order.serial_number}</p>
                             </div>
                         )}
-                        <Link href="/" className="block w-full py-3 bg-primary text-black font-bold rounded-xl mt-4">
+                        <Link href="/" className="arcade-btn block w-full py-3 text-primary-foreground font-bold rounded-xl mt-4 text-center">
                             Top Up Lagi
                         </Link>
                     </div>
@@ -430,7 +430,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                             href={`https://wa.me/6283114014648?text=${encodeURIComponent(`Halo Admin, saya mengalami kendala gagal order dengan Order ID: ${order.order_id} dan ref-id : ${order.ref_id || '-'}, Mohon bantuannya.`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="block w-full py-3 bg-primary text-black font-bold rounded-xl mt-4 hover:bg-primary/90 transition-colors"
+                            className="arcade-btn block w-full py-3 text-primary-foreground font-bold rounded-xl mt-4 text-center"
                         >
                             Hubungi Admin (WhatsApp)
                         </a>

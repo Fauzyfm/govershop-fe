@@ -41,20 +41,16 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
                         )}
 
                         <div className="flex flex-col gap-3">
-                            {/* Product Image / Icon */}
-                            <div className="flex justify-center mb-2">
-                                {hasCustomImage ? (
+                            {/* Product Image - Only if custom image exists */}
+                            {hasCustomImage && (
+                                <div className="flex justify-center mb-2">
                                     <img
                                         src={product.image_url}
                                         alt={displayName}
                                         className="w-16 h-16 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
                                     />
-                                ) : (
-                                    <div className="w-12 h-12 flex items-center justify-center text-4xl drop-shadow-md group-hover:scale-110 transition-transform duration-300">
-                                        💎
-                                    </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
                             {/* Product Name */}
                             <span className="font-semibold text-sm md:text-sm text-center leading-tight min-h-[40px] flex items-center justify-center">

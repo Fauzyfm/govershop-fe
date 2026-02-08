@@ -70,7 +70,7 @@ export default function OrderPageClient({ brand, products, paymentMethods, brand
             {/* Game Banner Header */}
             <div className="relative overflow-hidden rounded-2xl">
                 {/* Background Image/Gradient */}
-                <div className="relative h-40 md:h-48 bg-gradient-to-r from-primary/20 via-secondary/30 to-primary/20">
+                <div className="relative h-40 md:h-48 bg-linear-to-r from-background via-secondary to-background border-b border-primary/20">
                     {brandImage && (
                         <img
                             src={brandImage}
@@ -78,12 +78,12 @@ export default function OrderPageClient({ brand, products, paymentMethods, brand
                             className="absolute inset-0 w-full h-full object-cover opacity-30"
                         />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
 
                     {/* Content Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end gap-4">
                         {/* Game Logo */}
-                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-gradient-to-br from-primary/30 to-secondary/50 backdrop-blur-sm border border-white/10 flex items-center justify-center text-4xl font-bold shadow-2xl shadow-primary/30 flex-shrink-0">
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-linear-to-br from-primary via-secondary to-background backdrop-blur-sm border border-primary/40 flex items-center justify-center text-4xl font-bold shadow-[0_0_30px_rgba(195,17,12,0.4)] shrink-0">
                             {brandImage ? (
                                 <img
                                     src={brandImage}
@@ -105,7 +105,7 @@ export default function OrderPageClient({ brand, products, paymentMethods, brand
             </div>
 
             {/* Step-by-Step Dropdown */}
-            <div className="glass rounded-xl border border-white/5 overflow-hidden">
+            <div className="glass rounded-xl border border-primary/10 overflow-hidden">
                 <button
                     onClick={() => setShowSteps(!showSteps)}
                     className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
@@ -140,7 +140,7 @@ export default function OrderPageClient({ brand, products, paymentMethods, brand
                                         key={step.step}
                                         className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/5"
                                     >
-                                        <div className="w-7 h-7 rounded-full bg-primary text-black text-sm font-bold flex items-center justify-center flex-shrink-0">
+                                        <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center shrink-0">
                                             {step.step}
                                         </div>
                                         <div className="min-w-0">

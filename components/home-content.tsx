@@ -171,7 +171,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                     onClick={closePopup}
                 >
                     <div
-                        className={`relative max-w-md w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${isPopupClosing
+                        className={`relative max-w-md w-full glass-card rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(195,17,12,0.3)] border border-primary/40 transition-all duration-300 ${isPopupClosing
                             ? "opacity-0 scale-95 translate-y-4"
                             : "opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95"
                             }`}
@@ -200,9 +200,9 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                             />
                         )}
                         {(popup.title || popup.description) && (
-                            <div className="p-4">
-                                {popup.title && <h3 className="text-lg font-bold text-white">{popup.title}</h3>}
-                                {popup.description && <p className="text-sm text-slate-400 mt-1">{popup.description}</p>}
+                            <div className="p-4 bg-card">
+                                {popup.title && <h3 className="text-lg font-bold text-foreground">{popup.title}</h3>}
+                                {popup.description && <p className="text-sm text-muted-foreground mt-1">{popup.description}</p>}
                             </div>
                         )}
                     </div>
@@ -211,7 +211,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
 
             {/* Carousel logic ... */}
             {carousel.length > 0 && (
-                <section className="relative rounded-2xl overflow-hidden">
+                <section className="relative rounded-2xl overflow-hidden arcade-card">
                     <div className="relative aspect-[21/9] md:aspect-[3/1]">
                         {carousel.map((item, index) => (
                             <div
@@ -235,8 +235,8 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                     />
                                 )}
                                 {item.title && (
-                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                                        <h3 className="text-lg md:text-xl font-bold text-white">{item.title}</h3>
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-background/90 to-transparent">
+                                        <h3 className="text-lg md:text-xl font-bold text-foreground">{item.title}</h3>
                                     </div>
                                 )}
                             </div>
@@ -278,10 +278,10 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             {/* Hero / Search Section */}
             <section className="flex flex-col items-center justify-center py-8 space-y-6 text-center">
                 <div className="space-y-2">
-                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-br from-white to-white/50 bg-clip-text text-transparent">
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-linear-to-br from-white via-primary to-accent bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(230,80,27,0.5)]">
                         Govershop
                     </h1>
-                    <p className="text-muted-foreground max-w-lg mx-auto">
+                    <p className="text-muted-foreground/80 max-w-lg mx-auto font-medium">
                         Top up games favoritmu dengan harga termurah, proses instan, dan terpercaya 100%.
                     </p>
                 </div>
@@ -293,9 +293,9 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             {!search && bestSellerItems.length > 0 && (
                 <section className="w-full animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards">
                     <div className="flex items-center gap-3 mb-8 px-1">
-                        <div className="w-1.5 h-8 bg-gradient-to-b from-amber-400 to-orange-600 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
-                        <h2 className="text-2xl font-bold text-white tracking-tight">
-                            Paling Laris 🔥
+                        <div className="w-1.5 h-8 bg-linear-to-b from-primary to-accent rounded-full glow-pulse shadow-[0_0_20px_rgba(230,80,27,0.8)]" />
+                        <h2 className="text-2xl font-bold text-white tracking-tight neon-glow">
+                            Paling Laris
                         </h2>
                     </div>
 
@@ -382,13 +382,13 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                 className="flex items-center justify-between mb-8 px-1"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-8 bg-gradient-to-b from-primary to-emerald-600 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-                                    <h2 className="text-2xl font-bold text-white tracking-tight">
+                                    <div className="w-1.5 h-8 bg-linear-to-b from-primary to-accent rounded-full glow-pulse shadow-[0_0_15px_rgba(195,17,12,0.6)]" />
+                                    <h2 className="text-2xl font-bold text-white tracking-tight neon-glow">
                                         {catData.category}
                                     </h2>
                                 </div>
                                 <span className="text-xs md:text-sm font-medium px-3 py-1 rounded-full bg-secondary/50 border border-white/5 text-muted-foreground backdrop-blur-sm">
-                                    {catData.brands.length} Games
+                                    {catData.brands.length} Produk
                                 </span>
                             </motion.div>
 

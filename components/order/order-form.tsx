@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { getGameConfig, sanitizeUserId, buildCustomerNo } from "@/lib/game-input-config";
@@ -260,9 +260,9 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                     {/* Collapsible Header */}
                     <button
                         onClick={() => setNominalExpanded(!nominalExpanded)}
-                        className="w-full flex items-center justify-between p-5 hover:bg-white/5 transition-colors"
+                        className="w-full flex items-center justify-between p-5  hover:bg-white/5 transition-colors"
                     >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 ">
                             <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center text-sm">1</div>
                             <div className="text-left">
                                 <h2 className="text-lg font-bold">Pilih Nominal</h2>
@@ -285,12 +285,13 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                         nominalExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
                     )}>
                         <div className="overflow-hidden">
-                            <div className="px-5 pb-5 pt-0 space-y-5">
+                            <div className="px-5 pb-5 pt-5 space-y-5">
                                 {/* Server Selection Tabs */}
                                 {serverTabs.length > 1 && activeServerTab && (
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">🌐 Pilih Server</span>
+                                            <MapPin className="w-4 h-4 text-primary animate-bounce" />
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Pilih Server</span>
                                         </div>
                                         <ServerTabs
                                             tabs={serverTabs}
@@ -336,7 +337,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                                             selectedSku={selectedSku}
                                                             onSelect={setSelectedSku}
                                                         />
-                                                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-3" />
+                                                        <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent my-3" />
                                                     </div>
                                                 )}
 
@@ -353,7 +354,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                                 )}
 
                                                 {/* Main Grid (Filtered & Limited) */}
-                                                <div className="space-y-4">
+                                                <div className="space-y-5">
                                                     <ProductGrid
                                                         products={filteredProducts}
                                                         selectedSku={selectedSku}
@@ -398,8 +399,8 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                         <h2 className="text-lg font-bold">Masukkan Data</h2>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className={cn("space-y-2", gameConfig.hasZoneId ? "col-span-1" : "col-span-2")}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className={cn("space-y-2", gameConfig.hasZoneId ? "md:col-span-1" : "md:col-span-2")}>
                             <label className="text-xs text-muted-foreground font-medium">
                                 {gameConfig.userIdLabel || "User ID"}
                             </label>
@@ -475,7 +476,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between items-start">
                                 <span className="text-muted-foreground text-xs">Item</span>
-                                <span className="font-medium text-right w-40 break-words text-xs ml-2">
+                                <span className="font-medium text-right w-40 wrap-break-word text-xs ml-2">
                                     {initialProducts.find(p => p.buyer_sku_code === selectedSku)?.product_name || "-"}
                                 </span>
                             </div>

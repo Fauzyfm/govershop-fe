@@ -214,9 +214,9 @@ export default function AdminOrders() {
             case "failed":
                 return "bg-red-500/10 text-red-500";
             case "cancelled":
-                return "bg-slate-500/10 text-slate-400";
+                return "bg-white/5 text-white/40";
             default:
-                return "bg-slate-500/10 text-slate-500";
+                return "bg-white/5 text-white/30";
         }
     };
 
@@ -229,9 +229,9 @@ export default function AdminOrders() {
             case "expired":
                 return "bg-orange-500/10 text-orange-500";
             case "cancelled":
-                return "bg-slate-500/10 text-slate-400";
+                return "bg-white/5 text-white/40";
             default:
-                return "bg-slate-500/10 text-slate-500";
+                return "bg-white/5 text-white/30";
         }
     };
 
@@ -244,11 +244,14 @@ export default function AdminOrders() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Order Management</h1>
-                    <div className="text-sm text-slate-500">
+                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                        <span className="w-1.5 h-8 bg-primary rounded-full shadow-[0_0_10px_var(--primary)]" />
+                        Order Management
+                    </h1>
+                    <div className="text-sm text-white/50 ml-4">
                         Total Orders: <span className="text-white font-bold">{total}</span>
                         <span className="mx-2">•</span>
-                        <span className="text-slate-400">{dateFrom === dateTo ? dateFrom : `${dateFrom} - ${dateTo}`}</span>
+                        <span className="text-white/40">{dateFrom === dateTo ? dateFrom : `${dateFrom} - ${dateTo}`}</span>
                     </div>
                 </div>
 
@@ -256,7 +259,7 @@ export default function AdminOrders() {
                 <button
                     onClick={handleExportExcel}
                     disabled={orders.length === 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600/80 hover:bg-emerald-500 disabled:bg-white/5 disabled:text-white/30 disabled:cursor-not-allowed rounded-xl text-white text-sm font-medium transition-colors border border-emerald-500/20 shadow-lg shadow-emerald-900/20"
                 >
                     <Download className="w-4 h-4" />
                     Export Excel
@@ -265,39 +268,51 @@ export default function AdminOrders() {
 
             {/* Summary Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                <div className="glass-card rounded-xl p-4 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <DollarSign className="w-12 h-12 text-primary" />
+                    </div>
+                    <div className="flex items-center gap-2 text-white/60 text-xs mb-1 relative z-10">
                         <DollarSign className="w-4 h-4" />
                         Total Revenue
                     </div>
-                    <div className="text-xl font-bold text-white">
+                    <div className="text-xl font-bold text-white relative z-10">
                         Rp {summary.total_revenue.toLocaleString()}
                     </div>
                 </div>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-                        <ShoppingCart className="w-4 h-4" />
-                        Total Pembelian Dari Supplier
+                <div className="glass-card rounded-xl p-4 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <ShoppingCart className="w-12 h-12 text-orange-400" />
                     </div>
-                    <div className="text-xl font-bold text-orange-400">
+                    <div className="flex items-center gap-2 text-white/60 text-xs mb-1 relative z-10">
+                        <ShoppingCart className="w-4 h-4" />
+                        Total Cost (Modal)
+                    </div>
+                    <div className="text-xl font-bold text-orange-400 relative z-10">
                         Rp {summary.total_cost.toLocaleString()}
                     </div>
                 </div>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                <div className="glass-card rounded-xl p-4 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <TrendingUp className="w-12 h-12 text-emerald-400" />
+                    </div>
+                    <div className="flex items-center gap-2 text-white/60 text-xs mb-1 relative z-10">
                         <TrendingUp className="w-4 h-4" />
                         Total Profit
                     </div>
-                    <div className="text-xl font-bold text-emerald-400">
+                    <div className="text-xl font-bold text-emerald-400 relative z-10">
                         Rp {summary.total_profit.toLocaleString()}
                     </div>
                 </div>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                <div className="glass-card rounded-xl p-4 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Shield className="w-12 h-12 text-blue-400" />
+                    </div>
+                    <div className="flex items-center gap-2 text-white/60 text-xs mb-1 relative z-10">
                         <Calendar className="w-4 h-4" />
                         Transaksi Sukses
                     </div>
-                    <div className="text-xl font-bold text-blue-400">
+                    <div className="text-xl font-bold text-blue-400 relative z-10">
                         {summary.successful_orders}
                     </div>
                 </div>
@@ -305,13 +320,13 @@ export default function AdminOrders() {
 
             {/* Search */}
             <div className="relative flex-1 mdw-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
                 <input
                     type="text"
                     placeholder="Cari ref_id, no hp, email..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-full transition-colors"
+                    className="bg-black/20 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-primary/50 w-full transition-colors"
                 />
             </div>
             {/* Filters */}
@@ -319,19 +334,19 @@ export default function AdminOrders() {
 
                 {/* Date Range */}
                 <div className="flex flex-wrap items-center gap-2">
-                    <Calendar className="w-4 h-4 text-slate-500 " />
+                    <Calendar className="w-4 h-4 text-white/50 " />
                     <input
                         type="date"
                         value={dateFrom}
                         onChange={(e) => setDateFrom(e.target.value)}
-                        className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                        className="bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
                     />
-                    <span className="text-slate-500">-</span>
+                    <span className="text-white/50">-</span>
                     <input
                         type="date"
                         value={dateTo}
                         onChange={(e) => setDateTo(e.target.value)}
-                        className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                        className="bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
                     />
                 </div>
 
@@ -339,7 +354,7 @@ export default function AdminOrders() {
                 <select
                     value={paymentFilter}
                     onChange={(e) => setPaymentFilter(e.target.value)}
-                    className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer pr-10 hover:bg-slate-800 transition-colors"
+                    className="bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none cursor-pointer pr-10 hover:bg-white/5 transition-colors [&>option]:bg-[#280905]"
                 >
                     <option value="all">Payment: Semua</option>
                     <option value="completed">Completed</option>
@@ -352,7 +367,7 @@ export default function AdminOrders() {
                 <select
                     value={digiflazzFilter}
                     onChange={(e) => setDigiflazzFilter(e.target.value)}
-                    className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer pr-10 hover:bg-slate-800 transition-colors"
+                    className="bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none cursor-pointer pr-10 hover:bg-white/5 transition-colors [&>option]:bg-[#280905]"
                 >
                     <option value="all">Digiflazz: Semua</option>
                     <option value="Sukses">Sukses</option>
@@ -364,7 +379,7 @@ export default function AdminOrders() {
                 {/* Refresh */}
                 <button
                     onClick={fetchOrders}
-                    className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
+                    className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-white/50 hover:text-white transition-colors border border-white/5"
                     title="Refresh"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -372,10 +387,10 @@ export default function AdminOrders() {
             </div>
 
             {/* Table - Horizontal Scroll on Mobile */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div className="glass-card rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-400 min-w-[1200px]">
-                        <thead className="bg-slate-950 text-slate-200 uppercase font-medium text-xs">
+                    <table className="w-full text-left text-sm text-white/70 min-w-[1200px]">
+                        <thead className="bg-white/5 text-white/90 uppercase font-medium text-xs">
                             <tr>
                                 <th className="px-4 py-3 whitespace-nowrap">Ref ID</th>
                                 <th className="px-4 py-3 whitespace-nowrap">SKU</th>
@@ -390,20 +405,25 @@ export default function AdminOrders() {
                                 <th className="px-4 py-3 whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-800">
+                        <tbody className="divide-y divide-white/5">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={11} className="px-4 py-8 text-center">Loading orders...</td>
+                                    <td colSpan={11} className="px-4 py-8 text-center text-white/50">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                                            <span>Loading orders...</span>
+                                        </div>
+                                    </td>
                                 </tr>
                             ) : orders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={11} className="px-4 py-8 text-center text-slate-500">
+                                    <td colSpan={11} className="px-4 py-8 text-center text-white/50">
                                         No orders found for selected filters.
                                     </td>
                                 </tr>
                             ) : (
                                 orders.map((order) => (
-                                    <tr key={order.id} className="hover:bg-slate-800/50 transition-colors">
+                                    <tr key={order.id} className="hover:bg-white/5 transition-colors group">
                                         <td className="px-4 py-3 font-medium text-white align-top">
                                             {order.ref_id}
                                             {order.order_source?.startsWith("admin_") && (
@@ -416,15 +436,15 @@ export default function AdminOrders() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3 font-mono text-xs align-top">
-                                            <span className="bg-slate-800 px-1 py-0.5 rounded text-slate-300">
+                                            <span className="bg-white/10 px-1 py-0.5 rounded text-white/70">
                                                 {order.buyer_sku_code}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 align-top">
                                             <div className="flex flex-col text-xs gap-0.5">
-                                                <span className="text-white font-mono break-all">{order.customer_no}</span>
-                                                {order.customer_email && <span className="text-slate-400">{order.customer_email}</span>}
-                                                {order.customer_phone && <span className="text-slate-500">{order.customer_phone}</span>}
+                                                <span className="text-white font-mono break-all group-hover:text-primary transition-colors">{order.customer_no}</span>
+                                                {order.customer_email && <span className="text-white/40">{order.customer_email}</span>}
+                                                {order.customer_phone && <span className="text-white/50">{order.customer_phone}</span>}
                                                 {order.admin_notes && (
                                                     <div className="mt-1 p-1 bg-yellow-500/10 border border-yellow-500/20 rounded text-yellow-500 text-[10px] italic">
                                                         📝 {order.admin_notes}
@@ -445,7 +465,7 @@ export default function AdminOrders() {
                                             ? 'text-red-500 line-through opacity-60'
                                             : order.status === 'success' || order.status === 'processing' || order.status === 'paid'
                                                 ? 'text-emerald-400'
-                                                : 'text-slate-500'
+                                                : 'text-white/40'
                                             }`}>
                                             {order.status === 'failed' || order.status === 'cancelled' || order.status === 'expired'
                                                 ? '-'
@@ -453,7 +473,7 @@ export default function AdminOrders() {
                                             }
                                         </td>
                                         <td className="px-4 py-3 align-top">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.payment_status)} whitespace-nowrap`}>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.payment_status)} whitespace-nowrap border border-white/5`}>
                                                 {order.payment_status}
                                             </span>
                                         </td>
@@ -465,23 +485,23 @@ export default function AdminOrders() {
                                                         ? "text-red-500"
                                                         : order.digiflazz_status === "Pending"
                                                             ? "text-yellow-500"
-                                                            : "text-slate-400"
+                                                            : "text-white/40"
                                                     } whitespace-nowrap font-medium`}>
                                                     {order.digiflazz_status || "-"}
                                                 </span>
                                                 {order.serial_number && (
-                                                    <span className="text-emerald-300 font-mono text-[10px] break-all py-0.5 px-1 bg-emerald-950/50 rounded">
+                                                    <span className="text-emerald-300 font-mono text-[10px] break-all py-0.5 px-1 bg-emerald-950/30 rounded border border-emerald-500/20">
                                                         SN: {order.serial_number}
                                                     </span>
                                                 )}
                                                 {order.message && order.digiflazz_status === "Gagal" && (
-                                                    <span className="text-red-400 text-[10px] break-all py-0.5 px-1 bg-red-950/50 rounded">
+                                                    <span className="text-red-400 text-[10px] break-all py-0.5 px-1 bg-red-950/30 rounded border border-red-500/20">
                                                         ❌ {order.message}
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-xs align-top whitespace-nowrap text-slate-500">
+                                        <td className="px-4 py-3 text-xs align-top whitespace-nowrap text-white/50">
                                             {new Date(order.created_at).toLocaleString('id-ID')}
                                         </td>
                                         <td className="px-4 py-3 align-top">
@@ -531,15 +551,15 @@ export default function AdminOrders() {
             </div>
 
             {/* Info Note */}
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-sm text-blue-400">
+            <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 text-sm text-blue-400">
                 <p><strong>💡 Info:</strong> Profit = Harga Jual - Modal</p>
                 <p className="mt-1 text-xs text-blue-400/70">Pencarian: Ref ID, No HP, Email, Customer No, Serial Number, Product Name</p>
             </div>
 
             {/* Manual Topup Modal */}
             {manualTopupOrder && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-                    <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-md w-full space-y-4">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#280905] border border-white/10 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                                 <Shield className="w-5 h-5 text-orange-400" />
@@ -551,36 +571,36 @@ export default function AdminOrders() {
                                     setTotpCode("");
                                     setNewCustomerNo("");
                                 }}
-                                className="text-slate-400 hover:text-white"
+                                className="text-white/50 hover:text-white transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Order Info */}
-                        <div className="bg-slate-800 rounded-lg p-3 space-y-2 text-sm">
+                        <div className="bg-black/20 rounded-xl p-4 space-y-2 text-sm border border-white/5">
                             <div className="flex justify-between">
-                                <span className="text-slate-400">Order ID:</span>
+                                <span className="text-white/50">Order ID:</span>
                                 <span className="text-white font-mono text-xs">{manualTopupOrder.ref_id}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-slate-400">Product:</span>
+                                <span className="text-white/50">Product:</span>
                                 <span className="text-white">{manualTopupOrder.product_name}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-slate-400">SKU:</span>
-                                <span className="text-blue-400 font-mono">{manualTopupOrder.buyer_sku_code}</span>
+                                <span className="text-white/50">SKU:</span>
+                                <span className="text-primary font-mono">{manualTopupOrder.buyer_sku_code}</span>
                             </div>
                         </div>
 
                         {/* Customer No (editable) */}
                         <div className="space-y-2">
-                            <label className="text-sm text-slate-400">Customer No / User ID</label>
+                            <label className="text-sm text-white/70">Customer No / User ID</label>
                             <input
                                 type="text"
                                 value={newCustomerNo}
                                 onChange={(e) => setNewCustomerNo(e.target.value)}
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-primary/50"
                             />
                             {newCustomerNo !== manualTopupOrder.customer_no && (
                                 <p className="text-xs text-yellow-400">⚠️ Customer no berbeda dari aslinya: {manualTopupOrder.customer_no}</p>
@@ -589,16 +609,16 @@ export default function AdminOrders() {
 
                         {/* TOTP Code */}
                         <div className="space-y-2">
-                            <label className="text-sm text-slate-400">Kode TOTP (6 digit)</label>
+                            <label className="text-sm text-white/70">Kode TOTP (6 digit)</label>
                             <input
                                 type="text"
                                 value={totpCode}
                                 onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                                 placeholder="000000"
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-blue-500"
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-primary/50"
                                 maxLength={6}
                             />
-                            <p className="text-xs text-slate-500">Masukkan kode dari Google Authenticator</p>
+                            <p className="text-xs text-white/40">Masukkan kode dari Google Authenticator</p>
                         </div>
 
                         {/* Actions */}
@@ -609,14 +629,14 @@ export default function AdminOrders() {
                                     setTotpCode("");
                                     setNewCustomerNo("");
                                 }}
-                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                className="flex-1 bg-white/5 hover:bg-white/10 text-white/70 px-4 py-2 rounded-xl transition-colors"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={handleManualTopup}
                                 disabled={manualTopupLoading || totpCode.length !== 6 || !newCustomerNo}
-                                className="flex-1 bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 bg-primary hover:bg-primary/80 text-white px-4 py-2 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
                             >
                                 {manualTopupLoading ? (
                                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -628,7 +648,7 @@ export default function AdminOrders() {
                         </div>
 
                         {/* Warning */}
-                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-400">
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-xs text-red-400">
                             ⚠️ Aksi ini akan mengirim topup ke Digiflazz. Pastikan data sudah benar.
                         </div>
                     </div>

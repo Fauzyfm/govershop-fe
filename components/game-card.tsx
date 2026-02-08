@@ -29,52 +29,66 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
 
     const Content = (
         <div className={`
-            group relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-slate-900 border border-white/5 shadow-2xl transition-all duration-500
-            ${isDisabled ? "grayscale opacity-80 cursor-not-allowed" : "hover:border-primary/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:-translate-y-1"}
+            arcade-card group relative w-full aspect-3/4 rounded-2xl overflow-hidden
+            ${isDisabled ? "grayscale opacity-70 cursor-not-allowed" : "cursor-pointer"}
         `}>
+            {/* Scanline Overlay */}
+            <div className="scanlines absolute inset-0 z-10 pointer-events-none" />
+
             {/* Image */}
             <div className="absolute inset-0">
                 <img
                     src={image}
                     alt={name}
-                    className={`w-full h-full object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110"}`}
+                    className={`w-full h-full object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110 group-hover:rotate-1"}`}
                     loading="lazy"
                 />
 
                 {/* Gradient Overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 ${isDisabled ? "opacity-90" : "group-hover:opacity-90 transition-opacity"}`} />
+                <div className={`absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent opacity-90 ${isDisabled ? "" : "group-hover:opacity-95 transition-opacity"}`} />
+
+                {/* Fire Glow Overlay on Hover */}
+                {!isDisabled && (
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                )}
             </div>
 
+            {/* Arcade Border Glow - Fire Colored */}
+            {!isDisabled && (
+                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    style={{
+                        boxShadow: 'inset 0 0 30px rgba(195, 17, 12, 0.4), 0 0 20px rgba(230, 80, 27, 0.3)'
+                    }}
+                />
+            )}
+
             {/* Content */}
-            <div className="absolute inset-x-0 bottom-0 p-4 transform transition-all duration-300">
-                <h3 className="text-white font-bold text-lg md:text-xl truncate drop-shadow-md">
+            <div className="absolute inset-x-0 bottom-0 p-4 z-20">
+                <h3 className="text-foreground font-bold text-lg md:text-xl truncate drop-shadow-lg group-hover:text-white transition-colors">
                     {name}
                 </h3>
 
                 {isDisabled ? (
-                    <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
-                        <span className="text-xs font-medium text-white/80">
+                    <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-accent/20 backdrop-blur-sm border border-accent/20">
+                        <span className="text-xs font-medium text-muted-foreground">
                             {isComingSoon ? "Segera Hadir" : "Maintenance"}
                         </span>
                     </div>
                 ) : (
-                    <div className="w-8 h-1 bg-gradient-to-r from-primary to-emerald-400 mt-2 rounded-full transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <div className="w-full h-1 bg-linear-to-r from-accent to-primary rounded-full shadow-[0_0_10px_rgba(230,80,27,0.8)]" />
+                    </div>
                 )}
             </div>
 
-            {/* Glow effect on hover (only active) */}
-            {!isDisabled && (
-                <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 group-hover:ring-primary/50 transition-all pointer-events-none" />
-            )}
-
-            {/* Status Overlay for visual clarity */}
+            {/* Status Badge */}
             {isComingSoon && (
-                <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500/90 backdrop-blur-md text-black text-xs font-bold rounded-full shadow-lg">
+                <div className="absolute top-3 right-3 z-20 px-3 py-1 bg-accent/90 backdrop-blur-sm text-background text-xs font-bold rounded-full shadow-lg">
                     COMING SOON
                 </div>
             )}
             {isMaintenance && (
-                <div className="absolute top-3 right-3 px-3 py-1 bg-red-500/90 backdrop-blur-md text-white text-xs font-bold rounded-full shadow-lg">
+                <div className="absolute top-3 right-3 z-20 px-3 py-1 bg-red-600/90 backdrop-blur-sm text-white text-xs font-bold rounded-full shadow-lg">
                     MAINTENANCE
                 </div>
             )}
@@ -92,7 +106,7 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
     return (
         <>
             <PageLoading isVisible={isLoading} gameName={name} gameImage={image} />
-            <Link href={href} onClick={handleClick} className="block">
+            <Link href={href} onClick={handleClick} className="block group-hover:z-10 relative transition-all duration-300">
                 {Content}
             </Link>
         </>

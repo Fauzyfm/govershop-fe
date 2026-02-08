@@ -13,46 +13,254 @@
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
-  
-  --radius: 0.5rem;
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --radius: 0.75rem;
+  --font-family-display: 'Inter', system-ui, sans-serif;
+
+  --animate-grid-movement: grid-movement 20s linear infinite;
+
+  @keyframes grid-movement {
+    0% {
+      transform: translateY(0);
+    }
+
+    100% {
+      transform: translateY(40px);
+    }
+  }
 }
 
 :root {
-  /* Dark Theme by default for "Premium Gamer" feel */
-  --background: #020617; /* Slate 950 */
-  --foreground: #f8fafc; /* Slate 50 */
+  /* Arcade Fire Theme */
+  --background: #280905;
+  /* Deep Maroon */
+  --foreground: #E7F2EF;
 
-  --primary: #10b981; /* Emerald 500 */
-  --primary-foreground: #ffffff;
+  --primary: #C3110C;
+  /* Bright Red */
+  --primary-foreground: #E7F2EF;
 
-  --secondary: #1e293b; /* Slate 800 */
-  --secondary-foreground: #f8fafc;
+  --secondary: #740A03;
+  /* Dark Crimson */
+  --secondary-foreground: #E7F2EF;
 
-  --accent: #334155; /* Slate 700 */
-  --accent-foreground: #f8fafc;
+  --accent: #E6501B;
+  /* Fire Orange */
+  --accent-foreground: #280905;
 
-  --card: #0f172a; /* Slate 900 */
-  --card-foreground: #f8fafc;
+  --card: #3D0D07;
+  --card-foreground: #E7F2EF;
 
-  --border: #1e293b; /* Slate 800 */
-  --input: #1e293b;
+  --muted: #740A03;
+  --muted-foreground: #A8362D;
+
+  --border: #5C120B;
+  --input: #3D0D07;
+
+  /* Fire Glow Colors */
+  --glow-primary: rgba(195, 17, 12, 0.5);
+  --glow-accent: rgba(230, 80, 27, 0.4);
+  --neon-red: #C3110C;
+  --neon-orange: #E6501B;
 }
 
-/* Glassmorphism Utilities */
+/* 3D Retro Grid Background */
+.retro-grid-container {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background-color: var(--background);
+  perspective: 1000px;
+}
+
+.retro-grid {
+  position: absolute;
+  inset: -100% -50%;
+  width: 200%;
+  height: 200%;
+  background-image:
+    linear-gradient(to right, rgba(195, 17, 12, 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(195, 17, 12, 0.3) 1px, transparent 1px);
+  background-size: 40px 40px;
+  transform: rotateX(60deg);
+  transform-origin: center top;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 1) 100%);
+  animation: grid-movement 3s linear infinite;
+  box-shadow: inset 0 0 100px var(--background);
+}
+
+.horizon-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, var(--accent) 0%, transparent 60%);
+  opacity: 0.15;
+  filter: blur(50px);
+}
+
+/* Floating Particles */
+.particles {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--accent) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.2;
+  animation: grid-movement 10s linear infinite reverse;
+}
+
+/* Glassmorphism - Red/Fire Tint */
 .glass {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(40, 9, 5, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(195, 17, 12, 0.2);
 }
 
 .glass-card {
-  background: rgba(30, 41, 59, 0.4);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(61, 13, 7, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(195, 17, 12, 0.15);
 }
 
+/* Arcade Card - Fire Style */
+.arcade-card {
+  position: relative;
+  background: linear-gradient(145deg, #3D0D07, #280905);
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.arcade-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--primary), transparent, var(--accent));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.arcade-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 20px rgba(195, 17, 12, 0.3),
+    0 0 40px rgba(230, 80, 27, 0.15),
+    0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Neon Glow Effect */
+.neon-glow {
+  text-shadow:
+    0 0 5px var(--neon-red),
+    0 0 10px var(--neon-orange),
+    0 0 20px rgba(195, 17, 12, 0.5);
+}
+
+.glow-text {
+  color: var(--foreground);
+  text-shadow: 0 0 10px var(--primary);
+}
+
+/* Arcade Button - Fire Gradient */
+.arcade-btn {
+  background: linear-gradient(135deg, #E6501B, #C3110C);
+  color: #FFFFFF;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 4px 0 #740A03,
+    0 6px 20px rgba(195, 17, 12, 0.4);
+}
+
+.arcade-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 0 #740A03,
+    0 10px 30px rgba(230, 80, 27, 0.5);
+}
+
+.arcade-btn:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 2px 0 #740A03,
+    0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Scanline Overlay */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px);
+  pointer-events: none;
+}
+
+/* Animated Glow Pulse */
+@keyframes glow-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(195, 17, 12, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(230, 80, 27, 0.5), 0 0 40px rgba(195, 17, 12, 0.2);
+  }
+}
+
+.glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Base styles */
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: var(--font-family-display);
+}
+
+/* Selection Style */
+::selection {
+  background: rgba(230, 80, 27, 0.4);
+  color: #FFFFFF;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #280905;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #740A03;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C3110C;
 }

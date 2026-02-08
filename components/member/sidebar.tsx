@@ -4,30 +4,31 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
     LayoutDashboard,
-    Package,
-    ShoppingCart,
+    History,
+    Settings,
     LogOut,
     CreditCard,
     ChevronLeft,
     ChevronRight,
-    Image,
-    Zap,
-    Activity
+    User,
+    Wallet
 } from "lucide-react";
 
-interface AdminSidebarProps {
+interface MemberSidebarProps {
     isCollapsed: boolean;
     toggleSidebar: () => void;
 }
 
-export default function AdminSidebar({ isCollapsed, toggleSidebar }: AdminSidebarProps) {
+export default function MemberSidebar({ isCollapsed, toggleSidebar }: MemberSidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
 
     const handleLogout = () => {
         if (confirm("Apakah Anda yakin ingin logout?")) {
-            localStorage.removeItem("admin_token");
-            router.push("/admin/login");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+            router.push("/login");
         }
     };
 
@@ -42,47 +43,32 @@ export default function AdminSidebar({ isCollapsed, toggleSidebar }: AdminSideba
                 {
                     label: "Dashboard",
                     icon: LayoutDashboard,
-                    href: "/admin/dashboard",
+                    href: "/dashboard",
+                },
+                {
+                    label: "Deposit / Topup",
+                    icon: Wallet,
+                    href: "/dashboard/deposit",
                 },
             ]
         },
         {
-            title: "Transaction",
+            title: "History",
             items: [
                 {
-                    label: "Orders",
-                    icon: ShoppingCart,
-                    href: "/admin/orders",
-                },
-                {
-                    label: "Products",
-                    icon: Package,
-                    href: "/admin/products",
-                },
-                {
-                    label: "Custom Topup",
-                    icon: Zap,
-                    href: "/admin/topup/custom",
+                    label: "Riwayat Transaksi",
+                    icon: History,
+                    href: "/dashboard/transactions",
                 },
             ]
         },
         {
-            title: "Content",
+            title: "Account",
             items: [
                 {
-                    label: "Kelola Content",
-                    icon: Image,
-                    href: "/admin/content",
-                },
-            ]
-        },
-        {
-            title: "System",
-            items: [
-                {
-                    label: "System Logs",
-                    icon: Activity,
-                    href: "/admin/logs",
+                    label: "Profile Settings",
+                    icon: Settings,
+                    href: "/dashboard/profile",
                 },
             ]
         }
@@ -106,12 +92,12 @@ export default function AdminSidebar({ isCollapsed, toggleSidebar }: AdminSideba
 
                 {!isCollapsed ? (
                     <h1 className="text-xl font-bold text-white flex items-center gap-2 whitespace-nowrap z-10">
-                        <CreditCard className="w-6 h-6 text-primary" />
+                        <User className="w-6 h-6 text-primary" />
                         <span className="bg-linear-to-r from-white to-white/70 bg-clip-text text-transparent">Govershop</span>
-                        <span className="text-primary neon-glow">Admin</span>
+                        <span className="text-primary neon-glow">Member</span>
                     </h1>
                 ) : (
-                    <CreditCard className="w-8 h-8 text-primary z-10" />
+                    <User className="w-8 h-8 text-primary z-10" />
                 )}
             </div>
 

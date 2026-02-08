@@ -281,7 +281,7 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                    </div>
+                    </div >
                 );
             })}
 
@@ -337,6 +337,6 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                     </div>
                 );
             })}
-        </div>
+        </div >
     );
 }
