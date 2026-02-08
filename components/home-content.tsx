@@ -212,7 +212,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             {/* Carousel logic ... */}
             {carousel.length > 0 && (
                 <section className="relative rounded-2xl overflow-hidden arcade-card">
-                    <div className="relative aspect-[21/9] md:aspect-[3/1]">
+                    <div className="relative aspect-21/9 md:aspect-3/1">
                         {carousel.map((item, index) => (
                             <div
                                 key={item.id}
@@ -436,7 +436,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                             className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:shadow-primary/20 group overflow-hidden"
                                             title="Load More"
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             <ChevronDown className="w-6 h-6 text-primary group-hover:translate-y-0.5 transition-transform" />
                                         </motion.button>
                                     )}

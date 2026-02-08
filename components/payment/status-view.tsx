@@ -271,7 +271,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                             <span className="text-xs uppercase tracking-wider text-muted-foreground">
                                 Metode Pembayaran
                             </span>
-                            <p className="font-bold text-lg break-words">{getPaymentLabel(payment.payment_method)}</p>
+                            <p className="font-bold text-lg wrap-break-word">{getPaymentLabel(payment.payment_method)}</p>
                         </div>
 
                         {/* QR Code for QRIS */}
