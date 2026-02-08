@@ -6,10 +6,12 @@ import {
     Edit,
     Search,
     Filter,
+    FileDown,
 } from "lucide-react";
 import api from "@/lib/api";
 import Modal from "@/components/ui/modal";
 import Notification from "@/components/ui/notification";
+import { exportProductsToPDF } from "@/lib/pdf-export";
 
 export default function AdminProducts() {
     const [products, setProducts] = useState<any[]>([]);
@@ -320,6 +322,18 @@ export default function AdminProducts() {
                         <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                     </button>
 
+                    {/* Export PDF Button - only visible when products are loaded */}
+                    {products.length > 0 && (
+                        <button
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 hover:bg-blue-500 text-white rounded-xl transition-colors font-medium text-sm border border-blue-500/20 shadow-lg shadow-blue-900/20"
+                            onClick={() => exportProductsToPDF(products, { storeName: 'GOVERSHOP KATALOG' })}
+                            title="Export katalog produk ke PDF"
+                        >
+                            <FileDown className="w-4 h-4" />
+                            Export PDF
+                        </button>
+                    )}
+
                     <button
                         className="flex items-center gap-2 px-4 py-2 bg-emerald-600/80 hover:bg-emerald-500 text-white rounded-xl transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-500/20 shadow-lg shadow-emerald-900/20"
                         onClick={() => setIsSyncModalOpen(true)}
@@ -332,7 +346,7 @@ export default function AdminProducts() {
             </div>
 
             {/* Product Table */}
-            <div className="glass-card rounded-2xl overflow-hidden min-h-[400px]">
+            <div className="glass-card rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs text-white/70">
                         <thead className="bg-white/5 text-white/90 uppercase font-medium">

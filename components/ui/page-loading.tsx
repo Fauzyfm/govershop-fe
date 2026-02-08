@@ -87,9 +87,8 @@ export default function PageLoading({ isVisible, gameName, gameImage }: PageLoad
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.4 }}
-                            className="flex items-center gap-2 text-muted-foreground text-sm font-medium tracking-widest uppercase"
+                            className="flex items-center gap-2 text-muted-foreground text-sm font-medium tracking-widest uppercase mt-3"
                         >
-                            <span>Memuat</span>
                             <span className="flex gap-1">
                                 <motion.span
                                     animate={{ opacity: [0.3, 1, 0.3] }}
