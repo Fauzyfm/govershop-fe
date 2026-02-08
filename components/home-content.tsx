@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import GameCard from "@/components/game-card";
 import SearchInput from "@/components/ui/search-input";
-import { Brand } from "@/types/api";
+import { Brand, BrandPublicData, CarouselItem, PopupItem } from "@/types/api";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,29 +11,6 @@ import { motion, AnimatePresence } from "framer-motion";
 export interface CategoryWithBrands {
     category: string;
     brands: Brand[];
-}
-
-interface CarouselItem {
-    id: number;
-    image_url: string;
-    title?: string;
-    link_url?: string;
-}
-
-interface PopupItem {
-    id: number;
-    image_url: string;
-    title?: string;
-    description?: string;
-    link_url?: string;
-}
-
-interface BrandPublicData {
-    brand_name: string;
-    image_url: string;
-    is_best_seller: boolean;
-    is_visible: boolean;
-    status: string;
 }
 
 interface HomeContentProps {

@@ -99,54 +99,51 @@ export interface PaymentInfo {
   total_payment: number;
   status: string;
   expired_at: string;
-  expired_in: number;
-}
-
-// Payment initiation response from POST /orders/{id}/pay
-export interface PaymentResponse {
-  id: string;
-  order_id: string;
-  payment_method: string;
-  payment_number: string;
-  qr_string?: string;
-  va_number?: string;
-  amount: number;
-  fee: number;
-  total_payment: number;
-  status: string;
-  expired_at: string;
-  expired_in: number;
-}
-
-export interface ValidateAccountRequest {
-  brand: string;
-  customer_no: string;
-}
-
-export interface ValidateAccountResponse {
-  is_valid: boolean;
-  account_name: string;
-  customer_no: string;
-  brand: string;
-  message?: string;
-  validation_fee?: number;
-}
-
-export interface OrderHistoryResponse {
-    id: string;
-    ref_id: string;
-    product_name: string;
-    customer_no: string;
-    customer_phone: string;
-    price: number;
-    status: OrderStatus;
-    status_label: string;
-    created_at: string;
-    payment_method: string;
-    payment_amount: number;
+  paid_at?: string;
 }
 
 export interface Brand {
     name: string;
+    description?: string;
     image_url?: string;
+    status: string;
+}
+
+// Content Types
+export interface CarouselItem {
+    id: number;
+    image_url: string;
+    title?: string;
+    link_url?: string;
+}
+
+export interface PopupItem {
+    id: number;
+    image_url: string;
+    title?: string;
+    description?: string;
+    link_url?: string;
+}
+
+export interface BrandPublicData {
+    brand_name: string;
+    image_url: string;
+    is_best_seller: boolean;
+    is_visible: boolean;
+    status: string;
+}
+
+export interface OrderHistoryResponse {
+    id: string;
+    product_name: string;
+    created_at: string;
+    status: string;
+    status_label: string;
+    price: number;
+}
+
+export interface ValidateAccountResponse {
+    is_valid: boolean;
+    account_name: string;
+    message?: string;
 }

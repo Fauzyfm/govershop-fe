@@ -1,24 +1,8 @@
 import api from "@/lib/api";
 import HomeContent from "@/components/home-content";
-import { APIResponse, Brand } from "@/types/api";
+import { APIResponse, Brand, BrandPublicData, CarouselItem, PopupItem } from "@/types/api";
 
 export const revalidate = 60; // Revalidate every 60 seconds (ISR)
-
-// Types for content API
-interface CarouselItem {
-  id: number;
-  image_url: string;
-  title?: string;
-  link_url?: string;
-}
-
-interface PopupItem {
-  id: number;
-  image_url: string;
-  title?: string;
-  description?: string;
-  link_url?: string;
-}
 
 async function getCategories(): Promise<string[]> {
   try {
@@ -57,13 +41,6 @@ async function getCarousel(): Promise<CarouselItem[]> {
     console.error("Failed to fetch carousel", error);
     return [];
   }
-}
-
-interface BrandPublicData {
-  brand_name: string;
-  image_url: string;
-  is_best_seller: boolean;
-  status: string;
 }
 
 async function getBrandImages(): Promise<Record<string, BrandPublicData>> {
