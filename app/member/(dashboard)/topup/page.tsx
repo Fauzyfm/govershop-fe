@@ -242,7 +242,7 @@ function TopupContent() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <span className="w-1.5 h-8 bg-[var(--primary)] rounded-full shadow-[0_0_10px_var(--primary)]" />
+                    <span className="w-1.5 h-8 bg-(--primary) rounded-full shadow-[0_0_10px_var(--primary)]" />
                     <Zap className="w-7 h-7 text-yellow-500" />
                     Topup Product
                 </h1>
@@ -258,7 +258,7 @@ function TopupContent() {
             {/* Product Details Card */}
             {loadingProduct ? (
                 <div className="glass-card rounded-2xl p-8 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)] mx-auto" />
+                    <Loader2 className="w-8 h-8 animate-spin text-(--primary) mx-auto" />
                     <p className="text-white/50 mt-2">Loading produk...</p>
                 </div>
             ) : productDetails ? (
@@ -287,7 +287,7 @@ function TopupContent() {
                     </div>
                     <div className="pt-3 border-t border-white/10">
                         <span className="text-white/40 text-sm">Harga Member:</span>
-                        <span className="text-[var(--accent)] font-bold text-xl ml-3">
+                        <span className="text-(--accent) font-bold text-xl ml-3">
                             {formatPrice(productDetails.price)}
                         </span>
                     </div>
@@ -296,7 +296,7 @@ function TopupContent() {
                 <div className="glass-card rounded-2xl p-8 text-center">
                     <AlertCircle className="w-8 h-8 text-red-400 mx-auto" />
                     <p className="text-white/50 mt-2">Produk tidak ditemukan</p>
-                    <Link href="/member/products" className="text-[var(--primary)] text-sm hover:underline mt-2 inline-block">
+                    <Link href="/member/products" className="text-(--primary) text-sm hover:underline mt-2 inline-block">
                         Pilih produk lain
                     </Link>
                 </div>
@@ -316,7 +316,7 @@ function TopupContent() {
                                 setValidationResult(null);
                             }}
                             placeholder="Contoh: 081234567890 atau 12345678"
-                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--primary)]/50 placeholder:text-white/20 transition-all"
+                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white font-mono focus:outline-none focus:border-(--primary)/50 placeholder:text-white/20 transition-all"
                         />
                         <p className="text-xs text-amber-400/80">
                             ⚠️ Pastikan nomor/ID sudah benar. Kesalahan input diluar tanggung jawab kami.
@@ -330,7 +330,7 @@ function TopupContent() {
                 <button
                     onClick={handlePreCheck}
                     disabled={loading || !customerNo}
-                    className="w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white"
+                    className="w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg bg-(--primary) hover:bg-(--primary)/80 text-white"
                 >
                     <Zap className="w-6 h-6" />
                     Lanjutkan Topup
@@ -353,7 +353,7 @@ function TopupContent() {
                                 <p className="text-white/40 font-mono text-sm">{sku}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[var(--accent)] font-bold">{productDetails && formatPrice(productDetails.price)}</p>
+                                <p className="text-(--accent) font-bold">{productDetails && formatPrice(productDetails.price)}</p>
                             </div>
                         </div>
                     </div>
@@ -408,7 +408,7 @@ function TopupContent() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Masukkan password Anda"
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-white text-sm focus:outline-none focus:border-[var(--primary)]/50 placeholder:text-white/20 transition-colors"
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-white text-sm focus:outline-none focus:border-(--primary)/50 placeholder:text-white/20 transition-colors"
                         />
                         <p className="text-xs text-white/40">Password diperlukan untuk keamanan transaksi</p>
                     </div>
@@ -424,7 +424,7 @@ function TopupContent() {
                         <button
                             onClick={handleSubmit}
                             disabled={loading || !password}
-                            className="flex-1 py-2.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                            className="flex-1 py-2.5 rounded-xl bg-(--primary) hover:bg-(--primary)/80 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                             Konfirmasi & Topup
@@ -511,7 +511,7 @@ function TopupContent() {
                         {finalResult?.order_id && (
                             <Link
                                 href={`/member/orders/${finalResult.order_id}`}
-                                className="flex-1 py-3 bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 py-3 bg-(--primary) hover:bg-(--primary)/80 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
                             >
                                 Lihat Detail
                             </Link>
@@ -527,7 +527,7 @@ export default function MemberTopup() {
     return (
         <Suspense fallback={
             <div className="flex items-center justify-center min-h-[300px]">
-                <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)]" />
+                <Loader2 className="w-8 h-8 animate-spin text-(--primary)" />
             </div>
         }>
             <TopupContent />

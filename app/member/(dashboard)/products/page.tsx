@@ -147,12 +147,12 @@ export default function MemberProducts() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <span className="w-1.5 h-8 bg-[var(--primary)] rounded-full shadow-[0_0_10px_var(--primary)]" />
+                        <span className="w-1.5 h-8 bg-(--primary) rounded-full shadow-[0_0_10px_var(--primary)]" />
                         Order Product
                     </h1>
                     <div className="text-sm text-white/50 ml-4">
                         {hasSearched ? (
-                            <>Found <span className="text-[var(--primary)] font-bold">{total}</span> Products</>
+                            <>Found <span className="text-(--primary) font-bold">{total}</span> Products</>
                         ) : (
                             "Cari produk untuk melakukan topup"
                         )}
@@ -168,14 +168,14 @@ export default function MemberProducts() {
                             placeholder="Nama, SKU..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="bg-black/20 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[var(--primary)]/50 w-full md:w-48 transition-colors"
+                            className="bg-black/20 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-(--primary)/50 w-full md:w-48 transition-colors"
                         />
                     </form>
 
                     <select
                         value={category}
                         onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-                        className="bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[var(--primary)]/50 cursor-pointer max-w-[150px] [&>option]:bg-[#280905]"
+                        className="bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-(--primary)/50 cursor-pointer max-w-[150px] [&>option]:bg-[#280905]"
                     >
                         <option value="all">Category: All</option>
                         {filterOptions.categories.map((cat) => (
@@ -186,7 +186,7 @@ export default function MemberProducts() {
                     <select
                         value={brandStr}
                         onChange={(e) => { setBrandStr(e.target.value); setPage(1); }}
-                        className="bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[var(--primary)]/50 cursor-pointer max-w-[150px] [&>option]:bg-[#280905]"
+                        className="bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-(--primary)/50 cursor-pointer max-w-[150px] [&>option]:bg-[#280905]"
                     >
                         <option value="all">Brand: All</option>
                         {filterOptions.brands.map((b) => (
@@ -197,7 +197,7 @@ export default function MemberProducts() {
                     <select
                         value={typeStr}
                         onChange={(e) => { setTypeStr(e.target.value); setPage(1); }}
-                        className="bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[var(--primary)]/50 cursor-pointer max-w-[150px] [&>option]:bg-[#280905]"
+                        className="bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-(--primary)/50 cursor-pointer max-w-[150px] [&>option]:bg-[#280905]"
                     >
                         <option value="all">Type: All</option>
                         {filterOptions.types.map((type) => (
@@ -252,7 +252,7 @@ export default function MemberProducts() {
                                 <tr>
                                     <td colSpan={7} className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center justify-center gap-2">
-                                            <RefreshCw className="w-6 h-6 animate-spin text-[var(--primary)]" />
+                                            <RefreshCw className="w-6 h-6 animate-spin text-(--primary)" />
                                             <span className="text-white/50">Loading data...</span>
                                         </div>
                                     </td>
@@ -271,13 +271,13 @@ export default function MemberProducts() {
                                         </td>
                                         <td className="px-6 py-4 font-medium text-white align-top">
                                             <div className="flex flex-col gap-1">
-                                                <span className="line-clamp-2 leading-relaxed group-hover:text-[var(--primary)] transition-colors" title={product.product_name}>
+                                                <span className="line-clamp-2 leading-relaxed group-hover:text-(--primary) transition-colors" title={product.product_name}>
                                                     {product.display_name || product.product_name}
                                                 </span>
                                                 {product.tags && product.tags.length > 0 && (
                                                     <div className="flex flex-wrap gap-1">
                                                         {product.tags.map((tag) => (
-                                                            <span key={tag} className="px-1.5 py-0.5 rounded bg-[var(--primary)]/10 text-[var(--primary)] text-[10px] border border-[var(--primary)]/20">
+                                                            <span key={tag} className="px-1.5 py-0.5 rounded bg-(--primary)/10 text-(--primary) text-[10px] border border-(--primary)/20">
                                                                 {tag}
                                                             </span>
                                                         ))}
@@ -293,7 +293,7 @@ export default function MemberProducts() {
                                         </td>
                                         <td className="px-6 py-4 align-top whitespace-nowrap">{product.brand}</td>
                                         <td className="px-6 py-4 align-top whitespace-nowrap">
-                                            <span className="text-[var(--accent)] font-medium">
+                                            <span className="text-(--accent) font-medium">
                                                 Rp {(product.price || 0).toLocaleString("id-ID")}
                                             </span>
                                         </td>
@@ -309,7 +309,7 @@ export default function MemberProducts() {
                                             <Link
                                                 href={`/member/topup?sku=${product.buyer_sku_code}`}
                                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${product.is_available
-                                                    ? "bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white shadow-lg shadow-[var(--primary)]/20"
+                                                    ? "bg-(--primary) hover:bg-(--primary)/80 text-white shadow-lg shadow-(--primary)/20"
                                                     : "bg-white/5 text-white/30 cursor-not-allowed pointer-events-none"
                                                     }`}
                                             >

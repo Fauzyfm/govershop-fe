@@ -116,7 +116,7 @@ export default function MemberOrderDetailPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)]" />
+                <Loader2 className="w-8 h-8 animate-spin text-(--primary)" />
             </div>
         );
     }
@@ -129,7 +129,7 @@ export default function MemberOrderDetailPage() {
                 <p className="text-white/50 mb-6">Order dengan ID tersebut tidak ada atau bukan milik Anda.</p>
                 <Link
                     href="/member/orders"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white rounded-xl transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-(--primary) hover:bg-(--primary)/80 text-white rounded-xl transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Kembali ke Pesanan
@@ -212,7 +212,7 @@ export default function MemberOrderDetailPage() {
 
                 <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                        <Package className="w-5 h-5 text-[var(--primary)]" />
+                        <Package className="w-5 h-5 text-(--primary)" />
                         <div className="flex-1">
                             <p className="text-xs text-white/40">Produk</p>
                             <p className="text-white font-medium">{order.product_name}</p>
@@ -221,7 +221,7 @@ export default function MemberOrderDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                        <User className="w-5 h-5 text-[var(--primary)]" />
+                        <User className="w-5 h-5 text-(--primary)" />
                         <div className="flex-1">
                             <p className="text-xs text-white/40">Tujuan</p>
                             <p className="text-white font-mono">{order.customer_no}</p>
@@ -229,17 +229,17 @@ export default function MemberOrderDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                        <Hash className="w-5 h-5 text-[var(--primary)]" />
+                        <Hash className="w-5 h-5 text-(--primary)" />
                         <div className="flex-1">
                             <p className="text-xs text-white/40">Harga</p>
-                            <p className="text-[var(--accent)] font-bold">
+                            <p className="text-(--accent) font-bold">
                                 Rp {(order.member_price || 0).toLocaleString("id-ID")}
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                        <Calendar className="w-5 h-5 text-[var(--primary)]" />
+                        <Calendar className="w-5 h-5 text-(--primary)" />
                         <div className="flex-1">
                             <p className="text-xs text-white/40">Waktu Order</p>
                             <p className="text-white">{formatDate(order.created_at)}</p>
@@ -258,7 +258,7 @@ export default function MemberOrderDetailPage() {
                 </Link>
                 <Link
                     href="/member/products"
-                    className="flex-1 py-3 bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white rounded-xl font-medium transition-colors text-center"
+                    className="flex-1 py-3 bg-(--primary) hover:bg-(--primary)/80 text-white rounded-xl font-medium transition-colors text-center"
                 >
                     Order Lagi
                 </Link>
