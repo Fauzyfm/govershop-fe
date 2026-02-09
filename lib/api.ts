@@ -13,18 +13,13 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
-// Request interceptor to add Bearer token
+// Request interceptor - Token is now sent automatically via HTTP-only cookie
+// No need to add Authorization header manually
 api.interceptors.request.use(
   (config) => {
-    // Only on client side
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('admin_token');
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
     return config;
   },
   (error) => {

@@ -18,13 +18,6 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark">
       <body className={`${inter.className} min-h-screen flex flex-col antialiased relative overflow-x-hidden`}>
-        {/* 3D Retro Grid Background */}
-        <div className="retro-grid-container">
-          <div className="retro-grid" />
-          <div className="horizon-glow" />
-          <div className="particles" />
-        </div>
-
         <LayoutWrapper>
           {children}
         </LayoutWrapper>

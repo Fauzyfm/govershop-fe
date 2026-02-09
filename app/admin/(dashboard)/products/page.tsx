@@ -11,7 +11,7 @@ import {
 import api from "@/lib/api";
 import Modal from "@/components/ui/modal";
 import Notification from "@/components/ui/notification";
-import { exportProductsToPDF } from "@/lib/pdf-export";
+import { exportProductsToPDF, exportMemberPricesToPDF } from "@/lib/pdf-export";
 
 export default function AdminProducts() {
     const [products, setProducts] = useState<any[]>([]);
@@ -23,6 +23,7 @@ export default function AdminProducts() {
         message: null,
         type: null
     });
+    const [exporting, setExporting] = useState(false);
 
     // Pagination
     const [limit, setLimit] = useState(20);
@@ -95,6 +96,70 @@ export default function AdminProducts() {
         }
     };
 
+    // Fetch ALL products for PDF export (no pagination)
+    const fetchAllProductsForExport = async (): Promise<any[]> => {
+        try {
+            const params = new URLSearchParams();
+            params.append("limit", "10000"); // Get all products
+            params.append("offset", "0");
+            if (search) params.append("search", search);
+            if (category !== "all") params.append("category", category);
+            if (brandStr !== "all") params.append("brand", brandStr);
+            if (typeStr !== "all") params.append("type", typeStr);
+            if (status !== "all") params.append("status", status);
+
+            const response: any = await api.get(`/admin/products?${params.toString()}`);
+            const allProducts = response.data.products || [];
+
+            // Sort by SKU ASC
+            allProducts.sort((a: any, b: any) => {
+                return a.buyer_sku_code.localeCompare(b.buyer_sku_code, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            return allProducts;
+        } catch (error) {
+            console.error("Failed to fetch all products for export:", error);
+            return [];
+        }
+    };
+
+    // Export handlers
+    const handleExportCatalog = async () => {
+        setExporting(true);
+        setNotification({ message: "Mengambil semua data produk...", type: "info" });
+        try {
+            const allProducts = await fetchAllProductsForExport();
+            if (allProducts.length > 0) {
+                exportProductsToPDF(allProducts, { storeName: 'GOVERSHOP KATALOG' });
+                setNotification({ message: `Berhasil export ${allProducts.length} produk ke PDF!`, type: "success" });
+            } else {
+                setNotification({ message: "Tidak ada produk untuk diexport.", type: "error" });
+            }
+        } catch (error) {
+            setNotification({ message: "Gagal export PDF.", type: "error" });
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const handleExportMemberPrices = async () => {
+        setExporting(true);
+        setNotification({ message: "Mengambil semua data produk...", type: "info" });
+        try {
+            const allProducts = await fetchAllProductsForExport();
+            if (allProducts.length > 0) {
+                exportMemberPricesToPDF(allProducts, { storeName: 'GOVERSHOP - HARGA MEMBER' });
+                setNotification({ message: `Berhasil export ${allProducts.length} harga member ke PDF!`, type: "success" });
+            } else {
+                setNotification({ message: "Tidak ada produk untuk diexport.", type: "error" });
+            }
+        } catch (error) {
+            setNotification({ message: "Gagal export PDF.", type: "error" });
+        } finally {
+            setExporting(false);
+        }
+    };
+
     // 1. Auto-Fetch Trigger (Pagination / Filters)
     // We EXCLUDE 'search' here to prevent fetching on every keystroke
     useEffect(() => {
@@ -154,6 +219,7 @@ export default function AdminProducts() {
         image_url: "",
         description: "",
         markup_percent: "",
+        member_markup_percent: "",
         is_best_seller: false,
     });
 
@@ -189,6 +255,7 @@ export default function AdminProducts() {
             image_url: product.image_url || "",
             description: product.description || "",
             markup_percent: product.markup_percent ? product.markup_percent.toString() : "",
+            member_markup_percent: product.member_markup_percent ? product.member_markup_percent.toString() : "",
             is_best_seller: product.is_best_seller || false,
         });
         setIsEditModalOpen(true);
@@ -206,6 +273,7 @@ export default function AdminProducts() {
                 image_url: formData.image_url || null,
                 description: formData.description || null,
                 markup_percent: formData.markup_percent ? parseFloat(formData.markup_percent) : null,
+                member_markup_percent: formData.member_markup_percent ? parseFloat(formData.member_markup_percent) : null,
                 is_best_seller: formData.is_best_seller,
             };
 
@@ -322,20 +390,32 @@ export default function AdminProducts() {
                         <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                     </button>
 
-                    {/* Export PDF Button - only visible when products are loaded */}
+                    {/* Export PDF Buttons - only visible when products are loaded */}
                     {products.length > 0 && (
-                        <button
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 hover:bg-blue-500 text-white rounded-xl transition-colors font-medium text-sm border border-blue-500/20 shadow-lg shadow-blue-900/20"
-                            onClick={() => exportProductsToPDF(products, { storeName: 'GOVERSHOP KATALOG' })}
-                            title="Export katalog produk ke PDF"
-                        >
-                            <FileDown className="w-4 h-4" />
-                            Export PDF
-                        </button>
+                        <>
+                            <button
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 hover:bg-blue-500 text-white rounded-xl transition-colors font-medium text-sm border border-blue-500/20 shadow-lg shadow-blue-900/20 disabled:opacity-50"
+                                onClick={handleExportCatalog}
+                                disabled={exporting}
+                                title="Export katalog produk ke PDF (semua produk)"
+                            >
+                                <FileDown className={`w-4 h-4 ${exporting ? "animate-pulse" : ""}`} />
+                                {exporting ? "Exporting..." : "Katalog PDF"}
+                            </button>
+                            <button
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-600/80 hover:bg-emerald-500 text-white rounded-xl transition-colors font-medium text-sm border border-emerald-500/20 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+                                onClick={handleExportMemberPrices}
+                                disabled={exporting}
+                                title="Export harga member ke PDF (semua produk)"
+                            >
+                                <FileDown className={`w-4 h-4 ${exporting ? "animate-pulse" : ""}`} />
+                                {exporting ? "Exporting..." : "Harga Member PDF"}
+                            </button>
+                        </>
                     )}
 
                     <button
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600/80 hover:bg-emerald-500 text-white rounded-xl transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-500/20 shadow-lg shadow-emerald-900/20"
+                        className="flex items-center gap-2 px-4 py-2 bg-amber-600/80 hover:bg-amber-500 text-white rounded-xl transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed border border-amber-500/20 shadow-lg shadow-amber-900/20"
                         onClick={() => setIsSyncModalOpen(true)}
                         disabled={syncing}
                     >
@@ -358,8 +438,8 @@ export default function AdminProducts() {
                                 <th className="px-6 py-4 whitespace-nowrap">Seller</th>
                                 <th className="px-6 py-4 whitespace-nowrap">Price (Buy)</th>
                                 <th className="px-6 py-4 whitespace-nowrap">Markup %</th>
-                                <th className="px-6 py-4 whitespace-nowrap">Profit</th>
-                                <th className="px-6 py-4 whitespace-nowrap">Price (Sell)</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Price (Sell) + Profit</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Member (Harga / Profit)</th>
                                 <th className="px-6 py-4 whitespace-nowrap">Status</th>
                                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
                             </tr>
@@ -367,7 +447,7 @@ export default function AdminProducts() {
                         <tbody className="divide-y divide-white/5">
                             {!hasSearched && !loading ? (
                                 <tr>
-                                    <td colSpan={11} className="px-6 py-20 text-center">
+                                    <td colSpan={10} className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center justify-center text-white/50 gap-4">
                                             <div className="p-4 bg-white/5 rounded-full border border-white/10">
                                                 <Search className="w-8 h-8 opacity-50" />
@@ -383,7 +463,7 @@ export default function AdminProducts() {
                                 </tr>
                             ) : loading ? (
                                 <tr>
-                                    <td colSpan={11} className="px-6 py-20 text-center">
+                                    <td colSpan={10} className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <RefreshCw className="w-6 h-6 animate-spin text-primary" />
                                             <span className="text-white/50">Loading data...</span>
@@ -392,7 +472,7 @@ export default function AdminProducts() {
                                 </tr>
                             ) : products.length === 0 ? (
                                 <tr>
-                                    <td colSpan={11} className="px-6 py-8 text-center text-white/50">
+                                    <td colSpan={10} className="px-6 py-8 text-center text-white/50">
                                         No products found matching your filters.
                                     </td>
                                 </tr>
@@ -438,9 +518,6 @@ export default function AdminProducts() {
                                         </td>
                                         <td className="px-6 py-4 align-top whitespace-nowrap">Rp {product.buy_price ? product.buy_price.toLocaleString() : "-"}</td>
                                         <td className="px-6 py-4 text-white/60 align-top whitespace-nowrap">{product.markup_percent || 0}%</td>
-                                        <td className="px-6 py-4 text-emerald-400 font-medium align-top whitespace-nowrap">
-                                            Rp {((product.selling_price || 0) - (product.buy_price || 0)).toLocaleString()}
-                                        </td>
                                         <td className="px-6 py-4 align-top whitespace-nowrap">
                                             <div className="flex flex-col">
                                                 {product.discount_price && product.discount_price > 0 ? (
@@ -451,7 +528,24 @@ export default function AdminProducts() {
                                                 ) : (
                                                     <span className="text-emerald-400 font-medium">Rp {product.selling_price?.toLocaleString()}</span>
                                                 )}
+                                                <span className="text-emerald-400 text-[10px]">
+                                                    +Rp {((product.selling_price || 0) - (product.buy_price || 0)).toLocaleString()}
+                                                </span>
                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4 align-top whitespace-nowrap">
+                                            {(() => {
+                                                const buyPrice = product.buy_price || 0;
+                                                const memberMarkup = product.member_markup_percent || 0.7;
+                                                const memberPrice = Math.ceil(buyPrice + (buyPrice * memberMarkup / 100));
+                                                const memberProfit = memberPrice - buyPrice;
+                                                return (
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-cyan-400 font-medium">Rp {memberPrice.toLocaleString()}</span>
+                                                        <span className="text-emerald-400 text-[10px]">+Rp {memberProfit.toLocaleString()} ({memberMarkup}%)</span>
+                                                    </div>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="px-6 py-4 align-top whitespace-nowrap">
                                             <span className={`px-2 py-1 rounded-full text-[10px] font-medium border ${product.is_available
@@ -504,7 +598,7 @@ export default function AdminProducts() {
                         </button>
                     </div>
                 </div>
-            </div>
+            </div >
 
 
 
@@ -543,7 +637,7 @@ export default function AdminProducts() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-white/70 mb-1">
                                 Harga Jual Diskon (Rp)
@@ -575,7 +669,17 @@ export default function AdminProducts() {
                                 value={formData.markup_percent}
                                 onChange={(e) => setFormData({ ...formData, markup_percent: e.target.value })}
                                 className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-primary/50 transition-colors"
-                                placeholder="Example: 10"
+                                placeholder="Default: 3"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-white/70 mb-1">Member Markup (%)</label>
+                            <input
+                                type="number"
+                                value={formData.member_markup_percent}
+                                onChange={(e) => setFormData({ ...formData, member_markup_percent: e.target.value })}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                placeholder="Default: 0.7"
                             />
                         </div>
                     </div>
@@ -602,16 +706,18 @@ export default function AdminProducts() {
                     </div>
 
                     <div className="flex items-center gap-3 py-2">
-                        <input
-                            type="checkbox"
-                            id="is_best_seller"
-                            checked={formData.is_best_seller}
-                            onChange={(e) => setFormData({ ...formData, is_best_seller: e.target.checked })}
-                            className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary focus:ring-offset-0 focus:ring-primary"
-                        />
-                        <label htmlFor="is_best_seller" className="text-sm font-medium text-white cursor-pointer select-none">
-                            Set sebagai Best Seller
-                        </label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="is_best_seller"
+                                checked={formData.is_best_seller}
+                                onChange={(e) => setFormData({ ...formData, is_best_seller: e.target.checked })}
+                                className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary focus:ring-offset-0 focus:ring-primary"
+                            />
+                            <label htmlFor="is_best_seller" className="text-sm font-medium text-white cursor-pointer select-none">
+                                Set sebagai Best Seller
+                            </label>
+                        </div>
                     </div>
 
                     <div className="flex justify-end gap-3 pt-4 border-t border-white/10 mt-6">
@@ -630,10 +736,10 @@ export default function AdminProducts() {
                         </button>
                     </div>
                 </form>
-            </Modal>
+            </Modal >
 
             {/* Sync Confirmation Modal */}
-            <Modal
+            < Modal
                 isOpen={isSyncModalOpen}
                 onClose={() => !syncing && setIsSyncModalOpen(false)}
                 title="Konfirmasi Sync Produk"
@@ -679,7 +785,7 @@ export default function AdminProducts() {
                         </button>
                     </div>
                 </div>
-            </Modal>
-        </div>
+            </Modal >
+        </div >
     );
 }
