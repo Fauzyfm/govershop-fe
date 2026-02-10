@@ -105,7 +105,7 @@ export default function TrackOrderPage() {
                                 </h3>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                                     <Calendar className="w-4 h-4" />
-                                    <span>{new Date(order.created_at).toLocaleString('id-ID')}</span>
+                                    <span>{new Date(order.created_at).toLocaleString('id-ID', { timeZone: 'UTC' })}</span>
                                 </div>
                             </div>
                             <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(order.status)}`}>

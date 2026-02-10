@@ -170,7 +170,7 @@ export default function AdminDashboard() {
                         <div>
                             <p className="text-2xl font-bold text-white mb-1 font-mono">
                                 {data.last_sync?.completed_at
-                                    ? new Date(data.last_sync.completed_at).toLocaleString()
+                                    ? new Date(new Date(data.last_sync.completed_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('id-ID', { timeZone: 'UTC' })
                                     : "-"}
                             </p>
                             <p className="text-sm text-white/50">

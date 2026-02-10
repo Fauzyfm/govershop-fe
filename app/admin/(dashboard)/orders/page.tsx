@@ -47,6 +47,8 @@ interface Order {
     created_at: string;
     order_source: string;
     admin_notes?: string;
+    member_id?: number;
+    member_price?: number;
 }
 
 export default function AdminOrders() {
@@ -65,9 +67,15 @@ export default function AdminOrders() {
     const [newCustomerNo, setNewCustomerNo] = useState("");
     const [manualTopupLoading, setManualTopupLoading] = useState(false);
 
-    // Date filter - default to today
-    const [dateFrom, setDateFrom] = useState(() => new Date().toISOString().split('T')[0]);
-    const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0]);
+    // Date filter - default to today (Local/WIB)
+    const [dateFrom, setDateFrom] = useState(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
+    const [dateTo, setDateTo] = useState(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
 
     // Summary stats
     const [summary, setSummary] = useState<OrderSummary>({
@@ -172,6 +180,8 @@ export default function AdminOrders() {
             "Modal (Rp)": o.buy_price,
             "Harga Jual (Rp)": o.selling_price,
             "Profit (Rp)": o.profit,
+            "Member ID": o.member_id || "-",
+            "Member Price (Rp)": o.member_price || "-",
             "Status": o.status_label || o.status,
             "Payment": o.payment_status,
             "Digiflazz": o.digiflazz_status || "-",
@@ -426,6 +436,11 @@ export default function AdminOrders() {
                                     <tr key={order.id} className="hover:bg-white/5 transition-colors group">
                                         <td className="px-4 py-3 font-medium text-white align-top">
                                             {order.ref_id}
+                                            {order.member_id && (
+                                                <span className="block text-[10px] w-fit px-1.5 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                                    👤 Member #{order.member_id}
+                                                </span>
+                                            )}
                                             {order.order_source?.startsWith("admin_") && (
                                                 <span className={`block text-[10px] w-fit px-1.5 py-0.5 mt-1 rounded ${order.order_source === "admin_gift"
                                                     ? "bg-pink-500/20 text-pink-400 border border-pink-500/30"
@@ -502,7 +517,10 @@ export default function AdminOrders() {
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 text-xs align-top whitespace-nowrap text-white/50">
-                                            {new Date(order.created_at).toLocaleString('id-ID')}
+                                            {new Date(order.created_at).toLocaleString('id-ID', {
+                                                day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
+                                                timeZone: "UTC"
+                                            })}
                                         </td>
                                         <td className="px-4 py-3 align-top">
                                             <div className="flex flex-col gap-1.5">

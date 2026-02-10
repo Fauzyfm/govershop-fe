@@ -89,13 +89,18 @@ export default function LogsPage() {
     // Format helpers
     const formatDate = (dateString: string) => {
         if (!dateString) return "-";
-        return new Date(dateString).toLocaleString("id-ID", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
+        // Subtract 7 hours to fix double shifting (DB +7h + Frontend +7h)
+        const date = new Date(dateString);
+        const fixedDate = new Date(date.getTime() - 7 * 60 * 60 * 1000);
+
+        return fixedDate.toLocaleString("id-ID", {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: "UTC"
         });
     };
 

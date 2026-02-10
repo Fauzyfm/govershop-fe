@@ -74,12 +74,14 @@ export default function MemberOrderDetailPage() {
 
     const formatDate = (dateStr: string) => {
         return new Date(dateStr).toLocaleString("id-ID", {
-            day: "2-digit",
-            month: "short",
+            day: "numeric",
+            month: "long",
             year: "numeric",
             hour: "2-digit",
             minute: "2-digit",
+            timeZone: "UTC"
         });
+
     };
 
     const getStatusBadge = (status: string) => {
