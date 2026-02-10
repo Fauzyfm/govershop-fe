@@ -111,15 +111,17 @@ function TopupContent() {
                 brand: productDetails.brand,
                 customer_no: customerNo,
             });
+            // Response: { success, message, data: { is_valid, account_name, message, ... } }
+            const result = data.data || data;
             setValidationResult({
-                isValid: data.is_valid,
-                accountName: data.account_name,
-                message: data.message,
+                isValid: result.is_valid,
+                accountName: result.account_name,
+                message: result.message,
             });
-        } catch {
+        } catch (err: any) {
             setValidationResult({
                 isValid: false,
-                message: "Gagal melakukan validasi user",
+                message: err?.message || err?.error || "Gagal melakukan validasi user",
             });
         } finally {
             setValidatingUser(false);
@@ -150,8 +152,8 @@ function TopupContent() {
         setLoading(true);
         try {
             const data: any = await api.post("/member/orders", {
-                sku: sku.trim(),
-                customer_no: customerNo.trim(),
+                buyer_sku_code: sku.trim(),
+                destination_number: customerNo.trim(),
                 password,
             });
 
@@ -175,7 +177,7 @@ function TopupContent() {
             setIsConfirmOpen(false);
             setFinalResult({
                 status: "failed",
-                message: error?.message || "Gagal melakukan order",
+                message: error?.error || error?.message || "Gagal melakukan order",
             });
             setResultModalOpen(true);
         } finally {
