@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ShoppingCart, Package, Clock, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import api from "@/lib/api";
 
 interface Order {
     id: string;
@@ -33,10 +34,7 @@ export default function MemberOrdersPage() {
         setIsLoading(true);
         try {
             const offset = (page - 1) * limit;
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/orders?limit=${limit}&offset=${offset}`, {
-                credentials: "include",
-            });
-            const data = await res.json();
+            const data: any = await api.get(`/member/orders?limit=${limit}&offset=${offset}`);
             if (data.success) {
                 setOrders(data.orders || []);
                 setTotal(data.total || 0);

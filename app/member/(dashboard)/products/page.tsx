@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { RefreshCw, Search, ShoppingCart, Filter } from "lucide-react";
 import Link from "next/link";
+import api from "@/lib/api";
 
 interface Product {
     buyer_sku_code: string;
@@ -50,10 +51,7 @@ export default function MemberProducts() {
     useEffect(() => {
         const fetchFilters = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/filters`, {
-                    credentials: "include",
-                });
-                const json = await res.json();
+                const json: any = await api.get("/products/filters");
                 if (json.data) {
                     setFilterOptions({
                         categories: json.data.categories || [],
@@ -83,7 +81,7 @@ export default function MemberProducts() {
             if (typeStr !== "all") params.append("type", typeStr);
             if (status !== "all") params.append("status", status);
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/products?${params.toString()}`, {
+            const res = await fetch(`/api/v1/member/products?${params.toString()}`, {
                 credentials: "include",
             });
             const json = await res.json();

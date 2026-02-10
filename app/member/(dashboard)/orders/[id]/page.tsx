@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import api from "@/lib/api";
 import {
     ArrowLeft,
     Check,
@@ -42,10 +43,7 @@ export default function MemberOrderDetailPage() {
 
     const fetchOrder = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/orders/${orderId}`, {
-                credentials: "include",
-            });
-            const json = await res.json();
+            const json: any = await api.get(`/member/orders/${orderId}`);
             if (json.success && json.data) {
                 setOrder(json.data);
             }

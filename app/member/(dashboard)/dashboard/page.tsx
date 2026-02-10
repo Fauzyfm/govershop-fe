@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { CreditCard, Package, Clock, TrendingUp, CheckCircle, ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import api from "@/lib/api";
 
 interface DashboardData {
     balance: number;
@@ -29,10 +30,7 @@ export default function MemberDashboard() {
 
     const fetchDashboard = useCallback(async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/dashboard`, {
-                credentials: "include",
-            });
-            const json = await res.json();
+            const json: any = await api.get("/member/dashboard");
             if (json.success && json.data) {
                 setData(json.data);
             }
@@ -43,10 +41,7 @@ export default function MemberDashboard() {
 
     const fetchRecentOrders = useCallback(async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/orders?limit=5`, {
-                credentials: "include",
-            });
-            const json = await res.json();
+            const json: any = await api.get("/member/orders?limit=5");
             if (json.success && json.orders) {
                 setRecentOrders(json.orders);
             }

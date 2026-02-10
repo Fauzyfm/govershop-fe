@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Settings, Lock, AlertCircle, CheckCircle } from "lucide-react";
+import api from "@/lib/api";
 
 export default function MemberSettingsPage() {
     const [currentPassword, setCurrentPassword] = useState("");
@@ -26,16 +27,10 @@ export default function MemberSettingsPage() {
 
         setIsLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/password`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    current_password: currentPassword,
-                    new_password: newPassword,
-                }),
+            const data: any = await api.put("/member/password", {
+                current_password: currentPassword,
+                new_password: newPassword,
             });
-            const data = await res.json();
             if (data.success) {
                 setMessage({ type: "success", text: data.message || "Password berhasil diubah" });
                 setCurrentPassword("");

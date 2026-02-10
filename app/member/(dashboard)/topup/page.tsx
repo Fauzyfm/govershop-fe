@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
+import api from "@/lib/api";
 
 interface ProductDetails {
     buyer_sku_code: string;
@@ -69,10 +70,7 @@ function TopupContent() {
     const fetchProduct = async (skuCode: string) => {
         setLoadingProduct(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/products/${skuCode}`, {
-                credentials: "include",
-            });
-            const json = await res.json();
+            const json: any = await api.get(`/member/products/${skuCode}`);
             if (json.success && json.data) {
                 setProductDetails(json.data);
                 // Check if checker exists and get its price
@@ -80,18 +78,12 @@ function TopupContent() {
                     const brandSlug = json.data.brand.toLowerCase().replace(/ /g, "");
                     const checkerSku = `checkuser${brandSlug}`;
                     try {
-                        const checkerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${checkerSku}`);
-                        if (checkerRes.ok) {
-                            const checkerData = await checkerRes.json();
-                            setHasChecker(true);
-                            if (checkerData?.data?.sell_price) {
-                                setCheckerPrice(checkerData.data.sell_price);
-                            } else if (checkerData?.data?.price) {
-                                setCheckerPrice(checkerData.data.price);
-                            }
-                        } else {
-                            setHasChecker(false);
-                            setCheckerPrice(null);
+                        const checkerData: any = await api.get(`/products/${checkerSku}`);
+                        setHasChecker(true);
+                        if (checkerData?.data?.sell_price) {
+                            setCheckerPrice(checkerData.data.sell_price);
+                        } else if (checkerData?.data?.price) {
+                            setCheckerPrice(checkerData.data.price);
                         }
                     } catch {
                         setHasChecker(false);
@@ -115,16 +107,10 @@ function TopupContent() {
 
         setValidatingUser(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/validate-account`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    brand: productDetails.brand,
-                    customer_no: customerNo,
-                }),
+            const data: any = await api.post("/validate-account", {
+                brand: productDetails.brand,
+                customer_no: customerNo,
             });
-            const data = await res.json();
             setValidationResult({
                 isValid: data.is_valid,
                 accountName: data.account_name,
@@ -163,18 +149,11 @@ function TopupContent() {
 
         setLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/orders`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    sku: sku.trim(),
-                    customer_no: customerNo.trim(),
-                    password,
-                }),
+            const data: any = await api.post("/member/orders", {
+                sku: sku.trim(),
+                customer_no: customerNo.trim(),
+                password,
             });
-
-            const data = await res.json();
 
             setIsConfirmOpen(false);
 
@@ -210,10 +189,7 @@ function TopupContent() {
 
         setRefreshing(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/orders/${finalResult.order_id}`, {
-                credentials: "include",
-            });
-            const json = await res.json();
+            const json: any = await api.get(`/member/orders/${finalResult.order_id}`);
             if (json.success && json.data) {
                 setFinalResult((prev: any) => ({
                     ...prev,

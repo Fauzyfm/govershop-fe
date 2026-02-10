@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { History, ArrowUpCircle, ArrowDownCircle, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import api from "@/lib/api";
 
 interface Deposit {
     id: number;
@@ -23,10 +24,7 @@ export default function MemberHistoryPage() {
         setIsLoading(true);
         try {
             const offset = (page - 1) * limit;
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/deposits?limit=${limit}&offset=${offset}`, {
-                credentials: "include",
-            });
-            const data = await res.json();
+            const data: any = await api.get(`/member/deposits?limit=${limit}&offset=${offset}`);
             if (data.success) {
                 setDeposits(data.deposits || []);
                 setTotal(data.total || 0);

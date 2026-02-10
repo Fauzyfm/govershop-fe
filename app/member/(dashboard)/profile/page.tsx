@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { User, Mail, Phone, AlertCircle, CheckCircle, Save } from "lucide-react";
+import api from "@/lib/api";
 
 interface Profile {
     id: number;
@@ -28,10 +29,7 @@ export default function MemberProfilePage() {
 
     const fetchProfile = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/profile`, {
-                credentials: "include",
-            });
-            const data = await res.json();
+            const data: any = await api.get("/member/profile");
             if (data.success && data.data) {
                 setProfile(data.data);
                 setFullName(data.data.full_name || "");
@@ -50,16 +48,10 @@ export default function MemberProfilePage() {
         setIsSaving(true);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/profile`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    full_name: fullName,
-                    whatsapp: whatsapp,
-                }),
+            const data: any = await api.put("/member/profile", {
+                full_name: fullName,
+                whatsapp: whatsapp,
             });
-            const data = await res.json();
             if (data.success) {
                 setMessage({ type: "success", text: data.message || "Profil berhasil diupdate" });
                 fetchProfile();

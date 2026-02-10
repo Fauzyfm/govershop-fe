@@ -15,6 +15,7 @@ import {
     CreditCard,
     Package
 } from "lucide-react";
+import api from "@/lib/api";
 
 interface MemberSidebarProps {
     isCollapsed: boolean;
@@ -30,10 +31,7 @@ export default function MemberSidebar({ isCollapsed, toggleSidebar }: MemberSide
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/member/profile`, {
-                    credentials: "include",
-                });
-                const json = await res.json();
+                const json: any = await api.get("/member/profile");
                 if (json.success && json.data) {
                     setBalance(json.data.balance);
                 }
