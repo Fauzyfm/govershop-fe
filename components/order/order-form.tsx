@@ -39,6 +39,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     // State
     const [customerNo, setCustomerNo] = useState("");
     const [zoneId, setZoneId] = useState(""); // Only for some games like ML
+    const [server, setServer] = useState(""); // For games with server list like Genshin Impact
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
 
@@ -69,8 +70,8 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
 
     // Build sanitized customer number
     const fullCustomerNo = useMemo(
-        () => buildCustomerNo(brand, customerNo, zoneId),
-        [brand, customerNo, zoneId]
+        () => buildCustomerNo(brand, customerNo, zoneId, server),
+        [brand, customerNo, zoneId, server]
     );
 
     // Build dynamic server tabs from products
@@ -205,8 +206,13 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     };
 
     const handlePreSubmit = () => {
-        if (!selectedSku || !selectedPayment || !customerNo || !phone) {
-            alert("Harap lengkapi formular (ID, Item, No HP, Pembayaran)");
+        // Validation check including server if needed
+        const isGameDataComplete = gameConfig.hasServerList
+            ? (customerNo && server)
+            : (customerNo);
+
+        if (!selectedSku || !selectedPayment || !isGameDataComplete || !phone) {
+            alert("Harap lengkapi semua data (ID, Server, Item, No HP, Pembayaran)");
             return;
         }
 
@@ -400,7 +406,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className={cn("space-y-2", gameConfig.hasZoneId ? "md:col-span-1" : "md:col-span-2")}>
+                        <div className={cn("space-y-2", (gameConfig.hasZoneId || gameConfig.hasServerList) ? "md:col-span-1" : "md:col-span-2")}>
                             <label className="text-xs text-muted-foreground font-medium">
                                 {gameConfig.userIdLabel || "User ID"}
                             </label>
@@ -424,6 +430,23 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                 label={gameConfig.zoneIdLabel}
                                 placeholder={gameConfig.zoneIdPlaceholder}
                             />
+                        )}
+                        {gameConfig.hasServerList && gameConfig.serverList && (
+                            <div className="space-y-2">
+                                <label className="text-xs text-muted-foreground font-medium">
+                                    {gameConfig.serverLabel || "Server"}
+                                </label>
+                                <select
+                                    value={server}
+                                    onChange={(e) => setServer(e.target.value)}
+                                    className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm appearance-none"
+                                >
+                                    <option value="" disabled>Pilih Server</option>
+                                    {gameConfig.serverList.map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </select>
+                            </div>
                         )}
                     </div>
 

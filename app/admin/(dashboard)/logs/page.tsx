@@ -86,22 +86,13 @@ export default function LogsPage() {
         setPage(1);
     };
 
-    // Format helpers
     const formatDate = (dateString: string) => {
         if (!dateString) return "-";
-        // Subtract 7 hours to fix double shifting (DB +7h + Frontend +7h)
         const date = new Date(dateString);
-        const fixedDate = new Date(date.getTime() - 7 * 60 * 60 * 1000);
 
-        return fixedDate.toLocaleString("id-ID", {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            timeZone: "UTC"
-        });
+        const pad = (n: number, w = 2) => n.toString().padStart(w, '0');
+
+        return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
     };
 
     const getDuration = (start: string, end?: string) => {

@@ -12,6 +12,11 @@ export interface GameInputConfig {
   zoneIdPlaceholder?: string;   // Placeholder input Zone ID
   userIdLabel?: string;         // Label untuk User ID (default: "User ID")
   userIdPlaceholder?: string;   // Placeholder input User ID
+  
+  // New: Server List Dropdown
+  hasServerList?: boolean;      // Apakah menggunakan dropdown server
+  serverLabel?: string;         // Label untuk dropdown server
+  serverList?: string[];        // List opsi server
 }
 
 /**
@@ -27,23 +32,15 @@ const GAME_CONFIGS: GameInputConfig[] = [
     userIdLabel: "User ID",
     userIdPlaceholder: "Masukkan User ID"
   },
-  // Contoh untuk game lain yang memerlukan Zone ID:
-  // {
-  //   brand: "GENSHIN IMPACT",
-  //   hasZoneId: true,
-  //   zoneIdLabel: "Server",
-  //   zoneIdPlaceholder: "Asia",
-  //   userIdLabel: "UID",
-  //   userIdPlaceholder: "Masukkan UID"
-  // },
-  // {
-  //   brand: "HONKAI STAR RAIL",
-  //   hasZoneId: true,
-  //   zoneIdLabel: "Server",
-  //   zoneIdPlaceholder: "Asia",
-  //   userIdLabel: "UID",
-  //   userIdPlaceholder: "Masukkan UID"
-  // },
+  {
+    brand: "GENSHIN IMPACT",
+    hasZoneId: false,
+    userIdLabel: "UID",
+    userIdPlaceholder: "Masukkan UID",
+    hasServerList: true,
+    serverLabel: "Server",
+    serverList: ["Asia", "America", "Europe", "TW, HK, MO"]
+  }
 ];
 
 /**
@@ -96,15 +93,20 @@ export function sanitizeZoneId(value: string): string {
  * @param brand - Nama brand game
  * @param userId - Raw User ID input
  * @param zoneId - Raw Zone ID input (optional)
+ * @param server - Selected Server (optional)
  * @returns Sanitized, combined Customer No
  */
-export function buildCustomerNo(brand: string, userId: string, zoneId?: string): string {
+export function buildCustomerNo(brand: string, userId: string, zoneId?: string, server?: string): string {
   const config = getGameConfig(brand);
   const cleanUserId = sanitizeUserId(userId);
   
   if (config.hasZoneId && zoneId) {
     const cleanZoneId = sanitizeZoneId(zoneId);
     return `${cleanUserId}${cleanZoneId}`;
+  }
+
+  if (config.hasServerList && server) {
+    return `${cleanUserId}|${server}`;
   }
   
   return cleanUserId;
