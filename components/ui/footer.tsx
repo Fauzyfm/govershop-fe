@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GovershopLogo } from "@/components/components/GovershopLogo";
+
 
 export default function Footer() {
     return (
@@ -12,7 +12,7 @@ export default function Footer() {
                     {/* Logo & Description */}
                     <div className="text-center md:text-left">
                         <Link href="/" className="inline-flex items-center gap-2 font-bold text-xl text-foreground mb-3 neon-glow hover:text-primary transition-colors">
-                            <GovershopLogo size="small" className="h-auto w-auto" />
+                            Govershop
                         </Link>
                         <p className="text-sm text-muted-foreground max-w-xs">
                             Platform Top Up Game Terpercaya dengan proses kilat dan harga termurah.
