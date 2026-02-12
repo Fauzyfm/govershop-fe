@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 
 export default function Footer() {
@@ -11,8 +12,15 @@ export default function Footer() {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                     {/* Logo & Description */}
                     <div className="text-center md:text-left">
-                        <Link href="/" className="inline-flex items-center gap-2 font-bold text-xl text-foreground mb-3 neon-glow hover:text-primary transition-colors">
-                            Govershop
+                        <Link href="/" className="inline-block mb-3">
+                            <div className="relative h-12 w-40 mx-auto md:mx-0">
+                                <Image
+                                    src="/Banner/logo-govershop.png"
+                                    alt="Govershop"
+                                    fill
+                                    className="object-contain object-left"
+                                />
+                            </div>
                         </Link>
                         <p className="text-sm text-muted-foreground max-w-xs">
                             Platform Top Up Game Terpercaya dengan proses kilat dan harga termurah.

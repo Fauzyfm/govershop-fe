@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
@@ -13,7 +14,15 @@ export default function Navbar() {
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight group">
-                    Govershop
+                    <div className="relative h-10 w-32"> {/* Adjust width as needed based on aspect ratio */}
+                        <Image
+                            src="/Banner/logo-govershop.png"
+                            alt="Govershop Logo"
+                            fill
+                            className="object-contain object-left"
+                            priority
+                        />
+                    </div>
                 </Link>
 
                 {/* Desktop Menu */}

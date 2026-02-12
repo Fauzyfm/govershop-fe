@@ -8,6 +8,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Govershop - Top Up Games Termurah",
   description: "Top up game favoritmu dengan harga termurah dan proses instan.",
+  icons: {
+    icon: "/Banner/logo-govershop.png",
+    shortcut: "/Banner/logo-govershop.png",
+    apple: "/Banner/logo-govershop.png",
+  },
 };
 
 export default function RootLayout({

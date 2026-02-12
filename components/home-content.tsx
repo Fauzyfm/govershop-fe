@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import GameCard from "@/components/game-card";
 import SearchInput from "@/components/ui/search-input";
 
@@ -255,10 +256,16 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
 
             {/* Hero / Search Section */}
             <section className="flex flex-col items-center justify-center py-8 space-y-6 text-center">
-                <div className="space-y-2">
-                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-linear-to-br from-white via-primary to-accent bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(230,80,27,0.5)]">
-                        Govershop
-                    </h1>
+                <div className="space-y-4 flex flex-col items-center">
+                    <div className="relative w-64 h-24 md:w-80 md:h-32">
+                        <Image
+                            src="/Banner/logo-govershop.png"
+                            alt="Govershop"
+                            fill
+                            className="object-contain drop-shadow-[0_0_15px_rgba(230,80,27,0.5)]"
+                            priority
+                        />
+                    </div>
                     <p className="text-muted-foreground/80 max-w-lg mx-auto font-medium">
                         Top up games favoritmu dengan harga termurah, proses instan, dan terpercaya 100%.
                     </p>
