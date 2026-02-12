@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { GovershopLogo } from "@/components/components/GovershopLogo";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -12,9 +13,7 @@ export default function Navbar() {
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight group">
-                    <span className="text-foreground neon-glow group-hover:text-primary transition-colors text-2xl">
-                        GOVERSHOP
-                    </span>
+                    <GovershopLogo size="small" className="h-24 md:h-auto w-auto" />
                 </Link>
 
                 {/* Desktop Menu */}

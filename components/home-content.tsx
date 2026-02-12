@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import GameCard from "@/components/game-card";
 import SearchInput from "@/components/ui/search-input";
+import { GovershopLogo } from "@/components/components/GovershopLogo";
 import { Brand, BrandPublicData, CarouselItem, PopupItem } from "@/types/api";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";

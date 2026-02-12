@@ -45,6 +45,15 @@ export default function AdminDashboard() {
         }).format(amount);
     };
 
+    const formatDate = (dateString: string) => {
+        if (!dateString) return "-";
+        const date = new Date(dateString);
+
+        const pad = (n: number, w = 2) => n.toString().padStart(w, '0');
+
+        return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
+    };
+
     return (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -169,9 +178,7 @@ export default function AdminDashboard() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>
                             <p className="text-2xl font-bold text-white mb-1 font-mono">
-                                {data.last_sync?.completed_at
-                                    ? new Date(new Date(data.last_sync.completed_at).getTime() - 7 * 60 * 60 * 1000).toLocaleString('id-ID', { timeZone: 'UTC' })
-                                    : "-"}
+                                {formatDate(data.last_sync?.completed_at)}
                             </p>
                             <p className="text-sm text-white/50">
                                 {data.last_sync?.total_items || 0} produk diproses
