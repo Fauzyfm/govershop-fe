@@ -50,7 +50,6 @@
     "next": "16.1.4",
     "next-themes": "^0.4.6",
     "react": "19.2.3",
-    "react-day-picker": "^8.10.1",
     "react-dom": "19.2.3",
     "react-qr-code": "^2.0.18",
     "react-resizable-panels": "^4.6.2",
