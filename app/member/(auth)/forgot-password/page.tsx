@@ -31,7 +31,7 @@ export default function ForgotPassword() {
             <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-(--primary) via-(--accent) to-(--secondary)" />
 
             <div className="text-center mb-10">
-                <Link href="/member/login" className="inline-flex items-center gap-2 text-(--muted-foreground) hover:text-(--foreground) transition-colors mb-6 text-sm bg-(--card)/50 py-1.5 px-3 rounded-full hover:bg-(--card) border border-(--border)/30">
+                <Link href="/auth/login" className="inline-flex items-center gap-2 text-(--muted-foreground) hover:text-(--foreground) transition-colors mb-6 text-sm bg-(--card)/50 py-1.5 px-3 rounded-full hover:bg-(--card) border border-(--border)/30">
                     <ArrowLeft className="w-3.5 h-3.5" />
                     Kembali ke Login
                 </Link>
@@ -59,7 +59,7 @@ export default function ForgotPassword() {
                         <p className="text-sm text-(--muted-foreground)">{message}</p>
                     </div>
                     <Link
-                        href="/member/login"
+                        href="/auth/login"
                         className="block w-full arcade-btn text-center"
                     >
                         Kembali Login

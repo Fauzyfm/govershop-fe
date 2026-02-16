@@ -190,7 +190,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
 
             {/* Carousel logic ... */}
             {carousel.length > 0 && (
-                <section className="relative -mx-4! -mt-8! md:mx-0! md:mt-0! rounded-none! md:rounded-2xl! overflow-hidden arcade-card">
+                <section className="relative -mx-4! -mt-8! md:mx-0! md:mt-0! rounded-          md:rounded-2xl! overflow-hidden arcade-card">
                     <div className="relative aspect-video md:aspect-3/1">
                         {carousel.map((item, index) => (
                             <div
