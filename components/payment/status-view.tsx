@@ -275,10 +275,18 @@ export default function StatusView({ orderId }: StatusViewProps) {
                         </div>
 
                         {/* QR Code for QRIS */}
-                        {payment.qr_string && (
+                        {(payment.qr_image_url || payment.qr_string) && (
                             <div className="flex flex-col items-center space-y-4">
                                 <div className="bg-white p-4 rounded-xl">
-                                    <QRCode value={payment.qr_string} size={200} />
+                                    {payment.qr_image_url ? (
+                                        <img
+                                            src={payment.qr_image_url}
+                                            alt="QRIS Code"
+                                            className="w-[200px] h-[200px] object-contain"
+                                        />
+                                    ) : (
+                                        <QRCode value={payment.qr_string || ""} size={200} />
+                                    )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     Scan QR code dengan aplikasi e-wallet atau mobile banking

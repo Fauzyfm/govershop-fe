@@ -82,9 +82,9 @@ const PAYMENT_CATEGORIES: PaymentCategory[] = [
     },
 ];
 
-// Get fee display based on Pakasir pricing
+// Get fee display based on payment gateway
 function getFeeDisplay(code: string): string {
-    if (code.includes('qris')) return "0.7% + Rp 310";
+    if (code.includes('qris')) return "Gratis ✨";
     if (code.includes('paypal')) return "1% (min Rp 3.000)";
     if (code.includes('artha') || code.includes('sampoerna')) return "Rp 2.000";
     if (code.includes('_va')) return "Rp 3.500";

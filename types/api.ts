@@ -93,6 +93,7 @@ export interface PaymentInfo {
   payment_method: string;
   payment_number: string;
   qr_string?: string;
+  qr_image_url?: string;
   va_number?: string;
   amount: number;
   fee: number;
