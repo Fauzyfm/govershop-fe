@@ -10,7 +10,7 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <nav className="sticky top-0 z-50 w-full glass border-b border-primary/20 backdrop-blur-md">
+        <nav className="sticky top-0 z-50 w-full glass border-b border-primary/20 backdrop-blur-md" aria-label="Navigasi utama">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight group">
@@ -21,6 +21,7 @@ export default function Navbar() {
                             fill
                             className="object-contain object-left"
                             priority
+                            sizes="128px"
                         />
                     </div>
                 </Link>
@@ -42,6 +43,8 @@ export default function Navbar() {
                 <button
                     className="md:hidden p-2 text-foreground hover:bg-white/5 rounded-lg transition-colors"
                     onClick={() => setIsOpen(!isOpen)}
+                    aria-label={isOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+                    aria-expanded={isOpen}
                 >
                     {isOpen ? <X className="w-6 h-6 text-primary" /> : <Menu className="w-6 h-6 text-primary" />}
                 </button>

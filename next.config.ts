@@ -4,6 +4,22 @@ import type { NextConfig } from "next";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://govershop-govershop-be.lzfki7.easypanel.host';
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+    ],
+  },
   async rewrites() {
     return [
       {
@@ -15,3 +31,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

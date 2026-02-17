@@ -1,6 +1,23 @@
+import type { Metadata } from "next";
 import api from "@/lib/api";
 import { APIResponse, Product, PaymentMethod } from "@/types/api";
 import OrderPageClient from "@/components/order/order-page-client";
+
+export async function generateMetadata({ params }: OrderPageProps): Promise<Metadata> {
+    const resolvedParams = await params;
+    const brand = decodeURIComponent(resolvedParams.brand);
+    return {
+        title: `Top Up ${brand} — Harga Termurah & Proses Instan`,
+        description: `Top up ${brand} di Govershop dengan harga termurah dan proses instan. Pembayaran mudah via QRIS, transfer bank, dan lainnya. Aman dan terpercaya!`,
+        openGraph: {
+            title: `Top Up ${brand} | Govershop`,
+            description: `Top up ${brand} murah dan cepat di Govershop. Proses otomatis, harga bersaing.`,
+        },
+        alternates: {
+            canonical: `/order/${encodeURIComponent(brand)}`,
+        },
+    };
+}
 
 // Helper to fetch products for a brand
 async function getProducts(brand: string) {

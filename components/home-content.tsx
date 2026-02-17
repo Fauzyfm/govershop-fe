@@ -165,17 +165,25 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                         </button>
                         {popup.link_url ? (
                             <a href={popup.link_url} onClick={closePopup}>
-                                <img
+                                <Image
                                     src={popup.image_url}
-                                    alt={popup.title || "Promo"}
-                                    className="w-full"
+                                    alt={popup.title || "Promo Govershop"}
+                                    width={600}
+                                    height={400}
+                                    className="w-full h-auto"
+                                    sizes="(max-width: 448px) 100vw, 448px"
+                                    unoptimized={!popup.image_url?.startsWith('/')}
                                 />
                             </a>
                         ) : (
-                            <img
+                            <Image
                                 src={popup.image_url}
-                                alt={popup.title || "Promo"}
-                                className="w-full"
+                                alt={popup.title || "Promo Govershop"}
+                                width={600}
+                                height={400}
+                                className="w-full h-auto"
+                                sizes="(max-width: 448px) 100vw, 448px"
+                                unoptimized={!popup.image_url?.startsWith('/')}
                             />
                         )}
                         {(popup.title || popup.description) && (
@@ -200,17 +208,25 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                             >
                                 {item.link_url ? (
                                     <a href={item.link_url} className="block w-full h-full">
-                                        <img
+                                        <Image
                                             src={item.image_url}
-                                            alt={item.title || `Slide ${index + 1}`}
-                                            className="w-full h-full object-cover"
+                                            alt={item.title || `Banner promo Govershop slide ${index + 1}`}
+                                            fill
+                                            className="object-cover"
+                                            sizes="(max-width: 768px) 100vw, 1152px"
+                                            priority={index === 0}
+                                            unoptimized={!item.image_url?.startsWith('/')}
                                         />
                                     </a>
                                 ) : (
-                                    <img
+                                    <Image
                                         src={item.image_url}
-                                        alt={item.title || `Slide ${index + 1}`}
-                                        className="w-full h-full object-cover"
+                                        alt={item.title || `Banner promo Govershop slide ${index + 1}`}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 768px) 100vw, 1152px"
+                                        priority={index === 0}
+                                        unoptimized={!item.image_url?.startsWith('/')}
                                     />
                                 )}
                                 {item.title && (
@@ -257,10 +273,11 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             {/* Hero / Search Section */}
             <section className="flex flex-col items-center justify-center py-8 space-y-6 text-center">
                 <div className="space-y-4 flex flex-col items-center">
+                    <h1 className="sr-only">Govershop — Top Up Game Termurah dan Terpercaya</h1>
                     <div className="relative w-64 h-24 md:w-80 md:h-32">
                         <Image
                             src="/Banner/logo-govershop.png"
-                            alt="Govershop"
+                            alt="Govershop — Platform Top Up Game"
                             fill
                             className="object-contain drop-shadow-[0_0_15px_rgba(230,80,27,0.5)]"
                             priority

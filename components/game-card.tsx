@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import PageLoading from "@/components/ui/page-loading";
 
@@ -20,6 +21,10 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
     const isMaintenance = status === 'maintenance';
     const isDisabled = isComingSoon || isMaintenance;
 
+    // External URLs often block Next.js image optimization proxy (403/400 errors)
+    // Only optimize local images (starting with /)
+    const isUnoptimized = !image?.startsWith('/');
+
     const handleClick = (e: React.MouseEvent) => {
         if (isDisabled) return;
         e.preventDefault();
@@ -37,11 +42,14 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
 
             {/* Image */}
             <div className="absolute inset-0">
-                <img
+                <Image
                     src={image}
-                    alt={name}
-                    className={`w-full h-full object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110 group-hover:rotate-1"}`}
+                    alt={`Top Up ${name} — Govershop`}
+                    fill
+                    className={`object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110 group-hover:rotate-1"}`}
                     loading="lazy"
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
+                    unoptimized={isUnoptimized}
                 />
 
                 {/* Gradient Overlay */}

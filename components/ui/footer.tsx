@@ -9,10 +9,10 @@ export default function Footer() {
             <div className="absolute inset-0 bg-linear-to-t from-primary/10 to-transparent pointer-events-none" />
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
                     {/* Logo & Description */}
                     <div className="text-center md:text-left">
-                        <Link href="/" className="inline-block mb-3">
+                        <Link href="/" className="inline-block mb-3" aria-label="Govershop Beranda">
                             <div className="relative h-12 w-40 mx-auto md:mx-0">
                                 <Image
                                     src="/Banner/logo-govershop.png"
@@ -27,25 +27,58 @@ export default function Footer() {
                         </p>
                     </div>
 
-                    {/* Quick Links */}
-                    <div className="flex gap-8 text-sm font-medium">
-                        <Link href="/" className="text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_8px_rgba(195,17,12,0.4)]">
-                            Beranda
-                        </Link>
-                        <Link href="/track" className="text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_8px_rgba(195,17,12,0.4)]">
-                            Lacak Pesanan
-                        </Link>
-                        <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_8px_rgba(195,17,12,0.4)]">
-                            Terms & Conditions
-                        </Link>
-                    </div>
+                    {/* Navigasi */}
+                    <nav aria-label="Navigasi utama footer">
+                        <h3 className="text-sm font-bold text-foreground mb-4">Navigasi</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li>
+                                <Link href="/" className="text-muted-foreground hover:text-primary transition-colors">
+                                    Beranda Top Up Game
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/track" className="text-muted-foreground hover:text-primary transition-colors">
+                                    Lacak Pesanan Top Up
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    {/* Bantuan */}
+                    <nav aria-label="Tautan bantuan footer">
+                        <h3 className="text-sm font-bold text-foreground mb-4">Bantuan</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li>
+                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                                    Syarat & Ketentuan Govershop
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                                    Kebijakan Privasi
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                                    FAQ — Pertanyaan Umum
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                                    Hubungi Kami
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
 
                 {/* Copyright */}
                 <div className="mt-10 pt-6 border-t border-white/5 text-center flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground/60">
                     <p>&copy; {new Date().getFullYear()} Govershop. All rights reserved.</p>
+                    <p>Platform Top Up Game #1 di Indonesia</p>
                 </div>
             </div>
         </footer>
     );
 }
+

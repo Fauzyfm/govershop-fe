@@ -90,6 +90,8 @@
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 1) 100%);
   animation: grid-movement 3s linear infinite;
   box-shadow: inset 0 0 100px var(--background);
+  will-change: transform;
+  contain: layout style paint;
 }
 
 .horizon-glow {
@@ -111,6 +113,8 @@
   background-size: 50px 50px;
   opacity: 0.2;
   animation: grid-movement 10s linear infinite reverse;
+  will-change: transform;
+  contain: layout style paint;
 }
 
 /* Glassmorphism - Red/Fire Tint */
