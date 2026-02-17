@@ -84,7 +84,7 @@ const PAYMENT_CATEGORIES: PaymentCategory[] = [
 
 // Get fee display based on payment gateway
 function getFeeDisplay(code: string): string {
-    if (code.includes('qris')) return "Gratis ✨";
+    if (code.includes('qris')) return "0";
     if (code.includes('paypal')) return "1% (min Rp 3.000)";
     if (code.includes('artha') || code.includes('sampoerna')) return "Rp 2.000";
     if (code.includes('_va')) return "Rp 3.500";
@@ -152,7 +152,7 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                     <div
                         key={category.id}
                         className={cn(
-                            "rounded-xl border overflow-hidden transition-all",
+                            "rounded-xl border relative transition-all",
                             isDisabled
                                 ? "border-white/5 bg-secondary/20 opacity-60"
                                 : hasSelection
@@ -160,12 +160,23 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                                     : "border-white/10 bg-secondary/30"
                         )}
                     >
+                        {category.id === "qris" && (
+                            <div className="absolute -top-3 -left-3 z-20 pointer-events-none">
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                </span>
+                                <div className="absolute top-0 left-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-br-lg rounded-tl-lg shadow-lg translate-y-[2px] translate-x-[2px]">
+                                    TERMURAH
+                                </div>
+                            </div>
+                        )}
                         {/* Category Header (Dropdown Toggle) */}
                         <button
                             onClick={() => !isDisabled && toggleCategory(category.id)}
                             disabled={isDisabled}
                             className={cn(
-                                "w-full flex items-center justify-between p-4 transition-colors",
+                                "w-full flex items-center justify-between p-4 transition-colors rounded-xl",
                                 isDisabled
                                     ? "cursor-not-allowed"
                                     : "hover:bg-white/5"
@@ -183,6 +194,7 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                                 <div className="text-left">
                                     <h4 className="font-semibold flex items-center gap-2">
                                         {category.name}
+
                                         {hasSelection && (
                                             <span className="text-xs font-normal text-primary bg-primary/20 px-2 py-0.5 rounded-full">
                                                 {selectedName}
@@ -255,7 +267,14 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
 
                                                     {/* Payment Info */}
                                                     <div className="flex-1 text-left">
-                                                        <h5 className="font-medium text-sm">{method.name}</h5>
+                                                        <h5 className="font-medium text-sm flex items-center gap-2">
+                                                            {method.name}
+                                                            {method.code.includes("qris") && (
+                                                                <span className="text-[10px] font-bold bg-yellow-500 text-black px-1.5 py-0.5 rounded-br-lg rounded-tl-lg shadow-sm">
+                                                                    TERMURAH
+                                                                </span>
+                                                            )}
+                                                        </h5>
                                                         {getFeeDisplay(method.code) && (
                                                             <span className="text-xs text-muted-foreground">
                                                                 Fee: <span className="text-primary/80">{getFeeDisplay(method.code)}</span>
