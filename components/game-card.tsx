@@ -72,7 +72,7 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
 
             {/* Content */}
             <div className="absolute inset-x-0 bottom-0 p-4 z-20">
-                <h3 className="text-foreground font-bold text-lg md:text-xl truncate drop-shadow-lg group-hover:text-white transition-colors">
+                <h3 className="text-foreground font-bold text-lg md:text-xl drop-shadow-lg group-hover:text-white transition-colors">
                     {name}
                 </h3>
 

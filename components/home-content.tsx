@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import GameCard from "@/components/game-card";
 import SearchInput from "@/components/ui/search-input";
+import LayeredCarousel from "@/components/ui/layered-carousel";
 
 import { Brand, BrandPublicData, CarouselItem, PopupItem } from "@/types/api";
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Types
@@ -25,14 +26,18 @@ interface HomeContentProps {
 export default function HomeContent({ categoryData, carousel = [], brandImages = {}, popup }: HomeContentProps) {
     const [search, setSearch] = useState("");
     const [categoryLimits, setCategoryLimits] = useState<Record<string, number>>({});
-    const [currentSlide, setCurrentSlide] = useState(0);
     const [showPopup, setShowPopup] = useState(false);
     const [isPopupClosing, setIsPopupClosing] = useState(false);
+    const [activeTab, setActiveTab] = useState<string>("");
+    const [seoExpanded, setSeoExpanded] = useState(false);
 
-    const INITIAL_LIMIT = 5; // Desktop: 1 row, Mobile: 2.5 rows (trigger Load More for 7 items)
-    const LOAD_MORE_STEP = 10; // Divisible by 2, 5. Good balance.
+    const tabsRef = useRef<HTMLDivElement>(null);
+    const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+    const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+    const isScrollingToSection = useRef(false);
 
-    // ... (useEffect for popup and carousel remain same)
+    const INITIAL_LIMIT = 5;
+    const LOAD_MORE_STEP = 10;
 
     // Check if popup should be shown (once per session)
     useEffect(() => {
@@ -44,17 +49,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         }
     }, [popup]);
 
-    // Auto-slide carousel
-    useEffect(() => {
-        if (carousel.length <= 1) return;
-        const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % carousel.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, [carousel.length]);
-
     const closePopup = () => {
-        // ... (remains same)
         setIsPopupClosing(true);
         setTimeout(() => {
             if (popup) {
@@ -86,14 +81,10 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         return getBrandMeta(brand)?.status || 'active';
     };
 
-    // Check if brand is visible (default to true if not in brandImages)
     const isBrandVisible = (brand: Brand | string) => {
         const meta = getBrandMeta(brand);
-        // If brand has meta data, check is_visible; otherwise default to true
         return meta?.is_visible !== false;
     };
-
-    // ... (loadMore, showLess remain same)
 
     const loadMore = (category: string) => {
         setCategoryLimits(prev => ({
@@ -114,9 +105,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         ...catData,
         brands: catData.brands.filter((brand) => {
             const name = getBrandName(brand);
-            // Check visibility first
             if (!isBrandVisible(brand)) return false;
-            // Then check search
             return name?.toLowerCase().includes(search.toLowerCase());
         })
     })).filter(catData => catData.brands.length > 0);
@@ -131,17 +120,90 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             .map(b => getBrandName(b))
     ));
 
-    // Convert back to Brand objects (finding first occurrence)
     const bestSellerItems = bestSellerBrands.map(name => {
         return categoryData.flatMap(c => c.brands).find(b => getBrandName(b) === name)!;
     });
 
-    const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % carousel.length);
-    const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + carousel.length) % carousel.length);
+    // Build sorted tab list: Populer first, then alphabetical categories
+    const tabList: { id: string; label: string }[] = [];
+    if (bestSellerItems.length > 0) {
+        tabList.push({ id: "section-populer", label: "Populer" });
+    }
+    // Sort categories: "Games" first (if exists), then alphabetically
+    const sortedCategories = [...filteredCategoryData].sort((a, b) => {
+        if (a.category.toLowerCase() === "games") return -1;
+        if (b.category.toLowerCase() === "games") return 1;
+        return a.category.localeCompare(b.category);
+    });
+    sortedCategories.forEach(cat => {
+        tabList.push({ id: `section-${cat.category.toLowerCase().replace(/\s+/g, '-')}`, label: cat.category });
+    });
+
+    // Set initial active tab
+    useEffect(() => {
+        if (tabList.length > 0 && !activeTab) {
+            setActiveTab(tabList[0].id);
+        }
+    }, [tabList.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Scroll-spy: observe sections to highlight active tab
+    useEffect(() => {
+        if (search) return; // Don't scroll-spy when searching
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (isScrollingToSection.current) return;
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setActiveTab(entry.target.id);
+                    }
+                });
+            },
+            {
+                rootMargin: "-80px 0px -60% 0px",
+                threshold: 0.1,
+            }
+        );
+
+        // Observe all section elements
+        const currentRefs = sectionRefs.current;
+        Object.values(currentRefs).forEach((el) => {
+            if (el) observer.observe(el);
+        });
+
+        return () => {
+            Object.values(currentRefs).forEach((el) => {
+                if (el) observer.unobserve(el);
+            });
+        };
+    }, [search, filteredCategoryData.length, bestSellerItems.length]);
+
+    // Auto-scroll the tab bar to keep active tab visible
+    useEffect(() => {
+        const btn = tabButtonRefs.current[activeTab];
+        if (btn) {
+            btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        }
+    }, [activeTab]);
+
+    // Handle tab click: smooth scroll to section
+    const handleTabClick = useCallback((sectionId: string) => {
+        setActiveTab(sectionId);
+        const el = document.getElementById(sectionId);
+        if (el) {
+            isScrollingToSection.current = true;
+            const offset = 128; // Navbar (64px) + sticky tabs bar (~64px)
+            const top = el.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top, behavior: "smooth" });
+            // Re-enable scroll spy after scroll settles
+            setTimeout(() => {
+                isScrollingToSection.current = false;
+            }, 800);
+        }
+    }, []);
 
     return (
         <div className="space-y-8 max-w-6xl mx-auto text-left">
-            {/* ... (Popup and Carousel remain same) */}
             {/* Popup */}
             {showPopup && popup && (
                 <div
@@ -156,7 +218,6 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                             }`}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* ... popup content */}
                         <button
                             onClick={closePopup}
                             className="absolute top-3 right-3 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
@@ -196,85 +257,18 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 </div>
             )}
 
-            {/* Carousel logic ... */}
+            {/* Carousel */}
             {carousel.length > 0 && (
-                <section className="relative -mx-4! -mt-8! md:mx-0! md:mt-0! rounded-          md:rounded-2xl! overflow-hidden arcade-card">
-                    <div className="relative aspect-video md:aspect-3/1">
-                        {carousel.map((item, index) => (
-                            <div
-                                key={item.id}
-                                className={`absolute inset-0 transition-opacity duration-500 ${index === currentSlide ? "opacity-100" : "opacity-0 pointer-events-none"
-                                    }`}
-                            >
-                                {item.link_url ? (
-                                    <a href={item.link_url} className="block w-full h-full">
-                                        <Image
-                                            src={item.image_url}
-                                            alt={item.title || `Banner promo Govershop slide ${index + 1}`}
-                                            fill
-                                            className="object-cover"
-                                            sizes="(max-width: 768px) 100vw, 1152px"
-                                            priority={index === 0}
-                                            unoptimized={!item.image_url?.startsWith('/')}
-                                        />
-                                    </a>
-                                ) : (
-                                    <Image
-                                        src={item.image_url}
-                                        alt={item.title || `Banner promo Govershop slide ${index + 1}`}
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 768px) 100vw, 1152px"
-                                        priority={index === 0}
-                                        unoptimized={!item.image_url?.startsWith('/')}
-                                    />
-                                )}
-                                {item.title && (
-                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-background/90 to-transparent">
-                                        <h3 className="text-lg md:text-xl font-bold text-foreground">{item.title}</h3>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Carousel Controls */}
-                    {carousel.length > 1 && (
-                        <>
-                            <button
-                                onClick={prevSlide}
-                                className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <button
-                                onClick={nextSlide}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
-
-                            {/* Dots */}
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
-                                {carousel.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setCurrentSlide(index)}
-                                        className={`w-2 h-2 rounded-full transition-colors ${index === currentSlide ? "bg-white" : "bg-white/40"
-                                            }`}
-                                    />
-                                ))}
-                            </div>
-                        </>
-                    )}
+                <section className="-mx-4 md:mx-0">
+                    <LayeredCarousel items={carousel} />
                 </section>
             )}
 
             {/* Hero / Search Section */}
-            <section className="flex flex-col items-center justify-center py-8 space-y-6 text-center">
+            <section className="flex flex-col items-center justify-center space-y-6 text-center">
                 <div className="space-y-4 flex flex-col items-center">
                     <h1 className="sr-only">Govershop — Top Up Game Termurah dan Terpercaya</h1>
-                    <div className="relative w-64 h-24 md:w-80 md:h-32">
+                    {/* <div className="relative w-64 h-24 md:w-80 md:h-32">
                         <Image
                             src="/Banner/logo-govershop.png"
                             alt="Govershop — Platform Top Up Game"
@@ -282,7 +276,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                             className="object-contain drop-shadow-[0_0_15px_rgba(230,80,27,0.5)]"
                             priority
                         />
-                    </div>
+                    </div> */}
                     <p className="text-muted-foreground/80 max-w-lg mx-auto font-medium">
                         Top up games favoritmu dengan harga termurah, proses instan, dan terpercaya 100%.
                     </p>
@@ -291,42 +285,31 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 <SearchInput value={search} onChange={setSearch} />
             </section>
 
-            {/* Best Seller Section (Only when not searching) */}
-            {!search && bestSellerItems.length > 0 && (
-                <section className="w-full animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards">
-                    <div className="flex items-center gap-3 mb-8 px-1">
-                        <div className="w-1.5 h-8 bg-linear-to-b from-primary to-accent rounded-full glow-pulse shadow-[0_0_20px_rgba(230,80,27,0.8)]" />
-                        <h2 className="text-2xl font-bold text-white tracking-tight neon-glow">
-                            Paling Laris
-                        </h2>
+            {/* Sticky Category Tabs (only when not searching) */}
+            {!search && tabList.length > 0 && (
+                <div
+                    ref={tabsRef}
+                    className="sticky top-16 z-30 -mx-4 px-4 md:mx-0 md:px-0 py-3 bg-background/80 backdrop-blur-xl border-b border-white/5 rounded-full"
+                >
+                    <div className="flex gap-2 overflow-x-auto scrollbar-none max-w-6xl mx-4">
+                        {tabList.map((tab) => (
+                            <button
+                                key={tab.id}
+                                ref={(el) => { tabButtonRefs.current[tab.id] = el; }}
+                                onClick={() => handleTabClick(tab.id)}
+                                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shrink-0 ${activeTab === tab.id
+                                    ? "bg-primary text-white shadow-[0_0_15px_rgba(230,80,27,0.4)]"
+                                    : "bg-secondary/50 text-muted-foreground hover:bg-white/10 hover:text-white border border-white/5"
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
-                        {bestSellerItems.map((brand, idx) => {
-                            const name = getBrandName(brand);
-                            const image = getBrandImage(brand);
-                            const status = getBrandStatus(brand);
-                            return (
-                                <motion.div
-                                    key={`bestseller-${name}`}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                >
-                                    <GameCard
-                                        name={name}
-                                        href={`/order/${encodeURIComponent(name)}`}
-                                        image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
-                                        status={status}
-                                    />
-                                </motion.div>
-                            );
-                        })}
-                    </div>
-                </section>
+                </div>
             )}
 
-            {/* Category Sections */}
+            {/* Category Content */}
             {search ? (
                 // When searching, show flat results
                 <section>
@@ -365,104 +348,262 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                     )}
                 </section>
             ) : (
-                // Normal view: show by category
-                filteredCategoryData.map((catData, categoryIdx) => {
-                    const limit = categoryLimits[catData.category] || INITIAL_LIMIT;
-                    const visibleBrands = catData.brands.slice(0, limit);
-                    const hasMore = catData.brands.length > limit;
-                    const isExpanded = limit > INITIAL_LIMIT;
-
-                    return (
+                <>
+                    {/* Best Seller Section */}
+                    {bestSellerItems.length > 0 && (
                         <section
-                            key={catData.category}
-                            className={`w-full`}
+                            id="section-populer"
+                            ref={(el) => { sectionRefs.current["section-populer"] = el; }}
+                            className="w-full rounded-2xl scroll-mt-32 animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards"
                         >
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: categoryIdx * 0.1, duration: 0.5 }}
-                                className="flex items-center justify-between mb-8 px-1"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-8 bg-linear-to-b from-primary to-accent rounded-full glow-pulse shadow-[0_0_15px_rgba(195,17,12,0.6)]" />
-                                    <h2 className="text-2xl font-bold text-white tracking-tight neon-glow">
-                                        {catData.category}
-                                    </h2>
-                                </div>
-                                <span className="text-xs md:text-sm font-medium px-3 py-1 rounded-full bg-secondary/50 border border-white/5 text-muted-foreground backdrop-blur-sm">
-                                    {catData.brands.length} Produk
-                                </span>
-                            </motion.div>
+                            <div className="flex items-center gap-3 mb-8 px-1">
+                                <div className="w-1.5 h-8 bg-linear-to-b from-primary to-accent rounded-full glow-pulse shadow-[0_0_20px_rgba(230,80,27,0.8)]" />
+                                <h2 className="text-2xl font-bold text-white tracking-tight neon-glow">
+                                    Paling Laris
+                                </h2>
+                            </div>
 
-                            <motion.div
-                                layout
-                                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+                                {bestSellerItems.map((brand, idx) => {
+                                    const name = getBrandName(brand);
+                                    const image = getBrandImage(brand);
+                                    const status = getBrandStatus(brand);
+                                    return (
+                                        <motion.div
+                                            key={`bestseller-${name}`}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: idx * 0.05 }}
+                                        >
+                                            <GameCard
+                                                name={name}
+                                                href={`/order/${encodeURIComponent(name)}`}
+                                                image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
+                                                status={status}
+                                            />
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Category Sections (sorted: Games first, then alphabetical) */}
+                    {sortedCategories.map((catData, categoryIdx) => {
+                        const limit = categoryLimits[catData.category] || INITIAL_LIMIT;
+                        const visibleBrands = catData.brands.slice(0, limit);
+                        const hasMore = catData.brands.length > limit;
+                        const isExpanded = limit > INITIAL_LIMIT;
+                        const sectionId = `section-${catData.category.toLowerCase().replace(/\s+/g, '-')}`;
+
+                        return (
+                            <section
+                                key={catData.category}
+                                id={sectionId}
+                                ref={(el) => { sectionRefs.current[sectionId] = el; }}
+                                className="w-full scroll-mt-16"
                             >
-                                <AnimatePresence mode="popLayout">
-                                    {visibleBrands.map((brand, idx) => {
-                                        const name = getBrandName(brand);
-                                        const image = getBrandImage(brand);
-                                        const status = getBrandStatus(brand);
-                                        return (
-                                            <motion.div
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: categoryIdx * 0.1, duration: 0.5 }}
+                                    className="flex items-center justify-between mb-8 px-1"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-8 bg-linear-to-b from-primary to-accent rounded-full glow-pulse shadow-[0_0_15px_rgba(195,17,12,0.6)]" />
+                                        <h2 className="text-2xl font-bold text-white tracking-tight neon-glow">
+                                            {catData.category}
+                                        </h2>
+                                    </div>
+                                    <span className="text-xs md:text-sm font-medium px-3 py-1 rounded-full bg-secondary/50 border border-white/5 text-muted-foreground backdrop-blur-sm">
+                                        {catData.brands.length} Produk
+                                    </span>
+                                </motion.div>
+
+                                <motion.div
+                                    layout
+                                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"
+                                >
+                                    <AnimatePresence mode="popLayout">
+                                        {visibleBrands.map((brand, idx) => {
+                                            const name = getBrandName(brand);
+                                            const image = getBrandImage(brand);
+                                            const status = getBrandStatus(brand);
+                                            return (
+                                                <motion.div
+                                                    layout
+                                                    key={`${catData.category}-${name}`}
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.8 }}
+                                                    transition={{ duration: 0.3 }}
+                                                >
+                                                    <GameCard
+                                                        name={name}
+                                                        href={`/order/${encodeURIComponent(name)}`}
+                                                        image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
+                                                        status={status}
+                                                    />
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </AnimatePresence>
+                                </motion.div>
+
+                                <div className="mt-10 flex justify-center gap-6">
+                                    <AnimatePresence>
+                                        {hasMore && (
+                                            <motion.button
                                                 layout
-                                                key={`${catData.category}-${name}`}
                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.8 }}
-                                                transition={{ duration: 0.3 }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => loadMore(catData.category)}
+                                                className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:shadow-primary/20 group overflow-hidden"
+                                                title="Load More"
                                             >
-                                                <GameCard
-                                                    name={name}
-                                                    href={`/order/${encodeURIComponent(name)}`}
-                                                    image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
-                                                    status={status}
-                                                />
-                                            </motion.div>
-                                        );
-                                    })}
-                                </AnimatePresence>
-                            </motion.div>
+                                                <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <ChevronDown className="w-6 h-6 text-primary group-hover:translate-y-0.5 transition-transform" />
+                                            </motion.button>
+                                        )}
 
-                            <div className="mt-10 flex justify-center gap-6">
-                                <AnimatePresence>
-                                    {hasMore && (
-                                        <motion.button
-                                            layout
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.8 }}
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => loadMore(catData.category)}
-                                            className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:shadow-primary/20 group overflow-hidden"
-                                            title="Load More"
-                                        >
-                                            <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            <ChevronDown className="w-6 h-6 text-primary group-hover:translate-y-0.5 transition-transform" />
-                                        </motion.button>
-                                    )}
+                                        {isExpanded && (
+                                            <motion.button
+                                                layout
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => showLess(catData.category)}
+                                                className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:bg-white/5 group"
+                                                title="Show Less"
+                                            >
+                                                <ChevronUp className="w-6 h-6 text-muted-foreground group-hover:text-white transition-colors" />
+                                            </motion.button>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </section>
+                        );
+                    })}
+                </>
+            )}
 
-                                    {isExpanded && (
-                                        <motion.button
-                                            layout
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.8 }}
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => showLess(catData.category)}
-                                            className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:bg-white/5 group"
-                                            title="Show Less"
-                                        >
-                                            <ChevronUp className="w-6 h-6 text-muted-foreground group-hover:text-white transition-colors" />
-                                        </motion.button>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        </section>
-                    );
-                })
+            {/* SEO Copywriting Section */}
+            {!search && (
+                <section className="w-screen relative left-1/2 -translate-x-1/2 mt-16 -mb-8 bg-card/80 border-t border-white/5 pt-10 pb-16 px-4 md:px-10">
+                    <div className="max-w-6xl mx-auto space-y-8 text-muted-foreground/70 text-sm leading-relaxed">
+                        {/* Always visible: Title + Intro */}
+                        <div>
+                            <h2 className="text-xl md:text-2xl font-bold text-white mb-4">
+                                Govershop — Top Up Game &amp; Voucher Game Termurah dan Terpercaya
+                            </h2>
+                            <p>
+                                Di era gaming yang terus berkembang, kebutuhan akan layanan top up game dan pembelian voucher game menjadi bagian tak terpisahkan dari pengalaman bermain. Govershop hadir sebagai platform terpercaya yang menghadirkan kemudahan, kecepatan, dan keamanan terbaik untuk setiap transaksi digital kamu.
+                            </p>
+                            <p className="mt-3">
+                                Dengan koleksi game populer mulai dari Mobile Legends, PUBG Mobile, Free Fire, Genshin Impact, Valorant, hingga Roblox, Govershop memastikan setiap gamer bisa mendapatkan diamond, UC, gems, maupun voucher premium dengan harga paling kompetitif. Ditambah dukungan beragam metode pembayaran modern seperti e-wallet, transfer bank, hingga pulsa — bertransaksi jadi mudah kapan saja dan di mana saja.
+                            </p>
+                        </div>
+
+                        {/* Expandable content */}
+                        <AnimatePresence>
+                            {seoExpanded && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                                    className="overflow-hidden space-y-8"
+                                >
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-white/90 mb-3">
+                                            Kenapa Harus Govershop?
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">Harga Paling Bersahabat</h4>
+                                                <p>Govershop berkomitmen menghadirkan harga terbaik untuk setiap layanan top up dan voucher. Setiap transaksi dirancang agar tetap ramah di kantong tanpa mengorbankan kualitas layanan.</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">Transaksi Instan &amp; Otomatis</h4>
+                                                <p>Kecepatan adalah segalanya. Di Govershop, setiap top up diproses secara otomatis dalam hitungan detik. Begitu pembayaran berhasil, item langsung masuk ke akun game kamu.</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">100% Aman &amp; Terpercaya</h4>
+                                                <p>Keamanan data dan transaksi adalah prioritas utama. Govershop menggunakan sistem terenkripsi yang menjamin setiap informasi pribadi serta pembayaran terlindungi sepenuhnya.</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">Pilihan Game Terlengkap</h4>
+                                                <p>Dari game mobile populer hingga PC dan console, Govershop menyediakan ribuan produk digital — diamond, UC, gems, coin, hingga voucher game resmi yang siap digunakan kapan saja.</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">Dukungan Pelanggan 24/7</h4>
+                                                <p>Tim customer support Govershop selalu siap membantu kapan pun kamu membutuhkan — mulai dari pertanyaan seputar transaksi hingga kendala teknis.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-white/90 mb-3">
+                                            Layanan Unggulan Govershop
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">Top Up Game Mobile</h4>
+                                                <p>Dapatkan diamond, UC, gold, hingga berbagai mata uang digital lainnya secara instan untuk game favoritmu.</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">Voucher Game &amp; Gift Card</h4>
+                                                <p>Tersedia voucher resmi seperti Google Play, App Store, Steam Wallet, Garena Shells, dan masih banyak lagi dengan harga terbaik.</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">Promo &amp; Event Spesial</h4>
+                                                <p>Govershop rutin menghadirkan promo eksklusif, diskon besar, hingga cashback menarik untuk setiap transaksi tertentu.</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-white/80">Multi Metode Pembayaran</h4>
+                                                <p>Mendukung pembayaran via e-wallet (OVO, GoPay, Dana, ShopeePay), transfer bank, hingga pulsa operator besar di Indonesia.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-white/90 mb-3">
+                                            Govershop — Partner Gaming Digital Kamu
+                                        </h3>
+                                        <p>
+                                            Bermain game bukan lagi sekadar hiburan, tetapi juga gaya hidup. Untuk mendukung itu, Govershop hadir sebagai partner digital yang selalu siap menyediakan segala kebutuhan gaming kamu. Mulai dari membeli diamond Mobile Legends, mengisi UC PUBG Mobile, membeli voucher Steam Wallet, hingga top up Valorant Points — semua bisa dilakukan hanya dengan beberapa klik.
+                                        </p>
+                                        <p className="mt-3">
+                                            Dengan sistem yang praktis dan pelayanan profesional, Govershop memastikan setiap transaksi berlangsung lancar. Tidak perlu menunggu lama, tidak perlu khawatir soal keamanan — cukup pilih produk, lakukan pembayaran, dan nikmati hasilnya langsung di akun game kamu.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p>
+                                            Jika kamu mencari tempat top up game dan voucher game termurah serta terpercaya, maka <strong className="text-white/80">Govershop</strong> adalah jawabannya. Dengan harga bersahabat, transaksi otomatis super cepat, pilihan game lengkap, serta jaminan keamanan — Govershop menjadi solusi terbaik untuk memenuhi segala kebutuhan gaming digitalmu.
+                                        </p>
+                                        <p className="mt-3 text-muted-foreground/50 text-xs">
+                                            Jadikan pengalaman bermain game lebih seru dan menyenangkan bersama Govershop. Ribuan gamer sudah membuktikan kualitas layanan kami — kini giliran kamu untuk merasakannya.
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Toggle Button */}
+                        <button
+                            onClick={() => setSeoExpanded(!seoExpanded)}
+                            className="mt-6 px-6 py-2.5 rounded-full border border-white/10 text-sm font-semibold text-white/70 hover:text-white hover:border-primary/50 transition-all duration-300"
+                        >
+                            {seoExpanded ? "Sembunyikan" : "Baca Selengkapnya"}
+                        </button>
+                    </div>
+                </section>
             )}
 
             {/* Empty State */}
