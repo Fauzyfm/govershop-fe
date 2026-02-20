@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, MapPin, AlertTriangle, MessageCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { getGameConfig, sanitizeUserId, buildCustomerNo } from "@/lib/game-input-config";
@@ -55,6 +55,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     const [priceDetails, setPriceDetails] = useState<PriceCalculation | null>(null);
 
     const [submitting, setSubmitting] = useState(false);
+    const [showBalanceError, setShowBalanceError] = useState(false);
     const [activeTab, setActiveTab] = useState("Semua");
 
     // Server selection state (now using ServerTabInfo)
@@ -249,8 +250,14 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                 }
             }
         } catch (err: any) {
-            alert(err.message || "Gagal membuat order");
-            setShowValidationModal(false);
+            // Check for insufficient provider balance error
+            if (err?.code === 'INSUFFICIENT_PROVIDER_BALANCE') {
+                setShowValidationModal(false);
+                setShowBalanceError(true);
+            } else {
+                alert(err.message || err.error || "Gagal membuat order");
+                setShowValidationModal(false);
+            }
         } finally {
             setSubmitting(false);
         }
@@ -550,10 +557,10 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                     {isValidating ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : validationResult?.account_name ? (
-                                        <span className="text-green-500">{validationResult.account_name}</span>
+                                        <span className="text-green-500 text-xs text-end">{validationResult.account_name}</span>
                                     ) : validationResult?.message ? (
                                         <div className="flex flex-col">
-                                            <span className="text-yellow-500 text-xs font-medium">Validasi Manual</span>
+                                            <span className="text-yellow-500 text-xs font-medium">Pastikan ID Anda Benar.</span>
                                             <span className="text-xs text-muted-foreground mt-1">{validationResult.message}</span>
                                         </div>
                                     ) : validationError ? (
@@ -563,7 +570,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                             </div>
                             <div className="flex justify-between border-b border-white/10 pb-2">
                                 <span className="text-muted-foreground">Item</span>
-                                <span className="font-medium text-right w-40 truncate">
+                                <span className="font-medium text-right w-40">
                                     {initialProducts.find(p => p.buyer_sku_code === selectedSku)?.product_name}
                                 </span>
                             </div>
@@ -593,6 +600,56 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                 className="py-3 rounded-xl bg-primary hover:bg-primary/90 text-black font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                             >
                                 {submitting ? <Loader2 className="animate-spin w-4 h-4" /> : "Bayar Sekarang"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Balance Error Modal */}
+            {showBalanceError && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="bg-[#1a1b26] border border-white/10 rounded-2xl w-full max-w-md p-6 space-y-5 relative">
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setShowBalanceError(false)}
+                            className="absolute top-4 right-4 p-1 rounded-lg hover:bg-white/10 transition-colors"
+                        >
+                            <X className="w-5 h-5 text-muted-foreground" />
+                        </button>
+
+                        {/* Icon */}
+                        <div className="flex justify-center">
+                            <div className="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                                <AlertTriangle className="w-8 h-8 text-yellow-500" />
+                            </div>
+                        </div>
+
+                        {/* Message */}
+                        <div className="text-center space-y-2">
+                            <h3 className="text-lg font-bold text-yellow-500">Kendala Teknis</h3>
+                            <p className="text-sm text-muted-foreground">
+                                Maaf, saat ini sedang ada kendala teknis untuk topup produk ini.
+                                Silahkan hubungi admin untuk informasi lebih lanjut.
+                            </p>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="space-y-3 pt-2">
+                            <a
+                                href="https://wa.me/6283114014648?text=Halo%20admin%2C%20saya%20mengalami%20kendala%20saat%20topup%20di%20Govershop"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
+                            >
+                                <MessageCircle className="w-4 h-4" />
+                                Hubungi Admin via WhatsApp
+                            </a>
+                            <button
+                                onClick={() => setShowBalanceError(false)}
+                                className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors font-medium text-sm"
+                            >
+                                Tutup
                             </button>
                         </div>
                     </div>
