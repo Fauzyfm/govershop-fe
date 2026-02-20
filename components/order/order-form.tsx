@@ -560,11 +560,11 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                         <span className="text-green-500 text-xs text-end">{validationResult.account_name}</span>
                                     ) : validationResult?.message ? (
                                         <div className="flex flex-col">
-                                            <span className="text-yellow-500 text-xs font-medium">Pastikan ID Anda Benar.</span>
-                                            <span className="text-xs text-muted-foreground mt-1">{validationResult.message}</span>
+                                            <span className="text-yellow-500 text-xs font-medium text-end">Pastikan ID Anda Benar.</span>
+                                            <span className="text-xs text-muted-foreground mt-1 text-end ml-10">{validationResult.message}</span>
                                         </div>
                                     ) : validationError ? (
-                                        <span className="text-red-500">Invalid ID</span>
+                                        <span className="text-red-500 text-end">Invalid ID</span>
                                     ) : "-"}
                                 </span>
                             </div>
