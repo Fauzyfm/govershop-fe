@@ -107,7 +107,7 @@ function TopupContent() {
 
         setValidatingUser(true);
         try {
-            const data: any = await api.post("/validate-account", {
+            const data: any = await api.post("/member/validate-account", {
                 brand: productDetails.brand,
                 customer_no: customerNo,
             });
