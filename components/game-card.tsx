@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import PageLoading from "@/components/ui/page-loading";
+import { Clock, Wrench } from "lucide-react";
 
 interface GameCardProps {
     name: string;
@@ -70,15 +71,14 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
                 />
             )}
 
-            {/* Content */}
-            <div className="absolute inset-x-0 bottom-0 p-4 z-20">
-                <h3 className="text-foreground font-bold text-lg md:text-xl drop-shadow-lg group-hover:text-white transition-colors">
+            <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4 z-20">
+                <h3 className="text-foreground font-bold text-sm sm:text-base md:text-xl drop-shadow-lg group-hover:text-white transition-colors leading-tight line-clamp-2">
                     {name}
                 </h3>
 
                 {isDisabled ? (
-                    <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-accent/20 backdrop-blur-sm border border-accent/20">
-                        <span className="text-xs font-medium text-muted-foreground">
+                    <div className="mt-1.5 inline-flex items-center px-2 py-0.5 rounded-full bg-accent/20 backdrop-blur-sm border border-accent/20">
+                        <span className="text-[10px] sm:text-xs font-medium text-muted-foreground line-clamp-1">
                             {isComingSoon ? "Segera Hadir" : "Maintenance"}
                         </span>
                     </div>
@@ -91,13 +91,19 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
 
             {/* Status Badge */}
             {isComingSoon && (
-                <div className="absolute top-3 right-3 z-20 px-3 py-1 bg-accent/90 backdrop-blur-sm text-background text-xs font-bold rounded-full shadow-lg">
-                    COMING SOON
+                <div
+                    title="Segera Hadir"
+                    className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-accent/90 backdrop-blur-sm text-background rounded-full shadow-lg"
+                >
+                    <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
             )}
             {isMaintenance && (
-                <div className="absolute top-3 right-3 z-20 px-3 py-1 bg-red-600/90 backdrop-blur-sm text-white text-xs font-bold rounded-full shadow-lg">
-                    MAINTENANCE
+                <div
+                    title="Maintenance"
+                    className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-red-600/90 backdrop-blur-sm text-white rounded-full shadow-lg"
+                >
+                    <Wrench className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
             )}
         </div>

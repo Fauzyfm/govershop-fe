@@ -277,7 +277,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                         {/* QR Code for QRIS */}
                         {(payment.qr_image_url || payment.qr_string) && (
                             <div className="flex flex-col items-center space-y-4">
-                                <div className="bg-white p-4 rounded-xl">
+                                <div className="bg-white p-4 rounded-xl relative group">
                                     {payment.qr_image_url ? (
                                         <img
                                             src={payment.qr_image_url}
@@ -285,12 +285,73 @@ export default function StatusView({ orderId }: StatusViewProps) {
                                             className="w-[200px] h-[200px] object-contain"
                                         />
                                     ) : (
-                                        <QRCode value={payment.qr_string || ""} size={200} />
+                                        <div id="qris-code-container">
+                                            <QRCode value={payment.qr_string || ""} size={200} />
+                                        </div>
                                     )}
                                 </div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground text-center">
                                     Scan QR code dengan aplikasi e-wallet atau mobile banking
                                 </p>
+
+                                {/* Info Box for Dynamic Merchant Names (Qris.pw specifically) */}
+                                {isQRIS(payment.payment_method) && (
+                                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-400 mt-2 text-center max-w-sm">
+                                        <p className="font-medium mb-1 flex items-center justify-center gap-1">
+                                            <AlertCircle className="w-3.5 h-3.5" />
+                                            Informasi Merchant QRIS
+                                        </p>
+                                        <p>
+                                            Nama merchant / toko yang muncul saat di-scan mungkin berbeda-beda (bukan Govershop).
+                                            <br /><strong className="text-blue-300">Mohon abaikan nama merchant tersebut</strong>.
+                                            Selama <strong className="text-blue-300">Total Pembayaran</strong> sesuai dengan tagihan di bawah ini, pembayaran Anda dijamin aman dan akan masuk ke sistem kami secara otomatis.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Download QR Button */}
+                                <button
+                                    onClick={() => {
+                                        if (payment.qr_image_url) {
+                                            // Provide absolute URL download
+                                            const link = document.createElement('a');
+                                            link.href = payment.qr_image_url;
+                                            link.download = `QRIS-Govershop-${order.order_id}.png`;
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        } else {
+                                            // Grab SVG string if rendered using react-qr-code
+                                            const svg = document.querySelector('#qris-code-container svg');
+                                            if (svg) {
+                                                const svgData = new XMLSerializer().serializeToString(svg);
+                                                const canvas = document.createElement("canvas");
+                                                const ctx = canvas.getContext("2d");
+                                                const img = new Image();
+                                                img.onload = () => {
+                                                    canvas.width = img.width;
+                                                    canvas.height = img.width;
+                                                    if (ctx) {
+                                                        ctx.fillStyle = "white"; // Add white background
+                                                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                                        ctx.drawImage(img, 0, 0);
+                                                        const pngFile = canvas.toDataURL("image/png");
+                                                        const downloadLink = document.createElement("a");
+                                                        downloadLink.download = `QRIS-Govershop-${order.order_id}.png`;
+                                                        downloadLink.href = `${pngFile}`;
+                                                        downloadLink.click();
+                                                    }
+                                                };
+                                                img.src = "data:image/svg+xml;base64," + btoa(svgData);
+                                            }
+                                        }
+                                    }}
+                                    className="py-2.5 px-6 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    title="Download (Simpan) QR Code untuk discan nanti"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                                    Download QR
+                                </button>
                             </div>
                         )}
 

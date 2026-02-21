@@ -11,7 +11,7 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
     // Sorting is handled by parent (OrderForm)
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {products.map((product) => {
                 const displayName = product.display_name || product.product_name;
                 const hasCustomImage = !!product.image_url;
@@ -23,7 +23,7 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
                         className={cn(
                             "relative p-4 rounded-xl text-left transition-all border group",
                             selectedSku === product.buyer_sku_code
-                                ? "bg-primary/10 border-primary shadow-[0_0_20px_rgba(16,185,129,0.15)] scale-[1.02]"
+                                ? "bg-primary/10 border-primary shadow-[0_0_20px_rgba(230,80,27,0.15)] scale-[1.02]"
                                 : "bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10"
                         )}
                     >
@@ -40,48 +40,55 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
                             </div>
                         )}
 
-                        <div className="flex flex-col gap-3">
-                            {/* Product Image - Only if custom image exists */}
-                            {hasCustomImage && (
-                                <div className="flex justify-center mb-2">
-                                    <img
-                                        src={product.image_url}
-                                        alt={displayName}
-                                        className="w-16 h-16 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
-                                    />
-                                </div>
-                            )}
-
-                            {/* Product Name */}
-                            <span className="font-semibold text-sm md:text-sm text-center leading-tight min-h-[40px] flex items-center justify-center">
+                        <div className="flex flex-col h-full gap-2">
+                            {/* Product Name at the Top */}
+                            <span className="font-semibold text-[12px] sm:text-sm text-center leading-tight min-h-[36px] flex items-center justify-center">
                                 {displayName}
                             </span>
 
-                            {/* Price */}
-                            <div className="flex flex-col items-center">
+                            {/* Divider line matching the image style */}
+                            <hr className="border-white/10 mx-2" />
+
+                            {/* Middle section: Image and/or empty space to push price down */}
+                            <div className="grow flex flex-col items-center justify-center min-h-[80px] py-2">
+                                {/* Product Image */}
+                                {hasCustomImage && (
+                                    <img
+                                        src={product.image_url}
+                                        alt={displayName}
+                                        className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
+                                    />
+                                )}
+                                {/* Tags can go below the image if any */}
+                                {product.tags && product.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 justify-center mt-2">
+                                        {product.tags.map(tag => (
+                                            <span key={tag} className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-white/70 uppercase">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Price at the Bottom */}
+                            <div className="flex flex-col items-center w-full mt-auto">
                                 {product.is_promo && product.original_price && (
-                                    <span className="text-xs text-muted-foreground line-through">
+                                    <span className="text-[9px] sm:text-[10px] text-muted-foreground line-through mb-1">
                                         Rp {Math.ceil(product.original_price).toLocaleString("id-ID")}
                                     </span>
                                 )}
-                                <span className={cn(
-                                    "text-base font-bold",
-                                    selectedSku === product.buyer_sku_code ? "text-primary" : "text-white"
+                                <div className={cn(
+                                    "w-full py-1.5 px-1 sm:px-2 rounded-lg text-center font-bold tracking-tight transition-all duration-300",
+                                    selectedSku === product.buyer_sku_code
+                                        ? "bg-primary text-white shadow-[0_0_15px_rgba(230,80,27,0.6)] translate-y-[2px]"
+                                        : "bg-primary/90 hover:bg-primary text-white shadow-md border border-primary/50 border-b-[3px] active:border-b-0 active:translate-y-[2px]"
                                 )}>
-                                    Rp {Math.ceil(product.price).toLocaleString("id-ID")}
-                                </span>
-                            </div>
-
-                            {/* Tags */}
-                            {product.tags && product.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1 justify-center mt-1">
-                                    {product.tags.map(tag => (
-                                        <span key={tag} className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-white/70 uppercase">
-                                            {tag}
-                                        </span>
-                                    ))}
+                                    <span className="text-[12px] sm:text-sm md:text-base">
+                                        Rp {Math.ceil(product.price).toLocaleString("id-ID")}
+                                    </span>
                                 </div>
-                            )}
+                            </div>
                         </div>
 
                         {selectedSku === product.buyer_sku_code && (

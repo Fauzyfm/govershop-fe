@@ -36,8 +36,8 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const isScrollingToSection = useRef(false);
 
-    const INITIAL_LIMIT = 5;
-    const LOAD_MORE_STEP = 10;
+    const INITIAL_LIMIT = 6;
+    const LOAD_MORE_STEP = 12;
 
     // Check if popup should be shown (once per session)
     useEffect(() => {
@@ -207,7 +207,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             {/* Popup */}
             {showPopup && popup && (
                 <div
-                    className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${isPopupClosing ? "bg-black/0" : "bg-black/70"
+                    className={`fixed inset-0 h-dvh w-screen z-50 flex items-center justify-center p-4 transition-all duration-300 ${isPopupClosing ? "bg-black/0" : "bg-black/70"
                         }`}
                     onClick={closePopup}
                 >
@@ -320,7 +320,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                     </div>
 
                     {allFilteredBrands.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             {allFilteredBrands.map((brand, idx) => {
                                 const name = getBrandName(brand);
                                 const image = getBrandImage(brand);
@@ -363,7 +363,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+                            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
                                 {bestSellerItems.map((brand, idx) => {
                                     const name = getBrandName(brand);
                                     const image = getBrandImage(brand);
@@ -422,7 +422,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
 
                                 <motion.div
                                     layout
-                                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"
+                                    className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6"
                                 >
                                     <AnimatePresence mode="popLayout">
                                         {visibleBrands.map((brand, idx) => {
