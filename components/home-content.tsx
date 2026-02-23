@@ -36,8 +36,28 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const isScrollingToSection = useRef(false);
 
-    const INITIAL_LIMIT = 6;
-    const LOAD_MORE_STEP = 12;
+    const [initialLimit, setInitialLimit] = useState(10); // Default for SSR
+    const [loadMoreStep, setLoadMoreStep] = useState(10);
+
+    // Dynamic grid limits
+    useEffect(() => {
+        const updateLimits = () => {
+            if (window.innerWidth >= 1024) {
+                setInitialLimit(10);
+                setLoadMoreStep(10);
+            } else if (window.innerWidth >= 768) {
+                setInitialLimit(8);
+                setLoadMoreStep(8);
+            } else {
+                setInitialLimit(6);
+                setLoadMoreStep(6);
+            }
+        };
+
+        updateLimits();
+        window.addEventListener('resize', updateLimits);
+        return () => window.removeEventListener('resize', updateLimits);
+    }, []);
 
     // Check if popup should be shown (once per session)
     useEffect(() => {
@@ -89,14 +109,14 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     const loadMore = (category: string) => {
         setCategoryLimits(prev => ({
             ...prev,
-            [category]: (prev[category] || INITIAL_LIMIT) + LOAD_MORE_STEP
+            [category]: (prev[category] || initialLimit) + loadMoreStep
         }));
     };
 
     const showLess = (category: string) => {
         setCategoryLimits(prev => ({
             ...prev,
-            [category]: INITIAL_LIMIT
+            [category]: initialLimit
         }));
     };
 
@@ -350,50 +370,98 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             ) : (
                 <>
                     {/* Best Seller Section */}
-                    {bestSellerItems.length > 0 && (
-                        <section
-                            id="section-populer"
-                            ref={(el) => { sectionRefs.current["section-populer"] = el; }}
-                            className="w-full rounded-2xl scroll-mt-32 animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards"
-                        >
-                            <div className="flex items-center gap-3 mb-8 px-1">
-                                <div className="w-1.5 h-8 bg-linear-to-b from-primary to-accent rounded-full glow-pulse shadow-[0_0_20px_rgba(230,80,27,0.8)]" />
-                                <h2 className="text-2xl font-bold text-white tracking-tight neon-glow">
-                                    Paling Laris
-                                </h2>
-                            </div>
+                    {bestSellerItems.length > 0 && (() => {
+                        const limit = categoryLimits["populer"] || initialLimit;
+                        const visibleBrands = bestSellerItems.slice(0, limit);
+                        const hasMore = bestSellerItems.length > limit;
+                        const isExpanded = limit > initialLimit;
 
-                            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-                                {bestSellerItems.map((brand, idx) => {
-                                    const name = getBrandName(brand);
-                                    const image = getBrandImage(brand);
-                                    const status = getBrandStatus(brand);
-                                    return (
-                                        <motion.div
-                                            key={`bestseller-${name}`}
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{ delay: idx * 0.05 }}
-                                        >
-                                            <GameCard
-                                                name={name}
-                                                href={`/order/${encodeURIComponent(name)}`}
-                                                image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
-                                                status={status}
-                                            />
-                                        </motion.div>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )}
+                        return (
+                            <section
+                                id="section-populer"
+                                ref={(el) => { sectionRefs.current["section-populer"] = el; }}
+                                className="w-full rounded-2xl scroll-mt-32 animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards"
+                            >
+                                <div className="flex items-center gap-3 mb-8 px-1">
+                                    <div className="w-1.5 h-8 bg-linear-to-b from-primary to-accent rounded-full glow-pulse shadow-[0_0_20px_rgba(230,80,27,0.8)]" />
+                                    <h2 className="text-2xl font-bold text-white tracking-tight neon-glow">
+                                        Paling Laris
+                                    </h2>
+                                </div>
+
+                                <motion.div layout className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+                                    <AnimatePresence mode="popLayout">
+                                        {visibleBrands.map((brand, idx) => {
+                                            const name = getBrandName(brand);
+                                            const image = getBrandImage(brand);
+                                            const status = getBrandStatus(brand);
+                                            return (
+                                                <motion.div
+                                                    layout
+                                                    key={`bestseller-${name}`}
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.8 }}
+                                                    transition={{ duration: 0.3 }}
+                                                >
+                                                    <GameCard
+                                                        name={name}
+                                                        href={`/order/${encodeURIComponent(name)}`}
+                                                        image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
+                                                        status={status}
+                                                    />
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </AnimatePresence>
+                                </motion.div>
+
+                                <div className="mt-10 flex justify-center gap-6">
+                                    <AnimatePresence>
+                                        {hasMore && (
+                                            <motion.button
+                                                layout
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => loadMore("populer")}
+                                                className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:shadow-primary/20 group overflow-hidden"
+                                                title="Load More"
+                                            >
+                                                <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <ChevronDown className="w-6 h-6 text-primary group-hover:translate-y-0.5 transition-transform" />
+                                            </motion.button>
+                                        )}
+
+                                        {isExpanded && (
+                                            <motion.button
+                                                layout
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => showLess("populer")}
+                                                className="relative flex items-center justify-center w-12 h-12 rounded-full bg-secondary/50 border border-white/10 shadow-lg hover:bg-white/5 group"
+                                                title="Show Less"
+                                            >
+                                                <ChevronUp className="w-6 h-6 text-muted-foreground group-hover:text-white transition-colors" />
+                                            </motion.button>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </section>
+                        );
+                    })()}
 
                     {/* Category Sections (sorted: Games first, then alphabetical) */}
                     {sortedCategories.map((catData, categoryIdx) => {
-                        const limit = categoryLimits[catData.category] || INITIAL_LIMIT;
+                        const limit = categoryLimits[catData.category] || initialLimit;
                         const visibleBrands = catData.brands.slice(0, limit);
                         const hasMore = catData.brands.length > limit;
-                        const isExpanded = limit > INITIAL_LIMIT;
+                        const isExpanded = limit > initialLimit;
                         const sectionId = `section-${catData.category.toLowerCase().replace(/\s+/g, '-')}`;
 
                         return (

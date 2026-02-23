@@ -49,23 +49,13 @@ export default function Footer() {
                         <h3 className="text-sm font-bold text-foreground mb-4">Bantuan</h3>
                         <ul className="space-y-2 text-sm">
                             <li>
-                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                                    Syarat & Ketentuan Govershop
+                                <Link href="/terms-conditions" className="text-muted-foreground hover:text-primary transition-colors">
+                                    Syarat &amp; Ketentuan Govershop
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                                <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
                                     Kebijakan Privasi
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                                    FAQ — Pertanyaan Umum
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                                    Hubungi Kami
                                 </Link>
                             </li>
                         </ul>

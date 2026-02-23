@@ -88,7 +88,9 @@ export default function LayeredCarousel({
                 className="relative mx-auto overflow-hidden"
                 style={{
                     maxWidth: "1152px",
-                    height: isMobile ? "clamp(180px, 50vw, 260px)" : "clamp(200px, 30vw, 380px)",
+                    // Container aspect ratio = 2.3037 * 100 / cardWidth 
+                    // so the card (cardWidth% of container) has exactly 3110:1350 ratio matching banner images
+                    aspectRatio: `${230.37 / cardWidth} / 1`,
                 }}
             >
                 {items.map((item, index) => {

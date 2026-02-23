@@ -84,7 +84,7 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
                                         ? "bg-primary text-white shadow-[0_0_15px_rgba(230,80,27,0.6)] translate-y-[2px]"
                                         : "bg-primary/90 hover:bg-primary text-white shadow-md border border-primary/50 border-b-[3px] active:border-b-0 active:translate-y-[2px]"
                                 )}>
-                                    <span className="text-[12px] sm:text-sm md:text-base">
+                                    <span className="text-[12px] sm:text-sm md:text-[14px]">
                                         Rp {Math.ceil(product.price).toLocaleString("id-ID")}
                                     </span>
                                 </div>

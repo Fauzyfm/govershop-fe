@@ -27,7 +27,7 @@ export default function MobileOrderSummary({
             {/* Backdrop for expanded state */}
             {isExpanded && (
                 <div
-                    className="absolute inset-0 bg-black/50 backdrop-blur-sm -top-[100vh] h-[100vh]"
+                    className="absolute inset-0 bg-black/50 backdrop-blur-sm -top-[100vh] h-screen"
                     onClick={() => setIsExpanded(false)}
                 />
             )}
