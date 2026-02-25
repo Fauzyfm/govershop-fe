@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import api from "@/lib/api";
+import { toSlug } from "@/lib/slug";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://restopup.com";
 
@@ -40,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       brandPages = Object.entries(res.data.brand_images)
         .filter(([, brand]) => brand.is_visible !== false && brand.status === "active")
         .map(([name]) => ({
-          url: `${SITE_URL}/order/${encodeURIComponent(name)}`,
+          url: `${SITE_URL}/order/${toSlug(name)}`,
           lastModified: new Date(),
           changeFrequency: "weekly" as const,
           priority: 0.8,

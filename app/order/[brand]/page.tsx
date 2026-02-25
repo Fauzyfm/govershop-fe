@@ -1,11 +1,39 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import api from "@/lib/api";
+import { toSlug, findBrandBySlug } from "@/lib/slug";
 import { APIResponse, Product, PaymentMethod } from "@/types/api";
 import OrderPageClient from "@/components/order/order-page-client";
 
+interface BrandPublicData {
+    brand_name: string;
+    image_url: string;
+    is_best_seller: boolean;
+    status: string;
+}
+
+// Fetch all brand names for slug resolution
+async function getAllBrandNames(): Promise<string[]> {
+    try {
+        const res = await api.get<any, APIResponse<{ brand_images: Record<string, BrandPublicData> }>>('/content/brands');
+        if (res.success && res.data?.brand_images) {
+            return Object.keys(res.data.brand_images);
+        }
+        return [];
+    } catch {
+        return [];
+    }
+}
+
+// Resolve slug param to real brand name
+async function resolveBrand(slugParam: string): Promise<string | null> {
+    const brandNames = await getAllBrandNames();
+    return findBrandBySlug(slugParam, brandNames);
+}
+
 export async function generateMetadata({ params }: OrderPageProps): Promise<Metadata> {
     const resolvedParams = await params;
-    const brand = decodeURIComponent(resolvedParams.brand);
+    const brand = await resolveBrand(resolvedParams.brand) || decodeURIComponent(resolvedParams.brand);
     return {
         title: `Top Up ${brand} — Harga Termurah & Proses Instan`,
         description: `Top up ${brand} di Restopup dengan harga termurah dan proses instan. Pembayaran mudah via QRIS, transfer bank, dan lainnya. Aman dan terpercaya!`,
@@ -14,7 +42,7 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
             description: `Top up ${brand} murah dan cepat di Restopup. Proses otomatis, harga bersaing.`,
         },
         alternates: {
-            canonical: `/order/${encodeURIComponent(brand)}`,
+            canonical: `/order/${toSlug(brand)}`,
         },
     };
 }
@@ -23,7 +51,6 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
 async function getProducts(brand: string) {
     try {
         const res = await api.get<any, APIResponse<{ products: Product[] }>>(`/products?brand=${encodeURIComponent(brand)}`);
-        // Filter out system products like "Cek Username" and ensure brand match if API returns others
         const allProducts = res.data?.products || [];
         return allProducts.filter(p =>
             p.brand.toLowerCase() === brand.toLowerCase() &&
@@ -59,13 +86,6 @@ interface BrandDetails {
     description?: string;
 }
 
-interface BrandPublicData {
-    brand_name: string;
-    image_url: string;
-    is_best_seller: boolean;
-    status: string;
-}
-
 async function getBrandImages(): Promise<Record<string, BrandPublicData>> {
     try {
         const res = await api.get<any, APIResponse<{ brand_images: Record<string, BrandPublicData> }>>('/content/brands');
@@ -98,7 +118,13 @@ interface OrderPageProps {
 
 export default async function OrderPage({ params }: OrderPageProps) {
     const resolvedParams = await params;
-    const brand = decodeURIComponent(resolvedParams.brand);
+
+    // Resolve slug to real brand name
+    const brand = await resolveBrand(resolvedParams.brand);
+
+    if (!brand) {
+        notFound();
+    }
 
     // Fetch products, payment methods, brand details, AND global brand images in parallel
     const [products, paymentMethods, brandDetails, brandImages] = await Promise.all([
@@ -108,15 +134,12 @@ export default async function OrderPage({ params }: OrderPageProps) {
         getBrandImages()
     ]);
 
-    // Determine brand image:
-    // 1. Try from specific brand details
+    // Determine brand image
     let brandImage = brandDetails?.image_url;
 
-    // 2. If not found, try from global brand map (fallback)
     if (!brandImage) {
         let brandData = brandImages[brand];
         if (!brandData) {
-            // Case-insensitive lookup
             const brandLower = brand.toLowerCase();
             const foundKey = Object.keys(brandImages).find(k => k.toLowerCase() === brandLower);
             if (foundKey) {
@@ -126,7 +149,6 @@ export default async function OrderPage({ params }: OrderPageProps) {
         brandImage = brandData?.image_url || "";
     }
 
-    // Get dynamic content
     const dynamicSteps = brandDetails?.topup_steps || [];
     const description = brandDetails?.description || "";
 

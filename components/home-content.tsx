@@ -5,6 +5,7 @@ import Image from "next/image";
 import GameCard from "@/components/game-card";
 import SearchInput from "@/components/ui/search-input";
 import LayeredCarousel from "@/components/ui/layered-carousel";
+import { toSlug } from "@/lib/slug";
 
 import { Brand, BrandPublicData, CarouselItem, PopupItem } from "@/types/api";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
@@ -353,7 +354,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                     >
                                         <GameCard
                                             name={name}
-                                            href={`/order/${encodeURIComponent(name)}`}
+                                            href={`/order/${toSlug(name)}`}
                                             image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
                                             status={status}
                                         />
@@ -406,7 +407,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                                 >
                                                     <GameCard
                                                         name={name}
-                                                        href={`/order/${encodeURIComponent(name)}`}
+                                                        href={`/order/${toSlug(name)}`}
                                                         image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
                                                         status={status}
                                                     />
@@ -508,7 +509,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                                 >
                                                     <GameCard
                                                         name={name}
-                                                        href={`/order/${encodeURIComponent(name)}`}
+                                                        href={`/order/${toSlug(name)}`}
                                                         image={image || `https://placehold.co/400x500/1e293b/ffffff?text=${encodeURIComponent(name)}`}
                                                         status={status}
                                                     />

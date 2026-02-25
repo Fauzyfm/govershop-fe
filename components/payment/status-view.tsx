@@ -311,15 +311,24 @@ export default function StatusView({ orderId }: StatusViewProps) {
 
                                 {/* Download QR Button */}
                                 <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                         if (payment.qr_image_url) {
-                                            // Provide absolute URL download
-                                            const link = document.createElement('a');
-                                            link.href = payment.qr_image_url;
-                                            link.download = `QRIS-Restopup-${order.order_id}.png`;
-                                            document.body.appendChild(link);
-                                            link.click();
-                                            document.body.removeChild(link);
+                                            try {
+                                                // Fetch image as blob to bypass cross-origin download restrictions
+                                                const response = await fetch(payment.qr_image_url);
+                                                const blob = await response.blob();
+                                                const blobUrl = URL.createObjectURL(blob);
+                                                const link = document.createElement('a');
+                                                link.href = blobUrl;
+                                                link.download = `QRIS-Restopup-${order.order_id}.jpg`;
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                                URL.revokeObjectURL(blobUrl);
+                                            } catch {
+                                                // Fallback: open in new tab if fetch fails
+                                                window.open(payment.qr_image_url, '_blank');
+                                            }
                                         } else {
                                             // Grab SVG string if rendered using react-qr-code
                                             const svg = document.querySelector('#qris-code-container svg');
@@ -332,13 +341,13 @@ export default function StatusView({ orderId }: StatusViewProps) {
                                                     canvas.width = img.width;
                                                     canvas.height = img.width;
                                                     if (ctx) {
-                                                        ctx.fillStyle = "white"; // Add white background
+                                                        ctx.fillStyle = "white";
                                                         ctx.fillRect(0, 0, canvas.width, canvas.height);
                                                         ctx.drawImage(img, 0, 0);
-                                                        const pngFile = canvas.toDataURL("image/png");
+                                                        const jpgFile = canvas.toDataURL("image/jpeg", 0.95);
                                                         const downloadLink = document.createElement("a");
-                                                        downloadLink.download = `QRIS-Restopup-${order.order_id}.png`;
-                                                        downloadLink.href = `${pngFile}`;
+                                                        downloadLink.download = `QRIS-Restopup-${order.order_id}.jpg`;
+                                                        downloadLink.href = jpgFile;
                                                         downloadLink.click();
                                                     }
                                                 };
