@@ -302,7 +302,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                                             Informasi Merchant QRIS
                                         </p>
                                         <p>
-                                            Nama merchant / toko yang muncul saat di-scan mungkin berbeda-beda (bukan Govershop).
+                                            Nama merchant / toko yang muncul saat di-scan mungkin berbeda-beda (bukan Restopup).
                                             <br /><strong className="text-blue-300">Mohon abaikan nama merchant tersebut</strong>.
                                             Selama <strong className="text-blue-300">Total Pembayaran</strong> sesuai dengan tagihan di bawah ini, pembayaran Anda dijamin aman dan akan masuk ke sistem kami secara otomatis.
                                         </p>
@@ -316,7 +316,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                                             // Provide absolute URL download
                                             const link = document.createElement('a');
                                             link.href = payment.qr_image_url;
-                                            link.download = `QRIS-Govershop-${order.order_id}.png`;
+                                            link.download = `QRIS-Restopup-${order.order_id}.png`;
                                             document.body.appendChild(link);
                                             link.click();
                                             document.body.removeChild(link);
@@ -337,7 +337,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
                                                         ctx.drawImage(img, 0, 0);
                                                         const pngFile = canvas.toDataURL("image/png");
                                                         const downloadLink = document.createElement("a");
-                                                        downloadLink.download = `QRIS-Govershop-${order.order_id}.png`;
+                                                        downloadLink.download = `QRIS-Restopup-${order.order_id}.png`;
                                                         downloadLink.href = `${pngFile}`;
                                                         downloadLink.click();
                                                     }

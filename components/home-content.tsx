@@ -248,7 +248,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                             <a href={popup.link_url} onClick={closePopup}>
                                 <Image
                                     src={popup.image_url}
-                                    alt={popup.title || "Promo Govershop"}
+                                    alt={popup.title || "Promo Restopup"}
                                     width={600}
                                     height={400}
                                     className="w-full h-auto"
@@ -259,7 +259,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                         ) : (
                             <Image
                                 src={popup.image_url}
-                                alt={popup.title || "Promo Govershop"}
+                                alt={popup.title || "Promo Restopup"}
                                 width={600}
                                 height={400}
                                 className="w-full h-auto"
@@ -287,11 +287,11 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             {/* Hero / Search Section */}
             <section className="flex flex-col items-center justify-center space-y-6 text-center">
                 <div className="space-y-4 flex flex-col items-center">
-                    <h1 className="sr-only">Govershop — Top Up Game Termurah dan Terpercaya</h1>
+                    <h1 className="sr-only">Restopup — Top Up Game Termurah dan Terpercaya</h1>
                     {/* <div className="relative w-64 h-24 md:w-80 md:h-32">
                         <Image
-                            src="/Banner/logo-govershop.png"
-                            alt="Govershop — Platform Top Up Game"
+                            src="/Banner/logo-restopup-v1.png"
+                            alt="Restopup — Platform Top Up Game"
                             fill
                             className="object-contain drop-shadow-[0_0_15px_rgba(230,80,27,0.5)]"
                             priority
@@ -567,13 +567,13 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                         {/* Always visible: Title + Intro */}
                         <div>
                             <h2 className="text-xl md:text-2xl font-bold text-white mb-4">
-                                Govershop — Top Up Game &amp; Voucher Game Termurah dan Terpercaya
+                                Restopup — Top Up Game &amp; Voucher Game Termurah dan Terpercaya
                             </h2>
                             <p>
-                                Di era gaming yang terus berkembang, kebutuhan akan layanan top up game dan pembelian voucher game menjadi bagian tak terpisahkan dari pengalaman bermain. Govershop hadir sebagai platform terpercaya yang menghadirkan kemudahan, kecepatan, dan keamanan terbaik untuk setiap transaksi digital kamu.
+                                Di era gaming yang terus berkembang, kebutuhan akan layanan top up game dan pembelian voucher game menjadi bagian tak terpisahkan dari pengalaman bermain. Restopup hadir sebagai platform terpercaya yang menghadirkan kemudahan, kecepatan, dan keamanan terbaik untuk setiap transaksi digital kamu.
                             </p>
                             <p className="mt-3">
-                                Dengan koleksi game populer mulai dari Mobile Legends, PUBG Mobile, Free Fire, Genshin Impact, Valorant, hingga Roblox, Govershop memastikan setiap gamer bisa mendapatkan diamond, UC, gems, maupun voucher premium dengan harga paling kompetitif. Ditambah dukungan beragam metode pembayaran modern seperti e-wallet, transfer bank, hingga pulsa — bertransaksi jadi mudah kapan saja dan di mana saja.
+                                Dengan koleksi game populer mulai dari Mobile Legends, PUBG Mobile, Free Fire, Genshin Impact, Valorant, hingga Roblox, Restopup memastikan setiap gamer bisa mendapatkan diamond, UC, gems, maupun voucher premium dengan harga paling kompetitif. Ditambah dukungan beragam metode pembayaran modern seperti e-wallet, transfer bank, hingga pulsa — bertransaksi jadi mudah kapan saja dan di mana saja.
                             </p>
                         </div>
 
@@ -589,35 +589,35 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                 >
                                     <div>
                                         <h3 className="text-lg font-semibold text-white/90 mb-3">
-                                            Kenapa Harus Govershop?
+                                            Kenapa Harus Restopup?
                                         </h3>
                                         <div className="space-y-4">
                                             <div>
                                                 <h4 className="font-semibold text-white/80">Harga Paling Bersahabat</h4>
-                                                <p>Govershop berkomitmen menghadirkan harga terbaik untuk setiap layanan top up dan voucher. Setiap transaksi dirancang agar tetap ramah di kantong tanpa mengorbankan kualitas layanan.</p>
+                                                <p>Restopup berkomitmen menghadirkan harga terbaik untuk setiap layanan top up dan voucher. Setiap transaksi dirancang agar tetap ramah di kantong tanpa mengorbankan kualitas layanan.</p>
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-white/80">Transaksi Instan &amp; Otomatis</h4>
-                                                <p>Kecepatan adalah segalanya. Di Govershop, setiap top up diproses secara otomatis dalam hitungan detik. Begitu pembayaran berhasil, item langsung masuk ke akun game kamu.</p>
+                                                <p>Kecepatan adalah segalanya. Di Restopup, setiap top up diproses secara otomatis dalam hitungan detik. Begitu pembayaran berhasil, item langsung masuk ke akun game kamu.</p>
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-white/80">100% Aman &amp; Terpercaya</h4>
-                                                <p>Keamanan data dan transaksi adalah prioritas utama. Govershop menggunakan sistem terenkripsi yang menjamin setiap informasi pribadi serta pembayaran terlindungi sepenuhnya.</p>
+                                                <p>Keamanan data dan transaksi adalah prioritas utama. Restopup menggunakan sistem terenkripsi yang menjamin setiap informasi pribadi serta pembayaran terlindungi sepenuhnya.</p>
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-white/80">Pilihan Game Terlengkap</h4>
-                                                <p>Dari game mobile populer hingga PC dan console, Govershop menyediakan ribuan produk digital — diamond, UC, gems, coin, hingga voucher game resmi yang siap digunakan kapan saja.</p>
+                                                <p>Dari game mobile populer hingga PC dan console, Restopup menyediakan ribuan produk digital — diamond, UC, gems, coin, hingga voucher game resmi yang siap digunakan kapan saja.</p>
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-white/80">Dukungan Pelanggan 24/7</h4>
-                                                <p>Tim customer support Govershop selalu siap membantu kapan pun kamu membutuhkan — mulai dari pertanyaan seputar transaksi hingga kendala teknis.</p>
+                                                <p>Tim customer support Restopup selalu siap membantu kapan pun kamu membutuhkan — mulai dari pertanyaan seputar transaksi hingga kendala teknis.</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div>
                                         <h3 className="text-lg font-semibold text-white/90 mb-3">
-                                            Layanan Unggulan Govershop
+                                            Layanan Unggulan Restopup
                                         </h3>
                                         <div className="space-y-4">
                                             <div>
@@ -630,7 +630,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-white/80">Promo &amp; Event Spesial</h4>
-                                                <p>Govershop rutin menghadirkan promo eksklusif, diskon besar, hingga cashback menarik untuk setiap transaksi tertentu.</p>
+                                                <p>Restopup rutin menghadirkan promo eksklusif, diskon besar, hingga cashback menarik untuk setiap transaksi tertentu.</p>
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-white/80">Multi Metode Pembayaran</h4>
@@ -641,22 +641,22 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
 
                                     <div>
                                         <h3 className="text-lg font-semibold text-white/90 mb-3">
-                                            Govershop — Partner Gaming Digital Kamu
+                                            Restopup — Partner Gaming Digital Kamu
                                         </h3>
                                         <p>
-                                            Bermain game bukan lagi sekadar hiburan, tetapi juga gaya hidup. Untuk mendukung itu, Govershop hadir sebagai partner digital yang selalu siap menyediakan segala kebutuhan gaming kamu. Mulai dari membeli diamond Mobile Legends, mengisi UC PUBG Mobile, membeli voucher Steam Wallet, hingga top up Valorant Points — semua bisa dilakukan hanya dengan beberapa klik.
+                                            Bermain game bukan lagi sekadar hiburan, tetapi juga gaya hidup. Untuk mendukung itu, Restopup hadir sebagai partner digital yang selalu siap menyediakan segala kebutuhan gaming kamu. Mulai dari membeli diamond Mobile Legends, mengisi UC PUBG Mobile, membeli voucher Steam Wallet, hingga top up Valorant Points — semua bisa dilakukan hanya dengan beberapa klik.
                                         </p>
                                         <p className="mt-3">
-                                            Dengan sistem yang praktis dan pelayanan profesional, Govershop memastikan setiap transaksi berlangsung lancar. Tidak perlu menunggu lama, tidak perlu khawatir soal keamanan — cukup pilih produk, lakukan pembayaran, dan nikmati hasilnya langsung di akun game kamu.
+                                            Dengan sistem yang praktis dan pelayanan profesional, Restopup memastikan setiap transaksi berlangsung lancar. Tidak perlu menunggu lama, tidak perlu khawatir soal keamanan — cukup pilih produk, lakukan pembayaran, dan nikmati hasilnya langsung di akun game kamu.
                                         </p>
                                     </div>
 
                                     <div>
                                         <p>
-                                            Jika kamu mencari tempat top up game dan voucher game termurah serta terpercaya, maka <strong className="text-white/80">Govershop</strong> adalah jawabannya. Dengan harga bersahabat, transaksi otomatis super cepat, pilihan game lengkap, serta jaminan keamanan — Govershop menjadi solusi terbaik untuk memenuhi segala kebutuhan gaming digitalmu.
+                                            Jika kamu mencari tempat top up game dan voucher game termurah serta terpercaya, maka <strong className="text-white/80">Restopup</strong> adalah jawabannya. Dengan harga bersahabat, transaksi otomatis super cepat, pilihan game lengkap, serta jaminan keamanan — Restopup menjadi solusi terbaik untuk memenuhi segala kebutuhan gaming digitalmu.
                                         </p>
                                         <p className="mt-3 text-muted-foreground/50 text-xs">
-                                            Jadikan pengalaman bermain game lebih seru dan menyenangkan bersama Govershop. Ribuan gamer sudah membuktikan kualitas layanan kami — kini giliran kamu untuk merasakannya.
+                                            Jadikan pengalaman bermain game lebih seru dan menyenangkan bersama Restopup. Ribuan gamer sudah membuktikan kualitas layanan kami — kini giliran kamu untuk merasakannya.
                                         </p>
                                     </div>
                                 </motion.div>

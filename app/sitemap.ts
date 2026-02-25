@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import api from "@/lib/api";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://govershop.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://restopup.com";
 
 interface BrandPublicData {
   brand_name: string;

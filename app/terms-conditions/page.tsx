@@ -32,7 +32,7 @@ export default function TermsConditionsPage() {
                     <div className="space-y-10 text-foreground/85 leading-relaxed">
                         <section>
                             <p>
-                                Selamat datang di Govershop. Dengan mengakses dan menggunakan website serta layanan kami,
+                                Selamat datang di Restopup. Dengan mengakses dan menggunakan website serta layanan kami,
                                 Anda dianggap telah membaca, memahami, dan menyetujui seluruh Syarat &amp; Ketentuan yang
                                 berlaku di bawah ini. Jika Anda tidak menyetujui salah satu ketentuan, mohon untuk tidak
                                 menggunakan layanan kami.
@@ -45,20 +45,20 @@ export default function TermsConditionsPage() {
                             </h2>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
                                 <li>
-                                    <strong className="text-foreground/90">&quot;Govershop&quot;</strong> mengacu pada platform
+                                    <strong className="text-foreground/90">&quot;Restopup&quot;</strong> mengacu pada platform
                                     website yang menyediakan layanan top up game dan produk digital.
                                 </li>
                                 <li>
                                     <strong className="text-foreground/90">&quot;Pengguna&quot;</strong> adalah setiap individu
-                                    yang mengakses, mendaftar, atau menggunakan layanan Govershop.
+                                    yang mengakses, mendaftar, atau menggunakan layanan Restopup.
                                 </li>
                                 <li>
                                     <strong className="text-foreground/90">&quot;Layanan&quot;</strong> mencakup seluruh fitur yang
-                                    tersedia di Govershop, termasuk top up game, pembelian voucher, dan fitur member.
+                                    tersedia di Restopup, termasuk top up game, pembelian voucher, dan fitur member.
                                 </li>
                                 <li>
                                     <strong className="text-foreground/90">&quot;Transaksi&quot;</strong> adalah proses pembelian
-                                    produk digital melalui Govershop.
+                                    produk digital melalui Restopup.
                                 </li>
                             </ul>
                         </section>
@@ -70,8 +70,8 @@ export default function TermsConditionsPage() {
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
                                 <li>Pengguna wajib berusia minimal 13 tahun atau memiliki persetujuan orang tua/wali untuk menggunakan layanan ini.</li>
                                 <li>Pengguna bertanggung jawab penuh atas keakuratan data yang dimasukkan saat melakukan transaksi, termasuk User ID, Server ID, dan nomor telepon.</li>
-                                <li>Govershop berhak menolak, membatalkan, atau menghentikan layanan kepada pengguna yang melanggar ketentuan ini.</li>
-                                <li>Govershop berhak mengubah, memodifikasi, atau memperbarui Syarat &amp; Ketentuan ini kapan saja tanpa pemberitahuan terlebih dahulu.</li>
+                                <li>Restopup berhak menolak, membatalkan, atau menghentikan layanan kepada pengguna yang melanggar ketentuan ini.</li>
+                                <li>Restopup berhak mengubah, memodifikasi, atau memperbarui Syarat &amp; Ketentuan ini kapan saja tanpa pemberitahuan terlebih dahulu.</li>
                             </ul>
                         </section>
 
@@ -80,7 +80,7 @@ export default function TermsConditionsPage() {
                                 3. Layanan Top Up &amp; Produk Digital
                             </h2>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
-                                <li>Govershop menyediakan layanan top up game dan pembelian produk digital seperti diamond, UC, voucher, dan item in-game lainnya.</li>
+                                <li>Restopup menyediakan layanan top up game dan pembelian produk digital seperti diamond, UC, voucher, dan item in-game lainnya.</li>
                                 <li>Proses top up dilakukan secara otomatis setelah pembayaran dikonfirmasi oleh sistem pembayaran.</li>
                                 <li>Waktu pemrosesan transaksi umumnya berlangsung dalam hitungan detik hingga beberapa menit, tergantung kondisi server dan penyedia layanan.</li>
                                 <li>Harga produk yang ditampilkan sudah termasuk biaya layanan kecuali disebutkan lain.</li>
@@ -92,10 +92,10 @@ export default function TermsConditionsPage() {
                                 4. Pembayaran
                             </h2>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
-                                <li>Govershop menerima pembayaran melalui metode yang tersedia di website, termasuk namun tidak terbatas pada QRIS, e-wallet, dan transfer bank.</li>
+                                <li>Restopup menerima pembayaran melalui metode yang tersedia di website, termasuk namun tidak terbatas pada QRIS, e-wallet, dan transfer bank.</li>
                                 <li>Pembayaran harus dilakukan dalam batas waktu yang ditentukan. Transaksi yang tidak dibayar dalam batas waktu akan otomatis dibatalkan.</li>
                                 <li>Biaya tambahan seperti biaya admin dan biaya transaksi akan ditampilkan secara transparan sebelum pembayaran dilakukan.</li>
-                                <li>Govershop tidak bertanggung jawab atas keterlambatan atau kegagalan pembayaran yang disebabkan oleh pihak penyedia layanan pembayaran.</li>
+                                <li>Restopup tidak bertanggung jawab atas keterlambatan atau kegagalan pembayaran yang disebabkan oleh pihak penyedia layanan pembayaran.</li>
                             </ul>
                         </section>
 
@@ -112,11 +112,11 @@ export default function TermsConditionsPage() {
                             <p className="mb-3">Pengembalian dana hanya dapat dilakukan dalam kondisi berikut:</p>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
                                 <li>Pembayaran berhasil tetapi item tidak masuk ke akun game dalam waktu yang ditentukan, dan bukan disebabkan oleh kesalahan input pengguna.</li>
-                                <li>Terjadi kesalahan teknis dari pihak Govershop yang menyebabkan transaksi gagal.</li>
+                                <li>Terjadi kesalahan teknis dari pihak Restopup yang menyebabkan transaksi gagal.</li>
                                 <li>Terjadi duplikasi pembayaran yang tidak disengaja.</li>
                             </ul>
                             <p className="mt-3 text-muted-foreground">
-                                Proses refund akan diverifikasi terlebih dahulu oleh tim Govershop dan membutuhkan waktu 1–7 hari kerja.
+                                Proses refund akan diverifikasi terlebih dahulu oleh tim Restopup dan membutuhkan waktu 1–7 hari kerja.
                             </p>
                         </section>
 
@@ -130,7 +130,7 @@ export default function TermsConditionsPage() {
                                     User ID, Server ID, dan nomor telepon.
                                 </li>
                                 <li>
-                                    Govershop <strong className="text-foreground/90">tidak bertanggung jawab</strong> atas kerugian yang timbul akibat kesalahan input data oleh pengguna.
+                                    Restopup <strong className="text-foreground/90">tidak bertanggung jawab</strong> atas kerugian yang timbul akibat kesalahan input data oleh pengguna.
                                 </li>
                                 <li>
                                     Jika item sudah terkirim ke akun yang salah karena kesalahan input, maka transaksi
@@ -146,8 +146,8 @@ export default function TermsConditionsPage() {
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
                                 <li>Pengguna dapat mendaftar sebagai member untuk mendapatkan harga khusus dan fitur tambahan.</li>
                                 <li>Pengguna bertanggung jawab menjaga kerahasiaan kredensial akun (email dan password).</li>
-                                <li>Govershop tidak bertanggung jawab atas kerugian yang timbul akibat akses tidak sah ke akun member yang disebabkan oleh kelalaian pengguna.</li>
-                                <li>Govershop berhak menangguhkan atau menonaktifkan akun member yang terbukti melanggar ketentuan ini atau melakukan aktivitas yang mencurigakan.</li>
+                                <li>Restopup tidak bertanggung jawab atas kerugian yang timbul akibat akses tidak sah ke akun member yang disebabkan oleh kelalaian pengguna.</li>
+                                <li>Restopup berhak menangguhkan atau menonaktifkan akun member yang terbukti melanggar ketentuan ini atau melakukan aktivitas yang mencurigakan.</li>
                             </ul>
                         </section>
 
@@ -161,7 +161,7 @@ export default function TermsConditionsPage() {
                                 <li>Melakukan penipuan, manipulasi, atau penyalahgunaan sistem pembayaran.</li>
                                 <li>Menggunakan bot, script, atau metode otomatis lainnya untuk mengakses layanan.</li>
                                 <li>Mengganggu atau merusak infrastruktur dan keamanan website.</li>
-                                <li>Menyebarkan informasi palsu atau menyesatkan terkait layanan Govershop.</li>
+                                <li>Menyebarkan informasi palsu atau menyesatkan terkait layanan Restopup.</li>
                             </ul>
                         </section>
 
@@ -170,9 +170,9 @@ export default function TermsConditionsPage() {
                                 9. Batasan Tanggung Jawab
                             </h2>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
-                                <li>Govershop menyediakan layanan &quot;sebagaimana adanya&quot; (as is) tanpa jaminan apapun, baik tersurat maupun tersirat.</li>
-                                <li>Govershop tidak bertanggung jawab atas kerugian langsung maupun tidak langsung yang timbul dari penggunaan layanan, termasuk namun tidak terbatas pada kehilangan data, gangguan layanan, atau akses tidak sah.</li>
-                                <li>Govershop tidak bertanggung jawab atas gangguan layanan yang disebabkan oleh pihak ketiga, termasuk penyedia game, server game, atau penyedia layanan pembayaran.</li>
+                                <li>Restopup menyediakan layanan &quot;sebagaimana adanya&quot; (as is) tanpa jaminan apapun, baik tersurat maupun tersirat.</li>
+                                <li>Restopup tidak bertanggung jawab atas kerugian langsung maupun tidak langsung yang timbul dari penggunaan layanan, termasuk namun tidak terbatas pada kehilangan data, gangguan layanan, atau akses tidak sah.</li>
+                                <li>Restopup tidak bertanggung jawab atas gangguan layanan yang disebabkan oleh pihak ketiga, termasuk penyedia game, server game, atau penyedia layanan pembayaran.</li>
                             </ul>
                         </section>
 
@@ -196,7 +196,7 @@ export default function TermsConditionsPage() {
                                 Jika Anda memiliki pertanyaan mengenai Syarat &amp; Ketentuan ini, silakan hubungi kami:
                             </p>
                             <div className="mt-4 p-4 rounded-xl bg-card border border-border">
-                                <p className="font-semibold text-foreground">Govershop</p>
+                                <p className="font-semibold text-foreground">Restopup</p>
                                 <p className="text-muted-foreground mt-1">
                                     No Whatsapp / Telepon:{" "}
                                     <a href="mailto:fachrulfauzy23@gmail.com" className="text-primary hover:underline">

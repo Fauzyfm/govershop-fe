@@ -5,7 +5,7 @@ export const metadata: Metadata = {
         index: false,
         follow: false,
     },
-    title: "Member Area — Govershop",
+    title: "Member Area — Restopup",
 };
 
 export default function MemberLayout({

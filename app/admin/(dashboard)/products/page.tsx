@@ -130,7 +130,7 @@ export default function AdminProducts() {
         try {
             const allProducts = await fetchAllProductsForExport();
             if (allProducts.length > 0) {
-                exportProductsToPDF(allProducts, { storeName: 'GOVERSHOP KATALOG' });
+                exportProductsToPDF(allProducts, { storeName: 'RESTOPUP KATALOG' });
                 setNotification({ message: `Berhasil export ${allProducts.length} produk ke PDF!`, type: "success" });
             } else {
                 setNotification({ message: "Tidak ada produk untuk diexport.", type: "error" });
@@ -148,7 +148,7 @@ export default function AdminProducts() {
         try {
             const allProducts = await fetchAllProductsForExport();
             if (allProducts.length > 0) {
-                exportMemberPricesToPDF(allProducts, { storeName: 'GOVERSHOP - HARGA MEMBER' });
+                exportMemberPricesToPDF(allProducts, { storeName: 'RESTOPUP - HARGA MEMBER' });
                 setNotification({ message: `Berhasil export ${allProducts.length} harga member ke PDF!`, type: "success" });
             } else {
                 setNotification({ message: "Tidak ada produk untuk diexport.", type: "error" });

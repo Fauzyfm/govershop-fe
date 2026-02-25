@@ -12,11 +12,11 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
                     {/* Logo & Description */}
                     <div className="text-center md:text-left">
-                        <Link href="/" className="inline-block mb-3" aria-label="Govershop Beranda">
+                        <Link href="/" className="inline-block mb-3" aria-label="Restopup Beranda">
                             <div className="relative h-12 w-40 mx-auto md:mx-0">
                                 <Image
-                                    src="/Banner/logo-govershop.png"
-                                    alt="Govershop"
+                                    src="/Banner/logo-restopup-v1.png"
+                                    alt="Restopup"
                                     fill
                                     className="object-contain object-left"
                                 />
@@ -50,7 +50,7 @@ export default function Footer() {
                         <ul className="space-y-2 text-sm">
                             <li>
                                 <Link href="/terms-conditions" className="text-muted-foreground hover:text-primary transition-colors">
-                                    Syarat &amp; Ketentuan Govershop
+                                    Syarat &amp; Ketentuan Restopup
                                 </Link>
                             </li>
                             <li>
@@ -64,7 +64,7 @@ export default function Footer() {
 
                 {/* Copyright */}
                 <div className="mt-10 pt-6 border-t border-white/5 text-center flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground/60">
-                    <p>&copy; {new Date().getFullYear()} Govershop. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Restopup. All rights reserved.</p>
                     <p>Platform Top Up Game #1 di Indonesia</p>
                 </div>
             </div>

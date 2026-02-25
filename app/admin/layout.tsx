@@ -5,7 +5,7 @@ export const metadata: Metadata = {
         index: false,
         follow: false,
     },
-    title: "Admin Dashboard — Govershop",
+    title: "Admin Dashboard — Restopup",
 };
 
 export default function AdminLayout({

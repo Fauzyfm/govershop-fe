@@ -65,7 +65,7 @@ export default function UnifiedLogin() {
                     <User className="w-8 h-8 text-white" />
                 </div>
                 <h1 className="text-3xl font-bold text-(--foreground) mb-2 glow-text">Login</h1>
-                <p className="text-(--muted-foreground)">Masuk ke akun Govershop Anda</p>
+                <p className="text-(--muted-foreground)">Masuk ke akun Restopup Anda</p>
             </div>
 
             {error && (

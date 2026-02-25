@@ -298,7 +298,7 @@ export function exportMemberPricesToPDF(
             if (contactInfo) {
                 doc.text(contactInfo, 14, pageHeight - 6);
             } else {
-                doc.text('Dokumen internal - Harga member Govershop', 14, pageHeight - 6);
+                doc.text('Dokumen internal - Harga member Restopup', 14, pageHeight - 6);
             }
         },
     });

@@ -81,7 +81,7 @@ export default function AdminLayout({
                     >
                         <Menu className="w-6 h-6" />
                     </button>
-                    <span className="font-bold text-white ml-2 text-lg">Govershop Admin</span>
+                    <span className="font-bold text-white ml-2 text-lg">Restopup Admin</span>
                 </div>
 
                 {children}

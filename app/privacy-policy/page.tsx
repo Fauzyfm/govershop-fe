@@ -32,9 +32,9 @@ export default function PrivacyPolicyPage() {
                     <div className="space-y-10 text-foreground/85 leading-relaxed">
                         <section>
                             <p>
-                                Govershop (&quot;kami&quot;, &quot;milik kami&quot;) berkomitmen untuk melindungi privasi dan keamanan data pribadi Anda.
+                                Restopup (&quot;kami&quot;, &quot;milik kami&quot;) berkomitmen untuk melindungi privasi dan keamanan data pribadi Anda.
                                 Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, menyimpan, dan melindungi
-                                informasi pribadi Anda saat menggunakan layanan kami di website Govershop.
+                                informasi pribadi Anda saat menggunakan layanan kami di website Restopup.
                             </p>
                         </section>
 
@@ -174,7 +174,7 @@ export default function PrivacyPolicyPage() {
                                 Jika Anda memiliki pertanyaan atau keluhan terkait Kebijakan Privasi ini, silakan hubungi kami melalui:
                             </p>
                             <div className="mt-4 p-4 rounded-xl bg-card border border-border">
-                                <p className="font-semibold text-foreground">Govershop</p>
+                                <p className="font-semibold text-foreground">Restopup</p>
                                 <p className="text-muted-foreground mt-1">
                                     No Whatsapp / Telepon:{" "}
                                     <a href="mailto:fachrulfauzy23@gmail.com" className="text-primary hover:underline">

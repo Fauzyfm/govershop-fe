@@ -76,8 +76,8 @@ export default function LayeredCarousel({
     };
 
     const configs = isMobile ? MOBILE_CONFIGS : DESKTOP_CONFIGS;
-    // Mobile: card takes more width so it's visible; Desktop: 65%
-    const cardWidth = isMobile ? 80 : 65;
+    // Mobile: card takes nearly full width for bigger banners; Desktop: 65%
+    const cardWidth = isMobile ? 92 : 65;
 
     if (items.length === 0) return null;
 

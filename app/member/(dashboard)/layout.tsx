@@ -92,7 +92,7 @@ export default function MemberLayout({
                     >
                         <Menu className="w-6 h-6" />
                     </button>
-                    <span className="font-bold text-white ml-2 text-lg">Govershop Member</span>
+                    <span className="font-bold text-white ml-2 text-lg">Restopup Member</span>
                 </div>
 
                 {children}

@@ -120,7 +120,7 @@ export default function MemberSidebar({ isCollapsed, toggleSidebar }: MemberSide
                     {!isCollapsed ? (
                         <h1 className="text-xl font-bold text-white flex items-center gap-2 whitespace-nowrap">
                             <CreditCard className="w-6 h-6 text-(--primary)" />
-                            <span className="bg-linear-to-r from-white to-white/70 bg-clip-text text-transparent">Govershop</span>
+                            <span className="bg-linear-to-r from-white to-white/70 bg-clip-text text-transparent">Restopup</span>
                             <span className="text-(--primary) neon-glow">Member</span>
                         </h1>
                     ) : (

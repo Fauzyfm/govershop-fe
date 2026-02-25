@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Lacak Pesanan Top Up Game",
     description:
-        "Lacak status pesanan top up game kamu di Govershop. Masukkan nomor HP untuk melihat riwayat dan status pembayaran.",
+        "Lacak status pesanan top up game kamu di Restopup. Masukkan nomor HP untuk melihat riwayat dan status pembayaran.",
     alternates: {
         canonical: "/track",
     },

@@ -6,44 +6,44 @@ import { JsonLd } from "@/components/seo/jsonld";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://govershop.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://restopup.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Govershop — Top Up Game Termurah & Instan",
-    template: "%s | Govershop",
+    default: "Restopup — Top Up Game Termurah & Instan",
+    template: "%s | Restopup",
   },
   description:
-    "Top up game favoritmu di Govershop — harga termurah, proses instan, dan terpercaya. Mobile Legends, Free Fire, Genshin Impact, dan 100+ game lainnya.",
+    "Top up game favoritmu di Restopup — harga termurah, proses instan, dan terpercaya. Mobile Legends, Free Fire, Genshin Impact, dan 100+ game lainnya.",
   icons: {
-    icon: "/Banner/logo-govershop.png",
-    shortcut: "/Banner/logo-govershop.png",
-    apple: "/Banner/logo-govershop.png",
+    icon: "/Banner/favicon-restopup.png",
+    shortcut: "/Banner/favicon-restopup.png",
+    apple: "/Banner/favicon-restopup.png",
   },
   openGraph: {
     type: "website",
     locale: "id_ID",
     url: SITE_URL,
-    siteName: "Govershop",
-    title: "Govershop — Top Up Game Termurah & Instan",
+    siteName: "Restopup",
+    title: "Restopup — Top Up Game Termurah & Instan",
     description:
-      "Top up game favoritmu di Govershop — harga termurah, proses instan, dan terpercaya. 100+ game tersedia.",
+      "Top up game favoritmu di Restopup — harga termurah, proses instan, dan terpercaya. 100+ game tersedia.",
     images: [
       {
-        url: "/Banner/logo-govershop.png",
+        url: "/Banner/logo-restopup-v1.png",
         width: 1200,
         height: 630,
-        alt: "Govershop — Platform Top Up Game Terpercaya",
+        alt: "Restopup — Platform Top Up Game Terpercaya",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Govershop — Top Up Game Termurah & Instan",
+    title: "Restopup — Top Up Game Termurah & Instan",
     description:
-      "Top up game favoritmu dengan harga termurah dan proses instan di Govershop.",
-    images: ["/Banner/logo-govershop.png"],
+      "Top up game favoritmu dengan harga termurah dan proses instan di Restopup.",
+    images: ["/Banner/logo-restopup-v1.png"],
   },
   robots: {
     index: true,

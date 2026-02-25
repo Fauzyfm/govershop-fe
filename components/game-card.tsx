@@ -36,7 +36,10 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
     const Content = (
         <div className={`
             arcade-card group relative w-full aspect-3/4 rounded-2xl overflow-hidden
-            ${isDisabled ? "grayscale opacity-70 cursor-not-allowed" : "cursor-pointer"}
+            ${isDisabled
+                ? "grayscale opacity-70 cursor-not-allowed"
+                : "cursor-pointer border border-primary/30 shadow-[0_0_8px_rgba(195,17,12,0.25),0_0_20px_rgba(230,80,27,0.15)] hover:shadow-[0_0_15px_rgba(195,17,12,0.5),0_0_35px_rgba(230,80,27,0.3)] transition-shadow duration-500"
+            }
         `}>
             {/* Scanline Overlay */}
             <div className="scanlines absolute inset-0 z-10 pointer-events-none" />
@@ -45,7 +48,7 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
             <div className="absolute inset-0">
                 <Image
                     src={image}
-                    alt={`Top Up ${name} — Govershop`}
+                    alt={`Top Up ${name} — Restopup`}
                     fill
                     className={`object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110 group-hover:rotate-1"}`}
                     loading="lazy"
@@ -62,9 +65,9 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
                 )}
             </div>
 
-            {/* Arcade Border Glow - Fire Colored */}
+            {/* Arcade Border Glow - Fire Colored (intensifies on hover) */}
             {!isDisabled && (
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                <div className="absolute inset-0 rounded-2xl opacity-40 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                     style={{
                         boxShadow: 'inset 0 0 30px rgba(195, 17, 12, 0.4), 0 0 20px rgba(230, 80, 27, 0.3)'
                     }}

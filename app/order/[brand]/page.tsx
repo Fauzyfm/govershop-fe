@@ -8,10 +8,10 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
     const brand = decodeURIComponent(resolvedParams.brand);
     return {
         title: `Top Up ${brand} — Harga Termurah & Proses Instan`,
-        description: `Top up ${brand} di Govershop dengan harga termurah dan proses instan. Pembayaran mudah via QRIS, transfer bank, dan lainnya. Aman dan terpercaya!`,
+        description: `Top up ${brand} di Restopup dengan harga termurah dan proses instan. Pembayaran mudah via QRIS, transfer bank, dan lainnya. Aman dan terpercaya!`,
         openGraph: {
-            title: `Top Up ${brand} | Govershop`,
-            description: `Top up ${brand} murah dan cepat di Govershop. Proses otomatis, harga bersaing.`,
+            title: `Top Up ${brand} | Restopup`,
+            description: `Top up ${brand} murah dan cepat di Restopup. Proses otomatis, harga bersaing.`,
         },
         alternates: {
             canonical: `/order/${encodeURIComponent(brand)}`,

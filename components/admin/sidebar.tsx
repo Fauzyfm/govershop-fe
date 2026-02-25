@@ -118,7 +118,7 @@ export default function AdminSidebar({ isCollapsed, toggleSidebar }: AdminSideba
                 {!isCollapsed ? (
                     <h1 className="text-xl font-bold text-white flex items-center gap-2 whitespace-nowrap z-10">
                         <CreditCard className="w-6 h-6 text-primary" />
-                        <span className="bg-linear-to-r from-white to-white/70 bg-clip-text text-transparent">Govershop</span>
+                        <span className="bg-linear-to-r from-white to-white/70 bg-clip-text text-transparent">Restopup</span>
                         <span className="text-primary neon-glow">Admin</span>
                     </h1>
                 ) : (
