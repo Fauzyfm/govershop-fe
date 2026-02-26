@@ -154,6 +154,25 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
         return product?.price;
     }, [selectedSku, initialProducts]);
 
+    // Auto-deselect payment if product price makes it unavailable
+    useEffect(() => {
+        if (selectedPayment && selectedProductPrice) {
+            const selectedPaymentMethod = paymentMethods.find(m => m.code === selectedPayment);
+            if (selectedPaymentMethod) {
+                // VA requires minimum Rp 10.000
+                if (selectedPaymentMethod.type === 'va' && selectedProductPrice < 10000) {
+                    setSelectedPayment(null);
+                    setPriceDetails(null);
+                }
+                // PayPal requires minimum Rp 3.000
+                if (selectedPaymentMethod.type === 'paypal' && selectedProductPrice < 3000) {
+                    setSelectedPayment(null);
+                    setPriceDetails(null);
+                }
+            }
+        }
+    }, [selectedProductPrice, selectedPayment, paymentMethods]);
+
     // Effects
     useEffect(() => {
         // Calculate price when SKU or Payment changes

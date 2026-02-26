@@ -17,6 +17,9 @@ interface PaymentSelectorProps {
 // Minimum price for PayPal (Rp 3.000)
 const PAYPAL_MIN_PRICE = 3000;
 
+// Minimum price for Virtual Account (Rp 10.000) - Pakasir requirement
+const VA_MIN_PRICE = 10000;
+
 // Payment method logos mapping
 const PAYMENT_LOGOS: Record<string, string> = {
     // QRIS
@@ -110,6 +113,9 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
     // Check if PayPal is available (only for products >= Rp 3.000)
     const isPaypalAvailable = !productPrice || productPrice >= PAYPAL_MIN_PRICE;
 
+    // Check if Virtual Account is available (only for products >= Rp 10.000)
+    const isVaAvailable = !productPrice || productPrice >= VA_MIN_PRICE;
+
     // Group methods by type
     const groupedMethods = groupMethodsByType(methods);
 
@@ -145,8 +151,10 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                 const hasSelection = isCategorySelected(category.id);
                 const selectedName = getSelectedMethodName(category.id);
 
-                // Disable PayPal if product price is below minimum
-                const isDisabled = category.id === 'paypal' && !isPaypalAvailable;
+                // Disable category if product price is below minimum
+                const isDisabled =
+                    (category.id === 'paypal' && !isPaypalAvailable) ||
+                    (category.id === 'va' && !isVaAvailable);
 
                 return (
                     <div
@@ -202,13 +210,15 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                                         )}
                                         {isDisabled && (
                                             <span className="text-xs font-normal text-red-400 bg-red-400/20 px-2 py-0.5 rounded-full">
-                                                Min. Rp 3.000
+                                                {category.id === 'va' ? 'Min. Rp 10.000' : 'Min. Rp 3.000'}
                                             </span>
                                         )}
                                     </h4>
                                     <p className="text-xs text-muted-foreground">
                                         {isDisabled
-                                            ? "Harga produk harus minimal Rp 3.000 untuk PayPal"
+                                            ? (category.id === 'va'
+                                                ? "Nominal pembayaran harus minimal Rp 10.000 untuk Virtual Account"
+                                                : "Harga produk harus minimal Rp 3.000 untuk PayPal")
                                             : category.description}
                                     </p>
                                 </div>
