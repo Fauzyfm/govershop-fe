@@ -15,7 +15,7 @@ export default function Footer() {
                         <Link href="/" className="inline-block mb-3" aria-label="Restopup Beranda">
                             <div className="relative h-12 w-40 mx-auto md:mx-0">
                                 <Image
-                                    src="/Banner/logo-restopup-v1.png"
+                                    src="/Banner/logo-restopup-v2.png"
                                     alt="Restopup"
                                     fill
                                     className="object-contain object-left"

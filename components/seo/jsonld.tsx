@@ -22,7 +22,7 @@ const organizationJsonLd = {
     "@type": "Organization",
     name: "Restopup",
     url: SITE_URL,
-    logo: `${SITE_URL}/Banner/logo-restopup-v1.png`,
+    logo: `${SITE_URL}/Banner/logo-restopup-v2.png`,
     description:
         "Platform top up game online termurah dan terpercaya di Indonesia.",
     contactPoint: {

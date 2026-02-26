@@ -16,7 +16,7 @@ export default function Navbar() {
                 <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight group">
                     <div className="relative h-10 w-32"> {/* Adjust width as needed based on aspect ratio */}
                         <Image
-                            src="/Banner/logo-restopup-v1.png"
+                            src="/Banner/logo-restopup-v2.png"
                             alt="Restopup Logo"
                             fill
                             className="object-contain object-left"

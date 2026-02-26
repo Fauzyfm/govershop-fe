@@ -31,7 +31,7 @@ export const metadata: Metadata = {
       "Top up game favoritmu di Restopup — harga termurah, proses instan, dan terpercaya. 100+ game tersedia.",
     images: [
       {
-        url: "/Banner/logo-restopup-v1.png",
+        url: "/Banner/logo-restopup-v-dark.png",
         width: 1200,
         height: 630,
         alt: "Restopup — Platform Top Up Game Terpercaya",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     title: "Restopup — Top Up Game Termurah & Instan",
     description:
       "Top up game favoritmu dengan harga termurah dan proses instan di Restopup.",
-    images: ["/Banner/logo-restopup-v1.png"],
+    images: ["/Banner/logo-restopup-v-dark.png"],
   },
   robots: {
     index: true,
