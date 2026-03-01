@@ -67,7 +67,8 @@ async function getProducts(brand: string) {
         const allProducts = res.data?.products || [];
         return allProducts.filter(p =>
             p.brand.toLowerCase() === brand.toLowerCase() &&
-            !p.product_name.toLowerCase().includes("cek username")
+            !p.product_name.toLowerCase().includes("cek username") &&
+            !p.buyer_sku_code.toLowerCase().startsWith("checkuser")
         );
     } catch (error) {
         return [];
