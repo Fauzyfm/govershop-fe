@@ -145,18 +145,13 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         return categoryData.flatMap(c => c.brands).find(b => getBrandName(b) === name)!;
     });
 
-    // Build sorted tab list: Populer first, then alphabetical categories
+    // Build sorted tab list: Populer first, then categories in admin-defined order
     const tabList: { id: string; label: string }[] = [];
     if (bestSellerItems.length > 0) {
         tabList.push({ id: "section-populer", label: "Populer" });
     }
-    // Sort categories: "Games" first (if exists), then alphabetically
-    const sortedCategories = [...filteredCategoryData].sort((a, b) => {
-        if (a.category.toLowerCase() === "games") return -1;
-        if (b.category.toLowerCase() === "games") return 1;
-        return a.category.localeCompare(b.category);
-    });
-    sortedCategories.forEach(cat => {
+    // Categories are already in admin-defined order from backend
+    filteredCategoryData.forEach(cat => {
         tabList.push({ id: `section-${cat.category.toLowerCase().replace(/\s+/g, '-')}`, label: cat.category });
     });
 
@@ -457,8 +452,8 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                         );
                     })()}
 
-                    {/* Category Sections (sorted: Games first, then alphabetical) */}
-                    {sortedCategories.map((catData, categoryIdx) => {
+                    {/* Category Sections (in admin-defined order) */}
+                    {filteredCategoryData.map((catData, categoryIdx) => {
                         const limit = categoryLimits[catData.category] || initialLimit;
                         const visibleBrands = catData.brands.slice(0, limit);
                         const hasMore = catData.brands.length > limit;

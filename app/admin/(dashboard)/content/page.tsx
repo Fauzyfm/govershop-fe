@@ -18,8 +18,10 @@ import {
 import api from "@/lib/api";
 import Modal from "@/components/ui/modal";
 import BrandSettingsView from "./components/brand-settings-view";
+import DisplayCategoriesView from "./components/display-categories-view";
+import SimpleRichEditor from "@/components/ui/simple-rich-editor";
 
-type ContentType = "carousel" | "brand_image" | "popup" | "brand_settings";
+type ContentType = "carousel" | "brand_image" | "popup" | "brand_popup" | "brand_settings" | "display_categories";
 
 interface ContentItem {
     id: number;
@@ -61,7 +63,7 @@ export default function ContentManagement() {
 
     // Fetch content
     const fetchContent = async () => {
-        if (activeTab === "brand_settings") return;
+        if (activeTab === "brand_settings" || activeTab === "display_categories") return;
 
         setLoading(true);
         try {
@@ -175,6 +177,14 @@ export default function ContentManagement() {
             description: "Popup promo saat user masuk beranda"
         },
         {
+            key: "brand_popup" as ContentType,
+            label: "Brand Popup",
+            icon: Bell,
+            maxItems: null,
+            imageSize: "600 x 400 px (rasio 3:2)",
+            description: "Popup promo/info di halaman order brand tertentu"
+        },
+        {
             key: "brand_settings" as ContentType,
             label: "Kelola Brand",
             icon: RefreshCw,
@@ -182,10 +192,18 @@ export default function ContentManagement() {
             imageSize: "",
             description: "Atur status dan best seller brand"
         },
+        {
+            key: "display_categories" as ContentType,
+            label: "Kelola Kategori",
+            icon: Layers,
+            maxItems: null,
+            imageSize: "",
+            description: "Atur kategori tab di halaman depan"
+        },
     ];
 
     const currentTab = tabs.find(t => t.key === activeTab);
-    const canAdd = activeTab !== "brand_settings" && (currentTab?.maxItems ? items.filter(i => i.content_type === activeTab).length < currentTab.maxItems : true);
+    const canAdd = activeTab !== "brand_settings" && activeTab !== "display_categories" && (currentTab?.maxItems ? items.filter(i => i.content_type === activeTab).length < currentTab.maxItems : true);
 
     return (
         <div className="space-y-6">
@@ -199,7 +217,7 @@ export default function ContentManagement() {
                     <p className="text-white/50 text-sm mt-1 ml-4">Kelola carousel, gambar game card, popup, dan status brand</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    {activeTab !== "brand_settings" && (
+                    {activeTab !== "brand_settings" && activeTab !== "display_categories" && (
                         <button
                             onClick={fetchContent}
                             className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-white/70 transition-colors border border-white/5"
@@ -245,6 +263,8 @@ export default function ContentManagement() {
             {/* Content Area */}
             {activeTab === "brand_settings" ? (
                 <BrandSettingsView />
+            ) : activeTab === "display_categories" ? (
+                <DisplayCategoriesView />
             ) : (
                 <>
                     {/* Image Size Info */}
@@ -294,14 +314,20 @@ export default function ContentManagement() {
                                     >
                                         {/* Image Preview */}
                                         <div className="aspect-video bg-white/5 relative group-hover:bg-white/10 transition-colors">
-                                            <img
-                                                src={item.image_url}
-                                                alt={item.title || "Content"}
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = "https://placehold.co/400x225/1e293b/64748b?text=No+Image";
-                                                }}
-                                            />
+                                            {item.image_url ? (
+                                                <img
+                                                    src={item.image_url}
+                                                    alt={item.title || "Content"}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).src = "https://placehold.co/400x225/1e293b/64748b?text=No+Image";
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">
+                                                    No Image
+                                                </div>
+                                            )}
                                             {/* Status Badge */}
                                             <div className="absolute top-2 left-2 flex gap-2">
                                                 {!item.is_active && (
@@ -373,15 +399,15 @@ export default function ContentManagement() {
             )}
 
             {/* Create/Edit Modal */}
-            {activeTab !== "brand_settings" && (
+            {activeTab !== "brand_settings" && activeTab !== "display_categories" && (
                 <Modal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     title={editingItem ? "Edit Content" : `Tambah ${currentTab?.label}`}
                 >
                     <form onSubmit={handleSave} className="space-y-5">
-                        {/* Brand Name (for brand_image only) */}
-                        {activeTab === "brand_image" && (
+                        {/* Brand Name (for brand_image and brand_popup) */}
+                        {(activeTab === "brand_image" || activeTab === "brand_popup") && (
                             <div>
                                 <label className="block text-sm font-medium text-white/70 mb-1.5">
                                     Nama Brand/Game <span className="text-red-400">*</span>
@@ -412,7 +438,7 @@ export default function ContentManagement() {
                                     onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                     className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 text-sm outline-none transition-all placeholder:text-white/20"
                                     placeholder="https://example.com/image.jpg"
-                                    required
+                                    required={activeTab !== "brand_popup"}
                                 />
                                 {formData.image_url && (
                                     <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/40 aspect-video flex items-center justify-center">
@@ -433,7 +459,7 @@ export default function ContentManagement() {
                         </div>
 
                         {/* Title & Link Group */}
-                        {(activeTab === "carousel" || activeTab === "popup") && (
+                        {(activeTab === "carousel" || activeTab === "popup" || activeTab === "brand_popup") && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-white/70 mb-1.5">Title</label>
@@ -458,16 +484,25 @@ export default function ContentManagement() {
                             </div>
                         )}
 
-                        {/* Description (popup only) */}
-                        {activeTab === "popup" && (
+                        {/* Description (popup and brand_popup) */}
+                        {(activeTab === "popup" || activeTab === "brand_popup") && (
                             <div>
                                 <label className="block text-sm font-medium text-white/70 mb-1.5">Deskripsi</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 text-sm outline-none transition-all placeholder:text-white/20 min-h-[80px]"
-                                    placeholder="Deskripsi popup (opsional)"
-                                />
+                                {activeTab === "brand_popup" ? (
+                                    <SimpleRichEditor
+                                        value={formData.description}
+                                        onChange={(html) => setFormData({ ...formData, description: html })}
+                                        maxLength={1000}
+                                        placeholder="Tulis deskripsi popup brand..."
+                                    />
+                                ) : (
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 text-sm outline-none transition-all placeholder:text-white/20 min-h-[80px]"
+                                        placeholder="Deskripsi popup (opsional)"
+                                    />
+                                )}
                             </div>
                         )}
 

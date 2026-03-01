@@ -1,31 +1,37 @@
 import api from "@/lib/api";
 import HomeContent from "@/components/home-content";
-import { APIResponse, Brand, BrandPublicData, CarouselItem, PopupItem } from "@/types/api";
+import { APIResponse, Brand, BrandPublicData, CarouselItem, PopupItem, DisplayCategoryWithBrands } from "@/types/api";
 
 export const revalidate = 60; // Revalidate every 60 seconds (ISR)
 
-async function getCategories(): Promise<string[]> {
+async function getDisplayCategories(): Promise<DisplayCategoryWithBrands[]> {
   try {
-    const res = await api.get<any, APIResponse<{ categories: string[] }>>('/products/categories');
+    const res = await api.get<any, APIResponse<{ categories: DisplayCategoryWithBrands[] }>>('/content/display-categories');
     if (res.success && res.data) {
       return res.data.categories;
     }
     return [];
   } catch (error) {
-    console.error("Failed to fetch categories", error);
+    console.error("Failed to fetch display categories", error);
     return [];
   }
 }
 
-async function getBrandsByCategory(category: string): Promise<Brand[]> {
+async function getBrandsByNames(brandNames: string[]): Promise<Brand[]> {
+  // Get all brands from the products API, then filter by the names we need
   try {
-    const res = await api.get<any, APIResponse<{ brands: Brand[] }>>(`/products/brands?category=${encodeURIComponent(category)}`);
+    const res = await api.get<any, APIResponse<{ brands: Brand[] }>>('/products/brands');
     if (res.success && res.data) {
-      return res.data.brands;
+      const allBrands = res.data.brands;
+      // Filter to only include brands that are in the requested list, preserving order
+      return brandNames.map(name => {
+        const found = allBrands.find(b => b.name === name);
+        return found || { name, image_url: undefined, status: 'active' } as Brand;
+      });
     }
     return [];
   } catch (error) {
-    console.error(`Failed to fetch brands for ${category}`, error);
+    console.error("Failed to fetch brands", error);
     return [];
   }
 }
@@ -76,27 +82,28 @@ export interface CategoryWithBrands {
 
 export default async function Home() {
   // Fetch all data in parallel
-  const [categories, carousel, brandImages, popup] = await Promise.all([
-    getCategories(),
+  const [displayCategories, carousel, brandImages, popup] = await Promise.all([
+    getDisplayCategories(),
     getCarousel(),
     getBrandImages(),
     getPopup(),
   ]);
 
-  // Fetch brands for each category in parallel
-  const categoryData: CategoryWithBrands[] = await Promise.all(
-    categories.map(async (category) => ({
-      category,
-      brands: await getBrandsByCategory(category),
-    }))
-  );
+  // Fetch brands for all display categories
+  // Collect all unique brand names from display categories
+  const allBrandNames = Array.from(new Set(displayCategories.flatMap(dc => dc.brands)));
+  const allBrands = allBrandNames.length > 0 ? await getBrandsByNames(allBrandNames) : [];
+  const brandMap = new Map(allBrands.map(b => [b.name, b]));
 
-  // Filter out empty categories
-  const nonEmptyCategories = categoryData.filter(c => c.brands.length > 0);
+  // Build category data from display categories
+  const categoryData: CategoryWithBrands[] = displayCategories.map(dc => ({
+    category: dc.name,
+    brands: dc.brands.map(name => brandMap.get(name) || { name, status: 'active' } as Brand),
+  }));
 
   return (
     <HomeContent
-      categoryData={nonEmptyCategories}
+      categoryData={categoryData}
       carousel={carousel}
       brandImages={brandImages}
       popup={popup}

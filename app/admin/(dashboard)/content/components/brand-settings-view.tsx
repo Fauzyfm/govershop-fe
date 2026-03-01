@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { Search, Loader2 } from "lucide-react";
+import SimpleRichEditor from "@/components/ui/simple-rich-editor";
 
 // Topup Step interface
 interface TopupStep {
@@ -20,10 +21,20 @@ interface BrandSetting {
     status: string; // 'active', 'coming_soon', 'maintenance'
     topup_steps?: TopupStep[];
     description?: string;
+    display_category?: string | null;
+    display_sort_order?: number;
+}
+
+interface DisplayCategory {
+    id: number;
+    name: string;
+    slug: string;
+    is_active: boolean;
 }
 
 export default function BrandSettingsView() {
     const [brands, setBrands] = useState<BrandSetting[]>([]);
+    const [displayCategories, setDisplayCategories] = useState<DisplayCategory[]>([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
@@ -36,6 +47,10 @@ export default function BrandSettingsView() {
 
     const fetchBrands = async () => {
         try {
+            // Fetch display categories
+            const catRes: any = await api.get("/admin/display-categories");
+            setDisplayCategories(catRes.data?.categories || []);
+
             // First fetch products to get all available brands
             const productRes: any = await api.get("/products/brands");
             // Backend returns []{name: string, image_url: string}
@@ -62,7 +77,9 @@ export default function BrandSettingsView() {
                     is_visible: true,
                     status: "active",
                     topup_steps: [],
-                    description: ""
+                    description: "",
+                    display_category: null,
+                    display_sort_order: 0,
                 };
             });
 
@@ -189,6 +206,40 @@ export default function BrandSettingsView() {
                                     </div>
                                 </div>
 
+                                {/* Display Category Dropdown */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] text-white/30 uppercase font-bold tracking-wider">Kategori Tab</label>
+                                    <select
+                                        value={brand.display_category || ""}
+                                        onChange={(e) => updateBrand(brand, {
+                                            display_category: e.target.value || null,
+                                        })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/50 transition-all"
+                                    >
+                                        <option value="">— Belum dikategorikan —</option>
+                                        {displayCategories.filter(c => c.is_active).map(cat => (
+                                            <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Display Sort Order */}
+                                {brand.display_category && (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] text-white/30 uppercase font-bold tracking-wider">Urutan di Kategori</label>
+                                        <input
+                                            type="number"
+                                            value={brand.display_sort_order || 0}
+                                            onChange={(e) => updateBrand(brand, {
+                                                display_sort_order: parseInt(e.target.value) || 0,
+                                            })}
+                                            min="0"
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/50 transition-all"
+                                        />
+                                        <p className="text-[10px] text-white/20">0 = alfabet, angka kecil tampil duluan</p>
+                                    </div>
+                                )}
+
                                 {/* Edit Content Button */}
                                 <button
                                     onClick={() => setEditingContent(brand)}
@@ -253,10 +304,9 @@ function EditContentModal({ brand, onClose, onSave }: { brand: BrandSetting, onC
                     {/* Description Section */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-white/70">Deskripsi Tambahan</label>
-                        <textarea
+                        <SimpleRichEditor
                             value={desc}
-                            onChange={(e) => setDesc(e.target.value)}
-                            className="w-full h-24 bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-primary/50 placeholder:text-white/20"
+                            onChange={(html) => setDesc(html)}
                             placeholder="Tulis informasi tambahan, promo, atau catatan untuk customer..."
                         />
                     </div>

@@ -134,6 +134,12 @@ export interface BrandPublicData {
     status: string;
 }
 
+export interface DisplayCategoryWithBrands {
+    name: string;
+    slug: string;
+    brands: string[];
+}
+
 export interface OrderHistoryResponse {
     id: string;
     product_name: string;

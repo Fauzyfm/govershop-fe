@@ -77,6 +77,14 @@ interface TopupStep {
     desc: string;
 }
 
+interface BrandPopup {
+    id: number;
+    image_url: string;
+    title?: string;
+    description?: string;
+    link_url?: string;
+}
+
 interface BrandDetails {
     brand_name: string;
     image_url: string;
@@ -84,6 +92,7 @@ interface BrandDetails {
     status: string;
     topup_steps?: TopupStep[];
     description?: string;
+    popup?: BrandPopup | null;
 }
 
 async function getBrandImages(): Promise<Record<string, BrandPublicData>> {
@@ -151,6 +160,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
     const dynamicSteps = brandDetails?.topup_steps || [];
     const description = brandDetails?.description || "";
+    const brandPopup = brandDetails?.popup || null;
 
     return (
         <OrderPageClient
@@ -160,6 +170,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
             brandImage={brandImage}
             dynamicSteps={dynamicSteps}
             description={description}
+            brandPopup={brandPopup}
         />
     );
 }
