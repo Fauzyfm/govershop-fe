@@ -556,6 +556,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 </>
             )}
 
+
             {/* SEO Copywriting Section */}
             {!search && (
                 <section className="w-screen relative left-1/2 -translate-x-1/2 mt-16 -mb-8 bg-card/80 border-t border-white/5 pt-10 pb-16 px-4 md:px-10">
