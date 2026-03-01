@@ -12,14 +12,27 @@ interface BrandPublicData {
     status: string;
 }
 
-// Fetch all brand names for slug resolution
+// Fetch all brand names for slug resolution (from both content settings AND product data)
 async function getAllBrandNames(): Promise<string[]> {
     try {
-        const res = await api.get<any, APIResponse<{ brand_images: Record<string, BrandPublicData> }>>('/content/brands');
-        if (res.success && res.data?.brand_images) {
-            return Object.keys(res.data.brand_images);
+        const [contentRes, productsRes] = await Promise.all([
+            api.get<any, APIResponse<{ brand_images: Record<string, BrandPublicData> }>>('/content/brands').catch(() => null),
+            api.get<any, APIResponse<{ brands: { name: string }[] }>>('/products/brands').catch(() => null),
+        ]);
+
+        const names = new Set<string>();
+
+        // From content/brand settings
+        if (contentRes?.success && contentRes.data?.brand_images) {
+            Object.keys(contentRes.data.brand_images).forEach(name => names.add(name));
         }
-        return [];
+
+        // From Digiflazz products
+        if (productsRes?.success && productsRes.data?.brands) {
+            productsRes.data.brands.forEach((b: { name: string }) => names.add(b.name));
+        }
+
+        return Array.from(names);
     } catch {
         return [];
     }
