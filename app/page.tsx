@@ -1,4 +1,5 @@
 import api from "@/lib/api";
+import Image from "next/image";
 import HomeContent from "@/components/home-content";
 import { APIResponse, Brand, BrandPublicData, CarouselItem, PopupItem, DisplayCategoryWithBrands } from "@/types/api";
 
@@ -101,12 +102,64 @@ export default async function Home() {
     brands: dc.brands.map(name => brandMap.get(name) || { name, status: 'active' } as Brand),
   }));
 
+  // Get the first carousel image URL for server-side LCP optimization
+  const firstCarouselImageUrl = carousel.length > 0 ? carousel[0].image_url : null;
+  const firstCarouselLink = carousel.length > 0 ? carousel[0].link_url : undefined;
+  const firstCarouselTitle = carousel.length > 0 ? (carousel[0].title || "Banner") : "Banner";
+
   return (
-    <HomeContent
-      categoryData={categoryData}
-      carousel={carousel}
-      brandImages={brandImages}
-      popup={popup}
-    />
+    <div className="space-y-8 max-w-6xl mx-auto text-left">
+      {/* Server-rendered first carousel image for instant LCP */}
+      {firstCarouselImageUrl && (
+        <section className="-mx-4 md:mx-0" id="server-carousel-section">
+          <div className="relative w-full py-4 md:py-10">
+            <div
+              className="relative mx-auto rounded-xl md:rounded-2xl overflow-hidden border border-white/10 bg-background"
+              id="server-carousel-placeholder"
+              style={{
+                maxWidth: "750px",
+                aspectRatio: "3110 / 1350",
+                boxShadow: "0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)",
+              }}
+            >
+              {firstCarouselLink ? (
+                <a href={firstCarouselLink} className="block w-full h-full relative">
+                  <Image
+                    src={firstCarouselImageUrl}
+                    alt={firstCarouselTitle}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 92vw, 750px"
+                    priority
+                    fetchPriority="high"
+                    unoptimized={!firstCarouselImageUrl.startsWith("/")}
+                  />
+                </a>
+              ) : (
+                <div className="relative w-full h-full">
+                  <Image
+                    src={firstCarouselImageUrl}
+                    alt={firstCarouselTitle}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 92vw, 750px"
+                    priority
+                    fetchPriority="high"
+                    unoptimized={!firstCarouselImageUrl.startsWith("/")}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+      <HomeContent
+        categoryData={categoryData}
+        carousel={carousel}
+        brandImages={brandImages}
+        popup={popup}
+        firstCarouselImageUrl={firstCarouselImageUrl}
+      />
+    </div>
   );
 }

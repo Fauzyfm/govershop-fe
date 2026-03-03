@@ -22,9 +22,11 @@ interface HomeContentProps {
     carousel?: CarouselItem[];
     brandImages?: Record<string, BrandPublicData>;
     popup?: PopupItem | null;
+    firstCarouselImageUrl?: string | null;
 }
 
-export default function HomeContent({ categoryData, carousel = [], brandImages = {}, popup }: HomeContentProps) {
+export default function HomeContent({ categoryData, carousel = [], brandImages = {}, popup, firstCarouselImageUrl }: HomeContentProps) {
+    const [carouselReady, setCarouselReady] = useState(false);
     const [search, setSearch] = useState("");
     const [categoryLimits, setCategoryLimits] = useState<Record<string, number>>({});
     const [showPopup, setShowPopup] = useState(false);
@@ -218,8 +220,29 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         }
     }, []);
 
+    // Hide server-rendered placeholder once client carousel is ready
+    useEffect(() => {
+        if (firstCarouselImageUrl) {
+            // Small delay to ensure carousel has rendered before hiding placeholder
+            const timer = setTimeout(() => {
+                const section = document.getElementById('server-carousel-section');
+                if (section) {
+                    section.style.transition = 'opacity 0.3s ease-out';
+                    section.style.opacity = '0';
+                    setTimeout(() => {
+                        section.style.display = 'none';
+                    }, 300);
+                }
+                setCarouselReady(true);
+            }, 100);
+            return () => clearTimeout(timer);
+        } else {
+            setCarouselReady(true);
+        }
+    }, [firstCarouselImageUrl]);
+
     return (
-        <div className="space-y-8 max-w-6xl mx-auto text-left">
+        <>
             {/* Popup */}
             {showPopup && popup && (
                 <div
@@ -273,9 +296,15 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 </div>
             )}
 
-            {/* Carousel */}
+            {/* Carousel — hidden until ready if server already rendered first image */}
             {carousel.length > 0 && (
-                <section className="-mx-4 md:mx-0">
+                <section
+                    className="-mx-4 md:mx-0"
+                    style={{
+                        opacity: firstCarouselImageUrl && !carouselReady ? 0 : 1,
+                        transition: 'opacity 0.3s ease-in',
+                    }}
+                >
                     <LayeredCarousel items={carousel} />
                 </section>
             )}
@@ -677,6 +706,6 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                     <p>Belum ada produk tersedia.</p>
                 </div>
             )}
-        </div>
+        </>
     );
 }
