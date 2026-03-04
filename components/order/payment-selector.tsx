@@ -14,10 +14,7 @@ interface PaymentSelectorProps {
     productPrice?: number; // Price of selected product (for PayPal minimum check)
 }
 
-// Minimum price for PayPal (Rp 3.000)
-const PAYPAL_MIN_PRICE = 3000;
-
-// Minimum price for Virtual Account (Rp 10.000) - Pakasir requirement
+// Minimum price for Virtual Account (Rp 10.000) - iPaymu requirement
 const VA_MIN_PRICE = 10000;
 
 // Payment method logos mapping
@@ -78,26 +75,34 @@ const PAYMENT_CATEGORIES: PaymentCategory[] = [
         description: "Transfer via ATM atau Mobile Banking"
     },
     {
-        id: "paypal",
-        name: "PayPal",
-        icon: "https://upld.zone.id/uploads/exi8kviq/paypal-govershop.webp",
-        description: "Bayar dengan akun PayPal"
+        id: "cstore",
+        name: "Convenience Store",
+        icon: "https://upld.zone.id/uploads/exi8kviq/virtual-account.webp",
+        description: "Bayar di minimarket terdekat"
+    },
+    {
+        id: "cc",
+        name: "Credit Card",
+        icon: "https://upld.zone.id/uploads/exi8kviq/virtual-account.webp",
+        description: "Bayar dengan kartu kredit"
     },
 ];
 
-// Get fee display based on payment gateway
-function getFeeDisplay(code: string): string {
-    if (code.includes('qris')) return "0";
-    if (code.includes('paypal')) return "1% (min Rp 3.000)";
-    if (code.includes('artha') || code.includes('sampoerna')) return "Rp 2.000";
-    if (code.includes('_va')) return "Rp 3.500";
-    return "";
+// Get fee display from iPaymu fee data
+function getFeeDisplay(method: PaymentMethod): string {
+    if (!method.fee) return "";
+    const parts: string[] = [];
+    if (method.fee.percent > 0) parts.push(`${method.fee.percent}%`);
+    if (method.fee.flat > 0) parts.push(`Rp ${method.fee.flat.toLocaleString('id-ID')}`);
+
+    if (parts.length === 0) return "Gratis";
+    return parts.join(" + ");
 }
 
-// Group methods by type
+// Group methods by type (normalized to lowercase)
 function groupMethodsByType(methods: PaymentMethod[]): Record<string, PaymentMethod[]> {
     return methods.reduce((acc, method) => {
-        const type = method.type || 'other';
+        const type = (method.type || 'other').toLowerCase();
         if (!acc[type]) {
             acc[type] = [];
         }
@@ -110,8 +115,8 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
     // Track which categories are expanded (default: all closed)
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-    // Check if PayPal is available (only for products >= Rp 3.000)
-    const isPaypalAvailable = !productPrice || productPrice >= PAYPAL_MIN_PRICE;
+    // Check if PayPal is available (no longer used, but kept for future)
+    // const isPaypalAvailable = !productPrice || productPrice >= 3000;
 
     // Check if Virtual Account is available (only for products >= Rp 10.000)
     const isVaAvailable = !productPrice || productPrice >= VA_MIN_PRICE;
@@ -153,7 +158,6 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
 
                 // Disable category if product price is below minimum
                 const isDisabled =
-                    (category.id === 'paypal' && !isPaypalAvailable) ||
                     (category.id === 'va' && !isVaAvailable);
 
                 return (
@@ -253,7 +257,7 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                                     <div className="px-4 pb-4 pt-1 space-y-2">
                                         {categoryMethods.map((method) => {
                                             const isSelected = selectedMethod === method.code;
-                                            const logo = getPaymentLogo(method.code);
+                                            const logo = method.logo || getPaymentLogo(method.code);
 
                                             return (
                                                 <button
@@ -279,15 +283,15 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                                                     <div className="flex-1 text-left">
                                                         <h5 className="font-medium text-sm flex items-center gap-2">
                                                             {method.name}
-                                                            {method.code.includes("qris") && (
+                                                            {method.code.toLowerCase().includes("qris") && (
                                                                 <span className="text-[10px] font-bold bg-yellow-500 text-black px-1.5 py-0.5 rounded-br-lg rounded-tl-lg shadow-sm">
                                                                     TERMURAH
                                                                 </span>
                                                             )}
                                                         </h5>
-                                                        {getFeeDisplay(method.code) && (
+                                                        {getFeeDisplay(method) && (
                                                             <span className="text-xs text-muted-foreground">
-                                                                Fee: <span className="text-primary/80">{getFeeDisplay(method.code)}</span>
+                                                                Fee: <span className="text-primary/80">{getFeeDisplay(method)}</span>
                                                             </span>
                                                         )}
                                                     </div>
@@ -349,9 +353,9 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                                     </div>
                                     <div className="flex-1 text-left">
                                         <h4 className="font-semibold">{method.name}</h4>
-                                        {getFeeDisplay(method.code) && (
+                                        {getFeeDisplay(method) && (
                                             <span className="text-xs text-muted-foreground">
-                                                Fee: {getFeeDisplay(method.code)}
+                                                Fee: {getFeeDisplay(method)}
                                             </span>
                                         )}
                                     </div>

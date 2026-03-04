@@ -385,11 +385,15 @@ export default function StatusView({ orderId }: StatusViewProps) {
                             </div>
                         )}
 
-                        {/* Amount */}
+                        {/* Amount Breakdown */}
                         <div className="border-t border-primary/10 pt-4">
                             <div className="flex justify-between items-center mb-2 text-sm text-muted-foreground">
-                                <span>Harga</span>
+                                <span>Harga Produk</span>
                                 <span>Rp {payment.amount?.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div className="flex justify-between items-center mb-2 text-sm text-muted-foreground">
+                                <span>Biaya Admin</span>
+                                <span>Rp 10</span>
                             </div>
                             {payment.fee > 0 && (
                                 <div className="flex justify-between items-center mb-2 text-sm text-muted-foreground">

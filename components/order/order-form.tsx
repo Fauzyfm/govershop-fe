@@ -160,12 +160,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
             const selectedPaymentMethod = paymentMethods.find(m => m.code === selectedPayment);
             if (selectedPaymentMethod) {
                 // VA requires minimum Rp 10.000
-                if (selectedPaymentMethod.type === 'va' && selectedProductPrice < 10000) {
-                    setSelectedPayment(null);
-                    setPriceDetails(null);
-                }
-                // PayPal requires minimum Rp 3.000
-                if (selectedPaymentMethod.type === 'paypal' && selectedProductPrice < 3000) {
+                if (selectedPaymentMethod.type.toLowerCase() === 'va' && selectedProductPrice < 10000) {
                     setSelectedPayment(null);
                     setPriceDetails(null);
                 }
@@ -258,9 +253,11 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
             if (orderRes.success && orderRes.data) {
                 const orderId = orderRes.data.id;
 
-                // 2. Initiate Payment
+                // 2. Initiate Payment - send both method type and channel code for iPaymu
+                const selectedMethodObj = paymentMethods.find(m => m.code === selectedPayment);
                 const payRes = await api.post<any, APIResponse<any>>(`/orders/${orderId}/pay`, {
-                    payment_method: selectedPayment
+                    payment_method: selectedMethodObj?.type || selectedPayment,
+                    payment_channel: selectedPayment
                 });
 
                 if (payRes.success) {

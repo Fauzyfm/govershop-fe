@@ -25,10 +25,16 @@ export interface Product {
 }
 
 export interface PaymentMethod {
-  code: string;
-  name: string;
-  type: 'qris' | 'va' | 'paypal';
+  code: string;       // iPaymu channel code (e.g. "bni", "bri", "qris")
+  name: string;       // Display name (e.g. "BNI", "BRI", "QRIS")
+  type: string;       // Payment type from iPaymu (e.g. "va", "qris", "cc", "cstore")
+  description?: string;
+  logo?: string;
   icon_url?: string;
+  fee?: {
+    flat: number;
+    percent: number;
+  };
 }
 
 export interface PriceCalculation {
