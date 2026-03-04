@@ -391,13 +391,9 @@ export default function StatusView({ orderId }: StatusViewProps) {
                                 <span>Harga Produk</span>
                                 <span>Rp {payment.amount?.toLocaleString('id-ID')}</span>
                             </div>
-                            <div className="flex justify-between items-center mb-2 text-sm text-muted-foreground">
-                                <span>Biaya Admin</span>
-                                <span>Rp 10</span>
-                            </div>
                             {payment.fee > 0 && (
                                 <div className="flex justify-between items-center mb-2 text-sm text-muted-foreground">
-                                    <span>Fee Transaksi</span>
+                                    <span>Biaya Admin + Transaksi</span>
                                     <span>Rp {payment.fee?.toLocaleString('id-ID')}</span>
                                 </div>
                             )}
