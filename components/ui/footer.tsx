@@ -60,7 +60,12 @@ export default function Footer() {
                             </li>
                             <li>
                                 <Link href="/faq" className="text-muted-foreground hover:text-primary transition-colors">
-                                    FAQ (Tanya Jawab)
+                                    FAQ
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                                    Tentang Kami
                                 </Link>
                             </li>
                         </ul>
@@ -101,7 +106,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                                 <a href="mailto:support@restopup.store" className="hover:text-primary transition-colors">
-                                    support@restopup.store
+                                    support@restopup.com
                                 </a>
                             </li>
                             <li className="flex items-start gap-2 text-muted-foreground hover:text-primary transition-colors cursor-pointer" onClick={() => window.open('https://maps.google.com/?q=Jl Dipanjaitan, KP Karangsari No 149 RT/RW 012/003 Soklat, Subang', '_blank')}>

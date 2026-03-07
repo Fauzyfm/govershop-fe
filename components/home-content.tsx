@@ -12,6 +12,29 @@ import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Types
+const faqs = [
+    {
+        question: "Apa itu Restopup?",
+        answer: "Restopup adalah platform top up game dan voucher digital terpercaya di Indonesia yang menawarkan harga termurah dan proses otomatis 24 jam nonstop."
+    },
+    {
+        question: "Bagaimana cara melakukan transaksi?",
+        answer: "Cara transaksi sangat mudah: 1. Pilih game atau layanan yang diinginkan. 2. Pilih nominal produk. 3. Masukkan ID/Username game Anda. 4. Pilih metode pembayaran. 5. Lakukan pembayaran dan pesanan Anda akan diproses otomatis."
+    },
+    {
+        question: "Metode pembayaran apa saja yang tersedia?",
+        answer: "Kami menerima berbagai metode pembayaran seperti E-Wallet (OVO, DANA, GoPay, ShopeePay, LinkAja), Transfer Bank (BCA, Mandiri, BNI, BRI), QRIS, serta pembayaran melalui Alfamart dan Indomaret."
+    },
+    {
+        question: "Berapa lama proses transaksi selesai?",
+        answer: "Secara umum, proses transaksi memakan waktu 1-5 detik setelah pembayaran kami terima. Untuk keadaan tertentu seperti gangguan server game, diproses maksimal 1x24 jam."
+    },
+    {
+        question: "Apakah aman bertransaksi di Restopup?",
+        answer: "Sangat aman. Kami menggunakan sistem otomatis dan keamanan enkripsi transaksi dengan jaminan legal 100%. Kami tidak pernah meminta password akun game Anda (kecuali layanan joki)."
+    }
+];
+
 export interface CategoryWithBrands {
     category: string;
     brands: Brand[];
@@ -33,6 +56,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     const [isPopupClosing, setIsPopupClosing] = useState(false);
     const [activeTab, setActiveTab] = useState<string>("");
     const [seoExpanded, setSeoExpanded] = useState(false);
+    const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
     const tabsRef = useRef<HTMLDivElement>(null);
     const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -586,10 +610,67 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             )}
 
 
-            {/* SEO Copywriting Section */}
+            {/* FAQ Accordion & SEO Section */}
             {!search && (
-                <section className="w-screen relative left-1/2 -translate-x-1/2 mt-16 -mb-8 bg-card/80 border-t border-white/5 pt-10 pb-16 px-4 md:px-10">
-                    <div className="max-w-6xl mx-auto space-y-8 text-muted-foreground/70 text-sm leading-relaxed">
+                <section className="w-screen relative left-1/2 -translate-x-1/2 mt-16 -mb-8 bg-card/80 border-t border-white/5 pt-10 pb-16 px-4 md:px-10 overflow-hidden">
+                    {/* Background decoration for FAQ */}
+                    <div className="absolute top-0 right-0 p-32 bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+
+                    <div className="relative z-10 max-w-4xl mx-auto">
+                        <div className="text-center mb-8">
+                            <h2 className="text-2xl font-bold text-white mb-3 tracking-tight neon-glow">Pertanyaan Umum (FAQ)</h2>
+                            <p className="text-muted-foreground text-sm">Masih bingung? Temukan jawaban secara cepat untuk pertanyaan yang paling sering ditanyakan di sini.</p>
+                        </div>
+
+                        <div className="space-y-3">
+                            {faqs.map((faq, index) => {
+                                const isOpen = openFaqIndex === index;
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`border rounded-xl bg-background/50 backdrop-blur-sm overflow-hidden transition-colors duration-300 ${isOpen ? 'border-primary/50 shadow-[0_0_15px_rgba(230,80,27,0.1)]' : 'border-white/10 hover:border-white/20'}`}
+                                    >
+                                        <button
+                                            onClick={() => setOpenFaqIndex(isOpen ? null : index)}
+                                            className="w-full flex items-center justify-between p-4 text-left focus:outline-none"
+                                        >
+                                            <span className={`font-medium text-sm md:text-base pr-4 transition-colors ${isOpen ? 'text-primary' : 'text-white/90'}`}>{faq.question}</span>
+                                            <div className={`p-1 rounded-full transition-transform duration-300 shrink-0 ${isOpen ? 'bg-primary/20 text-primary rotate-180' : 'bg-secondary text-muted-foreground'}`}>
+                                                <ChevronDown className="w-4 h-4" />
+                                            </div>
+                                        </button>
+                                        <AnimatePresence>
+                                            {isOpen && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: "auto", opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    transition={{ duration: 0.3 }}
+                                                >
+                                                    <div className="px-4 pb-4">
+                                                        <div className="pt-2 text-sm text-muted-foreground leading-relaxed border-t border-white/5">
+                                                            <div className="pt-3">
+                                                                {faq.answer}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-8 mb-16 text-center">
+                            <a href="/faq" className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                                Lihat Semua FAQ <span className="ml-1 text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* SEO Copywriting Content */}
+                    <div className="relative z-10 max-w-6xl mx-auto space-y-8 text-muted-foreground/70 text-sm leading-relaxed border-t border-white/5 pt-12">
                         {/* Always visible: Title + Intro */}
                         <div>
                             <h2 className="text-xl md:text-2xl font-bold text-white mb-4">
