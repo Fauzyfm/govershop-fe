@@ -61,32 +61,64 @@ interface PaymentCategory {
     description: string;
 }
 
-const PAYMENT_CATEGORIES: PaymentCategory[] = [
-    {
-        id: "qris",
+// Metadata for known payment category types (icon, name, description)
+// Unknown types will get sensible defaults automatically
+const CATEGORY_META: Record<string, { name: string; icon: string; description: string }> = {
+    qris: {
         name: "QRIS",
         icon: "https://upld.zone.id/uploads/exi8kviq/qris-logo.webp",
-        description: "Scan & bayar dengan aplikasi e-wallet"
+        description: "Scan & bayar dengan aplikasi e-wallet",
     },
-    {
-        id: "va",
+    va: {
         name: "Virtual Account",
         icon: "https://upld.zone.id/uploads/exi8kviq/virtual-account.webp",
-        description: "Transfer via ATM atau Mobile Banking"
+        description: "Transfer via ATM atau Mobile Banking",
     },
-    {
-        id: "cstore",
+    cstore: {
         name: "Convenience Store",
         icon: "https://upld.zone.id/uploads/exi8kviq/virtual-account.webp",
-        description: "Bayar di minimarket terdekat"
+        description: "Bayar di minimarket terdekat",
     },
-    {
-        id: "cc",
+    cc: {
         name: "Credit Card",
         icon: "https://upld.zone.id/uploads/exi8kviq/virtual-account.webp",
-        description: "Bayar dengan kartu kredit"
+        description: "Bayar dengan kartu kredit",
     },
-];
+    ewallet: {
+        name: "E-Wallet",
+        icon: "https://upld.zone.id/uploads/exi8kviq/virtual-account.webp",
+        description: "Bayar dengan e-wallet",
+    },
+};
+
+// Preferred display order for categories
+const CATEGORY_ORDER = ["qris", "va", "ewallet", "cstore", "cc"];
+
+// Build dynamic categories from methods data
+function buildCategories(methods: PaymentMethod[]): PaymentCategory[] {
+    const typeSet = new Set<string>();
+    methods.forEach(m => typeSet.add((m.type || "other").toLowerCase()));
+
+    // Sort: known types first in preferred order, then unknown types alphabetically
+    const types = Array.from(typeSet).sort((a, b) => {
+        const idxA = CATEGORY_ORDER.indexOf(a);
+        const idxB = CATEGORY_ORDER.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+    });
+
+    return types.map(type => {
+        const meta = CATEGORY_META[type];
+        return {
+            id: type,
+            name: meta?.name || type.toUpperCase(),
+            icon: meta?.icon || "https://upld.zone.id/uploads/exi8kviq/virtual-account.webp",
+            description: meta?.description || `Bayar dengan ${type.toUpperCase()}`,
+        };
+    });
+}
 
 // Get fee display from iPaymu fee data
 function getFeeDisplay(method: PaymentMethod): string {
@@ -148,7 +180,7 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
 
     return (
         <div className="space-y-3">
-            {PAYMENT_CATEGORIES.map((category) => {
+            {buildCategories(methods).map((category) => {
                 const categoryMethods = groupedMethods[category.id] || [];
                 if (categoryMethods.length === 0) return null;
 
@@ -282,8 +314,8 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                                                     {/* Payment Info */}
                                                     <div className="flex-1 text-left">
                                                         <h5 className="font-medium text-sm flex items-center gap-2">
-                                                            {method.name}
-                                                            {method.code.toLowerCase().includes("qris") && (
+                                                            {method.name.toUpperCase() === 'MPM' ? 'QRIS' : method.name}
+                                                            {(method.code.toLowerCase().includes("qris") || method.code.toLowerCase() === "mpm") && (
                                                                 <span className="text-[10px] font-bold bg-yellow-500 text-black px-1.5 py-0.5 rounded-br-lg rounded-tl-lg shadow-sm">
                                                                     TERMURAH
                                                                 </span>
@@ -318,58 +350,6 @@ export default function PaymentSelector({ methods, selectedMethod, onSelect, pro
                 );
             })}
 
-            {/* Other payment methods (if any) */}
-            {Object.entries(groupedMethods).map(([type, typeMethods]) => {
-                // Skip if already shown in categories
-                if (PAYMENT_CATEGORIES.some(c => c.id === type)) return null;
-                if (typeMethods.length === 0) return null;
-
-                return (
-                    <div key={type} className="space-y-2">
-                        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-1">
-                            {type}
-                        </h4>
-                        {typeMethods.map((method) => {
-                            const isSelected = selectedMethod === method.code;
-                            const logo = getPaymentLogo(method.code);
-
-                            return (
-                                <button
-                                    key={method.code}
-                                    onClick={() => onSelect(method.code)}
-                                    className={cn(
-                                        "w-full flex items-center p-4 rounded-xl border transition-all",
-                                        isSelected
-                                            ? "bg-primary/20 border-primary"
-                                            : "bg-secondary/40 border-white/5 hover:bg-secondary/60"
-                                    )}
-                                >
-                                    <div className="w-12 h-8 rounded bg-white p-1 mr-4 flex items-center justify-center overflow-hidden">
-                                        <img
-                                            src={logo}
-                                            alt={method.name}
-                                            className="w-full h-full object-contain"
-                                        />
-                                    </div>
-                                    <div className="flex-1 text-left">
-                                        <h4 className="font-semibold">{method.name}</h4>
-                                        {getFeeDisplay(method) && (
-                                            <span className="text-xs text-muted-foreground">
-                                                Fee: {getFeeDisplay(method)}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {isSelected && (
-                                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                                            <Check className="w-4 h-4 text-black" />
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                );
-            })}
         </div >
     );
 }

@@ -58,6 +58,11 @@ export default function Footer() {
                                     Kebijakan Privasi
                                 </Link>
                             </li>
+                            <li>
+                                <Link href="/faq" className="text-muted-foreground hover:text-primary transition-colors">
+                                    FAQ (Tanya Jawab)
+                                </Link>
+                            </li>
                         </ul>
                     </nav>
 
@@ -90,6 +95,21 @@ export default function Footer() {
                                     </svg>
                                     083114014648
                                 </a>
+                            </li>
+                            <li className="flex items-center gap-2 text-muted-foreground">
+                                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <a href="mailto:support@restopup.store" className="hover:text-primary transition-colors">
+                                    support@restopup.store
+                                </a>
+                            </li>
+                            <li className="flex items-start gap-2 text-muted-foreground hover:text-primary transition-colors cursor-pointer" onClick={() => window.open('https://maps.google.com/?q=Jl Dipanjaitan, KP Karangsari No 149 RT/RW 012/003 Soklat, Subang', '_blank')}>
+                                <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Jl Dipanjaitan, KP Karangsari No 149<br />RT/RW 012/003 Soklat, Subang</span>
                             </li>
                         </ul>
                     </div>

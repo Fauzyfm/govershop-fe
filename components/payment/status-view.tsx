@@ -13,7 +13,10 @@ interface StatusViewProps {
 }
 
 // Helper to determine if payment is QR or VA
-const isQRIS = (method: string) => method?.toLowerCase().includes('qris');
+const isQRIS = (method: string) => {
+    const m = method?.toLowerCase();
+    return m?.includes('qris') || m === 'mpm';
+};
 
 export default function StatusView({ orderId }: StatusViewProps) {
     const [order, setOrder] = useState<OrderStatusResponse | null>(null);
@@ -200,6 +203,7 @@ export default function StatusView({ orderId }: StatusViewProps) {
         if (!method) return "";
         const labels: Record<string, string> = {
             'qris': 'QRIS',
+            'mpm': 'QRIS', // iPaymu sometimes returns 'mpm' for QRIS
             'bni_va': 'BNI Virtual Account',
             'bri_va': 'BRI Virtual Account',
             'mandiri_va': 'Mandiri Virtual Account',
@@ -364,19 +368,36 @@ export default function StatusView({ orderId }: StatusViewProps) {
                             </div>
                         )}
 
-                        {/* VA Number for Virtual Account */}
-                        {payment.va_number && (
+                        {/* Link Redirect (cc / url) vs VA Number */}
+                        {(payment.payment_method === 'cc' || payment.va_number?.startsWith('http')) ? (
+                            <div className="text-center space-y-3">
+                                <span className="text-xs uppercase tracking-wider text-muted-foreground">
+                                    Link Pembayaran
+                                </span>
+                                <a
+                                    href={payment.va_number || payment.payment_number || "#"}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="arcade-btn block w-full py-3 text-primary-foreground font-bold rounded-xl transition-colors"
+                                >
+                                    Buka Halaman Pembayaran
+                                </a>
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    Anda akan dialihkan ke halaman aman payment gateway untuk melakukan pembayaran.
+                                </p>
+                            </div>
+                        ) : payment.va_number && (
                             <div className="text-center space-y-3">
                                 <span className="text-xs uppercase tracking-wider text-muted-foreground">
                                     Nomor Virtual Account
                                 </span>
                                 <div className="flex items-center justify-center gap-3 bg-secondary/30 p-4 rounded-xl">
-                                    <span className="text-2xl font-mono font-bold tracking-widest">
+                                    <span className="text-2xl font-mono font-bold tracking-widest break-all">
                                         {payment.va_number}
                                     </span>
                                     <button
                                         onClick={() => copyToClipboard(payment.va_number || "")}
-                                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                                        className="p-2 hover:bg-white/10 rounded-lg transition-colors shrink-0"
                                         title="Salin"
                                     >
                                         <Copy className="w-5 h-5" />
