@@ -435,14 +435,28 @@ export default function StatusView({ orderId }: StatusViewProps) {
                         </div>
 
                         {/* Manual Check Button */}
-                        <button
-                            onClick={() => fetchStatus(true)}
-                            disabled={refreshing}
-                            className="arcade-btn w-full py-3 text-primary-foreground rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-                        >
-                            {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                            Cek Status Pembayaran
-                        </button>
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => fetchStatus(true)}
+                                disabled={refreshing}
+                                className="arcade-btn w-full py-3 text-primary-foreground rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+                            >
+                                {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                                Refresh Status Pembayaran
+                            </button>
+
+                            <p className="text-xs text-center text-muted-foreground px-4">
+                                Klik tombol di atas jika Anda sudah membayar tetapi status belum berubah. Masih terkendala?
+                                <a
+                                    href={`https://wa.me/6283114014648?text=${encodeURIComponent(`Halo Admin, saya mengalami kendala order dengan Order ID: ${order.order_id}. Saya sudah melakukan pembayaran tetapi status belum berubah. Mohon bantuannya.`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline ml-1 font-medium"
+                                >
+                                    Hubungi Admin
+                                </a>
+                            </p>
+                        </div>
 
                         {/* Cancel Order Button */}
                         <button
@@ -489,6 +503,24 @@ export default function StatusView({ orderId }: StatusViewProps) {
                         <Link href="/" className="arcade-btn block w-full py-3 text-primary-foreground font-bold rounded-xl mt-4 text-center">
                             Top Up Lagi
                         </Link>
+
+                        {/* Instagram Follow CTA */}
+                        <div className="mt-6 pt-6 border-t border-primary/10">
+                            <p className="text-sm text-muted-foreground mb-3">
+                                Jangan sampai ketinggalan promo spesial dan update terbaru!
+                            </p>
+                            <a
+                                href="https://instagram.com/restopup.store"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
+                            >
+                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                                </svg>
+                                Follow Instagram Kami
+                            </a>
+                        </div>
                     </div>
                 )}
 
@@ -504,12 +536,28 @@ export default function StatusView({ orderId }: StatusViewProps) {
                                 Pembayaran diterima! Top up sedang diproses...
                             </p>
                         </div>
-                        <button
-                            onClick={() => fetchStatus(true)}
-                            className="text-sm text-primary hover:underline"
-                        >
-                            Refresh Status
-                        </button>
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => fetchStatus(true)}
+                                disabled={refreshing}
+                                className="arcade-btn w-full py-3 text-primary-foreground rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+                            >
+                                {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                                Refresh Status Top Up
+                            </button>
+
+                            <p className="text-xs text-center text-muted-foreground px-4">
+                                Klik tombol di atas jika Anda merasa top up belum masuk setelah beberapa menit. Masih terkendala?
+                                <a
+                                    href={`https://wa.me/6283114014648?text=${encodeURIComponent(`Halo Admin, saya mengalami kendala order dengan Order ID: ${order.order_id}. Saya sudah melakukan pembayaran tetapi status masih diproses. Mohon bantuannya.`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline ml-1 font-medium"
+                                >
+                                    Hubungi Admin
+                                </a>
+                            </p>
+                        </div>
                     </div>
                 )}
                 {/* Failed State */}
@@ -552,6 +600,6 @@ export default function StatusView({ orderId }: StatusViewProps) {
                     </p>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
