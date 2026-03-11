@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/ui/layout-wrapper";
 import { JsonLd } from "@/components/seo/jsonld";
+import { MetaPixel } from "@/components/meta-pixel";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -63,6 +64,7 @@ export default function RootLayout({
     <html lang="id" className="dark">
       <body className={`${inter.className} min-h-screen flex flex-col antialiased relative overflow-x-hidden`}>
         <JsonLd />
+        <MetaPixel />
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
