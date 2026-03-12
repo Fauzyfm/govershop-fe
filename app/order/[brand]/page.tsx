@@ -5,6 +5,8 @@ import { toSlug, findBrandBySlug } from "@/lib/slug";
 import { APIResponse, Product, PaymentMethod } from "@/types/api";
 import OrderPageClient from "@/components/order/order-page-client";
 
+export const revalidate = 3600; // Revalidate every 1 hour (ISR)
+
 interface BrandPublicData {
     brand_name: string;
     image_url: string;
@@ -42,6 +44,14 @@ async function getAllBrandNames(): Promise<string[]> {
 async function resolveBrand(slugParam: string): Promise<string | null> {
     const brandNames = await getAllBrandNames();
     return findBrandBySlug(slugParam, brandNames);
+}
+
+// Pre-render all brand pages at build time for SEO
+export async function generateStaticParams() {
+    const brandNames = await getAllBrandNames();
+    return brandNames.map((name) => ({
+        brand: toSlug(name),
+    }));
 }
 
 export async function generateMetadata({ params }: OrderPageProps): Promise<Metadata> {
