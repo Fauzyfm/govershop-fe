@@ -4,6 +4,7 @@ import api from "@/lib/api";
 import { toSlug, findBrandBySlug } from "@/lib/slug";
 import { APIResponse, Product, PaymentMethod } from "@/types/api";
 import OrderPageClient from "@/components/order/order-page-client";
+import { Suspense } from "react";
 
 export const revalidate = 3600; // Revalidate every 1 hour (ISR)
 
@@ -187,14 +188,16 @@ export default async function OrderPage({ params }: OrderPageProps) {
     const brandPopup = brandDetails?.popup || null;
 
     return (
-        <OrderPageClient
-            brand={brand}
-            products={products}
-            paymentMethods={paymentMethods}
-            brandImage={brandImage}
-            dynamicSteps={dynamicSteps}
-            description={description}
-            brandPopup={brandPopup}
-        />
+        <Suspense fallback={null}>
+            <OrderPageClient
+                brand={brand}
+                products={products}
+                paymentMethods={paymentMethods}
+                brandImage={brandImage}
+                dynamicSteps={dynamicSteps}
+                description={description}
+                brandPopup={brandPopup}
+            />
+        </Suspense>
     );
 }
