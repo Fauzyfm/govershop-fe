@@ -154,7 +154,31 @@ export default async function OrderPage({ params }: OrderPageProps) {
     const resolvedParams = await params;
 
     // Resolve slug to real brand name
-    const brand = await resolveBrand(resolvedParams.brand);
+    let brand = await resolveBrand(resolvedParams.brand);
+
+    // Fallback: if slug resolution fails (e.g. API unreachable during ISR),
+    // try to use the slug directly as a brand name by converting it back
+    // (e.g. "pubg-mobile" → "PUBG MOBILE")
+    if (!brand) {
+        const slugAsBrand = decodeURIComponent(resolvedParams.brand)
+            .replace(/-/g, ' ')
+            .toUpperCase();
+
+        // Verify by trying to fetch products — if products exist, use this brand name
+        const testProducts = await getProducts(slugAsBrand);
+        if (testProducts.length > 0) {
+            brand = slugAsBrand;
+        } else {
+            // Also try original case from slug (e.g. "genshin-impact" → "Genshin Impact")
+            const titleCase = decodeURIComponent(resolvedParams.brand)
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+            const testProducts2 = await getProducts(titleCase);
+            if (testProducts2.length > 0) {
+                brand = titleCase;
+            }
+        }
+    }
 
     if (!brand) {
         notFound();
