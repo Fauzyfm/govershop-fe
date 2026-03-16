@@ -16,6 +16,7 @@ import api from "@/lib/api";
 import Modal from "@/components/ui/modal";
 import Notification from "@/components/ui/notification";
 import { exportProductsToPDF, exportMemberPricesToPDF } from "@/lib/pdf-export";
+import { toSlug } from "@/lib/slug";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -240,6 +241,17 @@ export default function AdminProducts() {
             });
             await fetchProducts();
             setIsSyncModalOpen(false);
+
+            // Revalidate all order pages after sync (prices may have changed)
+            try {
+                await fetch('/api/revalidate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paths: ['/order'] }),
+                });
+            } catch (revalError) {
+                console.warn('[Revalidate] Failed after sync:', revalError);
+            }
         } catch (error: any) {
             console.error("Sync failed:", error);
             const errorMessage = error.response?.data?.message || error.message || "Gagal melakukan sinkronisasi dengan Digiflazz.";
@@ -255,7 +267,7 @@ export default function AdminProducts() {
     const openEditModal = (product: any) => {
         setEditingProduct(product);
         setFormData({
-            display_name: product.display_name || product.product_name,
+            display_name: product.display_name || "",
             discount_price: product.discount_price ? product.discount_price.toString() : "",
             tags: product.tags ? product.tags.join(", ") : "",
             image_url: product.image_url || "",
@@ -287,6 +299,18 @@ export default function AdminProducts() {
             setNotification({ message: "Produk berhasil diupdate!", type: "success" });
             setIsEditModalOpen(false);
             fetchProducts();
+
+            // Trigger on-demand ISR revalidation for the brand's order page
+            try {
+                const brandSlug = toSlug(editingProduct.brand);
+                await fetch('/api/revalidate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paths: [`/order/${brandSlug}`] }),
+                });
+            } catch (revalError) {
+                console.warn('[Revalidate] Failed to revalidate, page will update on next ISR cycle:', revalError);
+            }
         } catch (error: any) {
             console.error("Failed to update product:", error);
             setNotification({ message: error?.response?.data?.message || "Gagal update produk.", type: "error" });
@@ -696,12 +720,33 @@ export default function AdminProducts() {
                             value={formData.display_name}
                             onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
                             className="bg-black/20 border-white/10 font-medium text-white"
-                            placeholder="Nama Custom..."
+                            placeholder={editingProduct ? editingProduct.product_name : "Nama Custom..."}
                         />
                         <p className="text-[10px] text-white/40 mt-1.5 flex items-center gap-1">
                             <AlertCircle className="w-3 h-3 text-primary" />
                             Kosongkan untuk menggunakan nama asli dari Digiflazz.
                         </p>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-white/70 mb-1.5">Image URL</label>
+                        <Input
+                            type="text"
+                            value={formData.image_url}
+                            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                            className="bg-black/20 border-white/10 font-medium text-white"
+                            placeholder="https://example.com/image.png"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-white/70 mb-1.5">Description</label>
+                        <textarea
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            className="w-full bg-black/20 border border-white/10 rounded-md p-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 min-h-[80px]"
+                            placeholder="Deskripsi produk..."
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
