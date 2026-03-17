@@ -6,7 +6,7 @@ import { APIResponse, Product, PaymentMethod } from "@/types/api";
 import OrderPageClient from "@/components/order/order-page-client";
 import { Suspense } from "react";
 
-export const revalidate = 3600; // Revalidate every 1 hour (ISR)
+export const revalidate = 60; // Revalidate every 60s — short enough to recover from API failures quickly
 
 interface BrandPublicData {
     brand_name: string;

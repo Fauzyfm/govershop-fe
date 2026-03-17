@@ -62,9 +62,54 @@ const getDefaultTopUpSteps = (brand: string): TopupStep[] => {
     ];
 };
 
-export default function OrderPageClient({ brand, products, paymentMethods, brandImage, dynamicSteps, description, brandPopup }: OrderPageClientProps) {
+export default function OrderPageClient({ brand, products: ssrProducts, paymentMethods: ssrPaymentMethods, brandImage, dynamicSteps, description, brandPopup }: OrderPageClientProps) {
     const [showSteps, setShowSteps] = useState(description ? true : false);
     const [showPopup, setShowPopup] = useState(false);
+
+    // Client-side fallback states (for when SSR data is empty due to API issues)
+    const [products, setProducts] = useState<Product[]>(ssrProducts);
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(ssrPaymentMethods);
+    const [isClientLoading, setIsClientLoading] = useState(false);
+
+    // Client-side fallback: fetch data from browser if SSR returned empty
+    useEffect(() => {
+        const needsProducts = !ssrProducts || ssrProducts.length === 0;
+        const needsPayments = !ssrPaymentMethods || ssrPaymentMethods.length === 0;
+
+        if (needsProducts || needsPayments) {
+            setIsClientLoading(true);
+            const fetches: Promise<void>[] = [];
+
+            if (needsProducts) {
+                fetches.push(
+                    api.get<any, APIResponse<{ products: Product[] }>>(`/products?brand=${encodeURIComponent(brand)}`)
+                        .then(res => {
+                            const allProducts = res.data?.products || [];
+                            const filtered = allProducts.filter(p =>
+                                p.brand.toLowerCase() === brand.toLowerCase() &&
+                                !p.product_name.toLowerCase().includes("cek username") &&
+                                !p.buyer_sku_code.toLowerCase().startsWith("checkuser")
+                            );
+                            if (filtered.length > 0) setProducts(filtered);
+                        })
+                        .catch(() => {})
+                );
+            }
+
+            if (needsPayments) {
+                fetches.push(
+                    api.get<any, APIResponse<{ payment_methods: PaymentMethod[] }>>('/payment-methods')
+                        .then(res => {
+                            const methods = res.data?.payment_methods || [];
+                            if (methods.length > 0) setPaymentMethods(methods);
+                        })
+                        .catch(() => {})
+                );
+            }
+
+            Promise.all(fetches).finally(() => setIsClientLoading(false));
+        }
+    }, [brand, ssrProducts, ssrPaymentMethods]);
 
     // Show popup on mount if there's an active brand popup
     useEffect(() => {
@@ -232,11 +277,20 @@ export default function OrderPageClient({ brand, products, paymentMethods, brand
                 </div>
 
                 {/* Main Order Form */}
-                <OrderForm
-                    brand={brand}
-                    initialProducts={sortedProducts}
-                    paymentMethods={paymentMethods}
-                />
+                {isClientLoading && products.length === 0 ? (
+                    <div className="glass rounded-xl border border-white/5 p-8">
+                        <div className="flex flex-col items-center justify-center gap-4">
+                            <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                            <p className="text-sm text-muted-foreground">Memuat produk...</p>
+                        </div>
+                    </div>
+                ) : (
+                    <OrderForm
+                        brand={brand}
+                        initialProducts={sortedProducts}
+                        paymentMethods={paymentMethods}
+                    />
+                )}
             </div>
         </>
     );
