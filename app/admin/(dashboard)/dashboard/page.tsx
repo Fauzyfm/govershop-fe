@@ -345,20 +345,20 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
-                            <div className="bg-black/30 px-5 py-4 rounded-xl border border-emerald-500/15 min-w-[100px] text-center hover:border-emerald-500/30 transition-colors">
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="bg-black/30 px-3 py-4 rounded-xl border border-emerald-500/15 text-center hover:border-emerald-500/30 transition-colors">
                                 <span className="text-emerald-400 text-[10px] uppercase tracking-widest block mb-1.5 font-semibold">Updated</span>
                                 <span className="text-white text-2xl font-bold">
                                     <AnimatedCount value={data.last_sync?.updated_count || 0} />
                                 </span>
                             </div>
-                            <div className="bg-black/30 px-5 py-4 rounded-xl border border-red-500/15 min-w-[100px] text-center hover:border-red-500/30 transition-colors">
+                            <div className="bg-black/30 px-3 py-4 rounded-xl border border-red-500/15 text-center hover:border-red-500/30 transition-colors">
                                 <span className="text-red-400 text-[10px] uppercase tracking-widest block mb-1.5 font-semibold">Failed</span>
                                 <span className="text-white text-2xl font-bold">
                                     <AnimatedCount value={data.last_sync?.failed_count || 0} />
                                 </span>
                             </div>
-                            <div className="bg-black/30 px-5 py-4 rounded-xl border border-white/10 min-w-[100px] text-center hover:border-white/20 transition-colors">
+                            <div className="bg-black/30 px-3 py-4 rounded-xl border border-white/10 text-center hover:border-white/20 transition-colors">
                                 <span className="text-white/50 text-[10px] uppercase tracking-widest block mb-1.5 font-semibold">Status</span>
                                 <Badge variant="success" className="mt-1">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
