@@ -117,6 +117,23 @@
   contain: layout style paint;
 }
 
+/* Hide 3D background effects on mobile — plain background only */
+@media (max-width: 768px) {
+  .retro-grid,
+  .horizon-glow,
+  .particles {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    animation: none !important;
+  }
+
+  .retro-grid-container {
+    background-color: var(--background) !important;
+    perspective: none !important;
+  }
+}
+
 /* Glassmorphism - Red/Fire Tint */
 .glass {
   background: rgba(40, 9, 5, 0.7);
