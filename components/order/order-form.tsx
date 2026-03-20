@@ -197,6 +197,12 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
             }
         } catch (err: any) {
             setValidationError(err.message || "Gagal memvalidasi akun.");
+            // Jika validasi gagal, tetap izinkan topup dengan warning
+            setValidationResult({
+                is_valid: true,
+                account_name: "",
+                message: "Sistem cek username sedang gangguan. Pastikan User ID sudah benar. Kesalahan input bukan tanggung jawab kami."
+            });
         } finally {
             setIsValidating(false);
         }
@@ -612,7 +618,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                disabled={submitting || isValidating || !!validationError}
+                                disabled={submitting || isValidating}
                                 className="py-3 rounded-xl bg-primary hover:bg-primary/90 text-black font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                             >
                                 {submitting ? <Loader2 className="animate-spin w-4 h-4" /> : "Bayar Sekarang"}
