@@ -448,7 +448,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             {/* ═══════════════ Hero / Search Section ═══════════════ */}
             <section className="relative flex flex-col items-center justify-center space-y-5 text-center py-2">
                 {/* Decorative glow orbs */}
-                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-primary/8 rounded-full blur-[100px] pointer-events-none" />
+                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] max-w-full h-[200px] bg-primary/8 rounded-full blur-[100px] pointer-events-none" />
 
                 <div className="space-y-3 flex flex-col items-center relative z-10">
                     <h1 className="sr-only">Restopup — Top Up Game Termurah dan Terpercaya</h1>
@@ -611,8 +611,8 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
 
                     <div className="bg-linear-to-b from-card/80 via-card/60 to-background pt-12 pb-16 px-4 md:px-10 relative">
                         {/* Background decoration */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/4" />
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/5 rounded-full blur-[80px] pointer-events-none translate-y-1/2 -translate-x-1/4" />
+                        <div className="absolute top-0 right-0 w-64 max-w-full h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2" />
+                        <div className="absolute bottom-0 left-0 w-48 max-w-full h-48 bg-accent/5 rounded-full blur-[80px] pointer-events-none translate-y-1/2" />
 
                         <div className="relative z-10 max-w-3xl mx-auto">
                             {/* FAQ Header */}
