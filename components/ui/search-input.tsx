@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface SearchInputProps {
     value: string;
@@ -10,15 +11,15 @@ interface SearchInputProps {
 
 export default function SearchInput({ value, onChange, placeholder = "Cari game..." }: SearchInputProps) {
     return (
-        <div className="relative w-full max-w-md">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
-                <Search className="w-5 h-5" />
+        <div className="relative w-full max-w-md group">
+            <div className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors duration-300">
+                <Search className="w-4.5 h-4.5" />
             </div>
-            <input
+            <Input
                 type="text"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border rounded-full focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-muted-foreground/70"
+                className="h-12 w-full pl-11 pr-4 bg-white/4 border-white/8 rounded-full text-sm placeholder:text-muted-foreground/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 focus-visible:bg-white/6 transition-all duration-300"
                 placeholder={placeholder}
             />
         </div>

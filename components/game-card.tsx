@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import PageLoading from "@/components/ui/page-loading";
 import { Clock, Wrench } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface GameCardProps {
     name: string;
@@ -37,62 +38,56 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
         <div className={`
             arcade-card group relative w-full aspect-3/4 rounded-2xl overflow-hidden
             ${isDisabled
-                ? "grayscale opacity-70 cursor-not-allowed"
-                : "cursor-pointer border border-primary/30 shadow-[0_0_8px_rgba(195,17,12,0.25),0_0_20px_rgba(230,80,27,0.15)] hover:shadow-[0_0_15px_rgba(195,17,12,0.5),0_0_35px_rgba(230,80,27,0.3)] transition-shadow duration-500"
+                ? "grayscale opacity-60 cursor-not-allowed"
+                : "cursor-pointer border border-white/8 shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_40px_rgba(195,17,12,0.25),0_0_30px_rgba(230,80,27,0.15)] hover:border-primary/30 transition-all duration-500"
             }
         `}>
-            {/* Scanline Overlay */}
-            <div className="scanlines absolute inset-0 z-10 pointer-events-none" />
-
             {/* Image */}
             <div className="absolute inset-0">
                 <Image
                     src={image}
                     alt={`Top Up ${name} — Restopup`}
                     fill
-                    className={`object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110 group-hover:rotate-1"}`}
+                    className={`object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110"}`}
                     loading="lazy"
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                     unoptimized={isUnoptimized}
                 />
 
                 {/* Gradient Overlay */}
-                <div className={`absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent opacity-90 ${isDisabled ? "" : "group-hover:opacity-95 transition-opacity"}`} />
+                <div className={`absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent opacity-90 ${isDisabled ? "" : "group-hover:opacity-95 transition-opacity duration-500"}`} />
 
-                {/* Fire Glow Overlay on Hover */}
+                {/* Subtle glow on hover */}
                 {!isDisabled && (
-                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 )}
             </div>
 
-            {/* Arcade Border Glow - Fire Colored (intensifies on hover) */}
-            {!isDisabled && (
-                <div className="absolute inset-0 rounded-2xl opacity-40 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{
-                        boxShadow: 'inset 0 0 30px rgba(195, 17, 12, 0.4), 0 0 20px rgba(230, 80, 27, 0.3)'
-                    }}
-                />
-            )}
-
+            {/* Bottom content */}
             <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4 z-20">
-                <h3 className="text-foreground font-bold text-sm sm:text-base md:text-xl drop-shadow-lg group-hover:text-white transition-colors leading-tight line-clamp-2">
+                <h3 className="text-foreground font-bold text-sm sm:text-base md:text-lg drop-shadow-lg group-hover:text-white transition-colors leading-tight line-clamp-2">
                     {name}
                 </h3>
 
                 {isDisabled ? (
-                    <div className="mt-1.5 inline-flex items-center px-2 py-0.5 rounded-full bg-accent/20 backdrop-blur-sm border border-accent/20">
-                        <span className="text-[10px] sm:text-xs font-medium text-muted-foreground line-clamp-1">
-                            {isComingSoon ? "Segera Hadir" : "Maintenance"}
-                        </span>
-                    </div>
+                    <Badge
+                        variant="secondary"
+                        className="mt-1.5 bg-accent/15 text-muted-foreground border-accent/20 text-[10px] sm:text-xs py-0.5"
+                    >
+                        {isComingSoon ? (
+                            <><Clock className="w-3 h-3 mr-1" /> Segera Hadir</>
+                        ) : (
+                            <><Wrench className="w-3 h-3 mr-1" /> Maintenance</>
+                        )}
+                    </Badge>
                 ) : (
-                    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
-                        <div className="w-full h-1 bg-linear-to-r from-accent to-primary rounded-full shadow-[0_0_10px_rgba(230,80,27,0.8)]" />
+                    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <div className="w-full h-0.5 bg-linear-to-r from-accent to-primary rounded-full shadow-[0_0_8px_rgba(230,80,27,0.6)]" />
                     </div>
                 )}
             </div>
 
-            {/* Status Badge */}
+            {/* Status Badge (top-right corner) */}
             {isComingSoon && (
                 <div
                     title="Segera Hadir"
