@@ -16,177 +16,110 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
 
-  --radius: 0.75rem;
-  --font-family-display: 'Inter', system-ui, sans-serif;
+  /* Ember Surface Tiers */
+  --color-surface-lowest: var(--surface-lowest);
+  --color-surface-low: var(--surface-low);
+  --color-surface: var(--surface);
+  --color-surface-high: var(--surface-high);
+  --color-surface-highest: var(--surface-highest);
 
-  --animate-grid-movement: grid-movement 20s linear infinite;
-
-  @keyframes grid-movement {
-    0% {
-      transform: translateY(0);
-    }
-
-    100% {
-      transform: translateY(40px);
-    }
-  }
+  --radius: 0.125rem; /* rounded-sm */
+  --font-family-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-family-sans: var(--font-inter), system-ui, sans-serif;
+  --font-family-mono-ibm: var(--font-ibm-plex-mono), 'IBM Plex Mono', monospace;
+  --font-family-kodchasan: var(--font-kodchasan), 'Kodchasan', sans-serif;
 }
 
 :root {
-  /* Arcade Fire Theme */
-  --background: #280905;
-  /* Deep Maroon */
-  --foreground: #E7F2EF;
+  /* The Ember Interface */
+  --background: #220d0c;
+  --foreground: #f5f5f5;
 
-  --primary: #C3110C;
-  /* Bright Red */
-  --primary-foreground: #E7F2EF;
+  --primary: #ff5733;
+  --primary-foreground: #ffffff;
 
-  --secondary: #740A03;
-  /* Dark Crimson */
-  --secondary-foreground: #E7F2EF;
+  --secondary: #3d1b18;
+  --secondary-foreground: #ffb4a4;
 
-  --accent: #E6501B;
-  /* Fire Orange */
-  --accent-foreground: #280905;
+  --accent: #ffb4a4;
+  --accent-foreground: #220d0c;
 
-  --card: #3D0D07;
-  --card-foreground: #E7F2EF;
+  --card: #2a1110;
+  --card-foreground: #f5f5f5;
 
-  --muted: #740A03;
-  --muted-foreground: #A8362D;
+  --muted: #4a1f1b;
+  --muted-foreground: #d2aca8;
 
-  --border: #5C120B;
-  --input: #3D0D07;
+  --border: rgba(255, 87, 51, 0.15); /* Ghost border fallback */
+  --input: #1a0a09;
 
-  /* Fire Glow Colors */
-  --glow-primary: rgba(195, 17, 12, 0.5);
-  --glow-accent: rgba(230, 80, 27, 0.4);
-  --neon-red: #C3110C;
-  --neon-orange: #E6501B;
+  /* Surface Hierarchy */
+  --surface-lowest: #1a0a09;
+  --surface-low: #2a1110;
+  --surface: #220d0c;
+  --surface-high: #3d1b18;
+  --surface-highest: #4a1f1b;
 }
 
-/* 3D Retro Grid Background */
+/* Ambient Ember Background */
 .retro-grid-container {
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   background-color: var(--background);
-  perspective: 1000px;
-}
-
-.retro-grid {
-  position: absolute;
-  inset: -100% -50%;
-  width: 200%;
-  height: 200%;
-  background-image:
-    linear-gradient(to right, rgba(195, 17, 12, 0.3) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(195, 17, 12, 0.3) 1px, transparent 1px);
-  background-size: 40px 40px;
-  transform: rotateX(60deg);
-  transform-origin: center top;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 1) 100%);
-  animation: grid-movement 3s linear infinite;
-  box-shadow: inset 0 0 100px var(--background);
-  will-change: transform;
-  contain: layout style paint;
 }
 
 .horizon-glow {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(to bottom, var(--accent) 0%, transparent 60%);
-  opacity: 0.15;
-  filter: blur(50px);
-}
-
-/* Floating Particles */
-.particles {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(var(--accent) 1px, transparent 1px);
-  background-size: 50px 50px;
-  opacity: 0.2;
-  animation: grid-movement 10s linear infinite reverse;
-  will-change: transform;
-  contain: layout style paint;
-}
-
-/* Hide 3D background effects on mobile — plain background only */
-@media (max-width: 768px) {
-  .retro-grid,
-  .horizon-glow,
-  .particles {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    animation: none !important;
-  }
-
-  .retro-grid-container {
-    background-color: var(--background) !important;
-    perspective: none !important;
-  }
-}
-
-/* Glassmorphism - Red/Fire Tint */
-.glass {
-  background: rgba(40, 9, 5, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(195, 17, 12, 0.2);
-}
-
-.glass-card {
-  background: rgba(61, 13, 7, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(195, 17, 12, 0.15);
-}
-
-/* Arcade Card - Fire Style */
-.arcade-card {
-  position: relative;
-  background: linear-gradient(145deg, #3D0D07, #280905);
-  border: 2px solid transparent;
-  border-radius: 1rem;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.arcade-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 2px;
-  background: linear-gradient(135deg, var(--primary), transparent, var(--accent));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  top: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150vw;
+  height: 60vh;
+  background: radial-gradient(ellipse at top, rgba(255, 87, 51, 0.15) 0%, transparent 70%);
+  filter: blur(80px);
   pointer-events: none;
 }
 
-.arcade-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 0 20px rgba(195, 17, 12, 0.3),
-    0 0 40px rgba(230, 80, 27, 0.15),
-    0 20px 40px rgba(0, 0, 0, 0.5);
+
+/* Glassmorphism - Ember Tint */
+.glass {
+  background: rgba(34, 13, 12, 0.6); /* surface with opacity */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: none;
 }
 
-/* Neon Glow Effect */
+.glass-card {
+  background: rgba(42, 17, 16, 0.7); /* surface-low with opacity */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: none;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Ember Card - Surface Depth */
+.arcade-card {
+  position: relative;
+  background: var(--surface-low);
+  border: none;
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.arcade-card:hover {
+  background: var(--surface-high);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255, 87, 51, 0.08); /* Ambient shadow */
+}
+
+/* Ember Glow Effect */
 .neon-glow {
   text-shadow:
-    0 0 5px var(--neon-red),
-    0 0 10px var(--neon-orange),
-    0 0 20px rgba(195, 17, 12, 0.5);
+    0 0 5px var(--primary),
+    0 0 15px rgba(255, 180, 164, 0.5);
 }
 
 .glow-text {
@@ -194,37 +127,31 @@
   text-shadow: 0 0 10px var(--primary);
 }
 
-/* Arcade Button - Fire Gradient */
+/* Ember Button - Primary Gradient */
 .arcade-btn {
-  background: linear-gradient(135deg, #E6501B, #C3110C);
+  background: linear-gradient(135deg, var(--primary), var(--primary-container));
   color: #FFFFFF;
-  font-weight: 700;
+  font-weight: 600;
   border: none;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   padding: 0.75rem 1.5rem;
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow:
-    0 4px 0 #740A03,
-    0 6px 20px rgba(195, 17, 12, 0.4);
+  box-shadow: 0 4px 15px rgba(255, 87, 51, 0.3);
 }
 
 .arcade-btn:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 6px 0 #740A03,
-    0 10px 30px rgba(230, 80, 27, 0.5);
+  box-shadow: 0 8px 25px rgba(255, 180, 164, 0.4);
 }
 
 .arcade-btn:active {
-  transform: translateY(2px);
-  box-shadow:
-    0 2px 0 #740A03,
-    0 4px 10px rgba(0, 0, 0, 0.3);
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(255, 87, 51, 0.2);
 }
 
-/* Scanline Overlay */
+/* Scanline Overlay (Maintained for gaming feel but subtle) */
 .scanlines::after {
   content: '';
   position: absolute;
@@ -232,21 +159,18 @@
   background: repeating-linear-gradient(0deg,
       transparent,
       transparent 2px,
-      rgba(0, 0, 0, 0.1) 2px,
-      rgba(0, 0, 0, 0.1) 4px);
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 4px);
   pointer-events: none;
 }
 
 /* Animated Glow Pulse */
 @keyframes glow-pulse {
-
-  0%,
-  100% {
-    box-shadow: 0 0 10px rgba(195, 17, 12, 0.3);
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 87, 51, 0.2);
   }
-
   50% {
-    box-shadow: 0 0 25px rgba(230, 80, 27, 0.5), 0 0 40px rgba(195, 17, 12, 0.2);
+    box-shadow: 0 0 25px rgba(255, 180, 164, 0.4), 0 0 40px rgba(255, 87, 51, 0.15);
   }
 }
 
@@ -258,32 +182,36 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: var(--font-family-sans);
+}
+
+h1, h2, h3, h4, h5, h6, .display-font {
   font-family: var(--font-family-display);
 }
 
 /* Selection Style */
 ::selection {
-  background: rgba(230, 80, 27, 0.4);
+  background: rgba(255, 87, 51, 0.4);
   color: #FFFFFF;
 }
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #280905;
+  background: var(--surface-lowest);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #740A03;
+  background: var(--surface-high);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #C3110C;
+  background: var(--primary);
 }
 
 /* Hide scrollbar utility */
@@ -294,4 +222,45 @@ body {
 
 .scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+/* Custom Shake Animation */
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg) scale(1.02); }
+  50% { transform: rotate(3deg) scale(1.02); }
+  75% { transform: rotate(-3deg) scale(1.02); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out infinite;
+}
+
+/* Shimmer Animation - for gradient strips */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Custom Scrollbar - subtle for popups */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }

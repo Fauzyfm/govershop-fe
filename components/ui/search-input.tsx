@@ -19,7 +19,7 @@ export default function SearchInput({ value, onChange, placeholder = "Cari game.
                 type="text"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="h-12 w-full pl-11 pr-4 bg-white/4 border-white/8 rounded-full text-sm placeholder:text-muted-foreground/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 focus-visible:bg-white/6 transition-all duration-300"
+                className="h-12 w-full pl-11 pr-4 bg-surface-lowest border border-white/10 rounded-full text-sm placeholder:text-muted-foreground/50 focus-visible:border-primary/50 focus-visible:ring-4 focus-visible:ring-primary/20 transition-all duration-300"
                 placeholder={placeholder}
             />
         </div>

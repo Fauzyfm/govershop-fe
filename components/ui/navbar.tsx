@@ -3,19 +3,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Search } from "lucide-react";
 
+interface NavbarProps {
+    search?: string;
+    onSearchChange?: (value: string) => void;
+    showSearch?: boolean;
+}
 
-export default function Navbar() {
+export default function Navbar({ search, onSearchChange, showSearch = false }: NavbarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [contactOpen, setContactOpen] = useState(false);
 
     return (
-        <nav className="sticky top-0 z-50 w-full glass border-b border-primary/20 backdrop-blur-md" aria-label="Navigasi utama">
-            <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <nav className="sticky top-0 z-50 w-full glass backdrop-blur-md" aria-label="Navigasi utama">
+            <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight group">
-                    <div className="relative h-10 w-32"> {/* Adjust width as needed based on aspect ratio */}
+                <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight group shrink-0">
+                    <div className="relative h-10 w-32">
                         <Image
                             src="/Banner/logo-restopup-v2.png"
                             alt="Restopup Logo"
@@ -28,26 +33,26 @@ export default function Navbar() {
                 </Link>
 
                 {/* Desktop Menu */}
-                <div className="hidden md:flex items-center gap-8">
-                    <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(195,17,12,0.5)]">
+                <div className="hidden md:flex items-center gap-6" style={{ fontFamily: 'var(--font-family-mono-ibm)' }}>
+                    <Link href="/" className="text-sm font-medium text-primary transition-colors hover:drop-shadow-[0_0_10px_var(--primary)]">
                         Beranda
                     </Link>
-                    <Link href="/track" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(195,17,12,0.5)]">
+                    <Link href="/track" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:drop-shadow-[0_0_10px_var(--primary)]">
                         Lacak Pesanan
                     </Link>
-                    <Link href="/about" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(195,17,12,0.5)]">
+                    <Link href="/about" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:drop-shadow-[0_0_10px_var(--primary)]">
                         Tentang Kami
                     </Link>
                     {/* Contact Dropdown */}
                     <div className="relative group">
-                        <button className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(195,17,12,0.5)] flex items-center gap-1">
-                            Hubungi Kami
+                        <button className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hover:drop-shadow-[0_0_10px_var(--primary)] flex items-center gap-1">
+                            Contact
                             <svg className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
                         <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <div className="glass-card rounded-xl p-3 min-w-[200px] shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-primary/20 flex flex-col gap-2">
+                            <div className="glass-card rounded-xl p-3 min-w-[200px] shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex flex-col gap-2">
                                 <a
                                     href="https://instagram.com/restopup.store"
                                     target="_blank"
@@ -75,6 +80,22 @@ export default function Navbar() {
                     </div>
                 </div>
 
+                {/* Desktop Search */}
+                {showSearch && (
+                    <div className="hidden md:flex items-center relative shrink-0">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={search || ""}
+                                onChange={(e) => onSearchChange?.(e.target.value)}
+                                placeholder="Cari Produk"
+                                className="h-9 w-48 lg:w-56 pl-9 pr-3 bg-surface-lowest border border-white/10 rounded-full text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300"
+                            />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                        </div>
+                    </div>
+                )}
+
                 {/* Mobile Toggle */}
                 <button
                     className="md:hidden p-2 text-foreground hover:bg-white/5 rounded-lg transition-colors"
@@ -88,22 +109,38 @@ export default function Navbar() {
 
             {/* Mobile Menu */}
             {isOpen && (
-                <div className="md:hidden absolute top-16 left-0 w-full glass border-b border-primary/20 p-4 flex flex-col gap-4 animate-in slide-in-from-top-2 z-50">
-                    <Link href="/" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 border-b border-white/5">
+                <div className="md:hidden absolute top-16 left-0 w-full glass p-4 flex flex-col gap-4 animate-in slide-in-from-top-2 z-50" style={{ fontFamily: 'var(--font-family-mono-ibm)' }}>
+                    {/* Mobile Search */}
+                    {showSearch && (
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={search || ""}
+                                onChange={(e) => onSearchChange?.(e.target.value)}
+                                placeholder="Cari Produk"
+                                className="h-10 w-full pl-10 pr-4 bg-surface-lowest border border-white/10 rounded-full text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300"
+                            />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                        </div>
+                    )}
+                    <Link href="/" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 hover:bg-white/5 rounded-md px-2 transition-colors">
                         Beranda
                     </Link>
-                    <Link href="/track" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 border-b border-white/5">
-                        Lacak Pesanan
+                    <Link href="/track" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 hover:bg-white/5 rounded-md px-2 transition-colors">
+                        Lacak
                     </Link>
-                    <Link href="/about" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 border-b border-white/5">
+                    <Link href="/order" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 hover:bg-white/5 rounded-md px-2 transition-colors">
+                        Pesanan
+                    </Link>
+                    <Link href="/about" onClick={() => setIsOpen(false)} className="text-sm font-medium text-foreground hover:text-primary py-2 hover:bg-white/5 rounded-md px-2 transition-colors">
                         Tentang Kami
                     </Link>
                     <div className="pb-1">
                         <button
                             onClick={() => setContactOpen(!contactOpen)}
-                            className="flex items-center justify-between w-full text-sm font-medium text-foreground hover:text-primary py-2"
+                            className="flex items-center justify-between w-full text-sm font-medium text-foreground hover:text-primary py-2 hover:bg-white/5 rounded-md px-2 transition-colors"
                         >
-                            Hubungi Kami
+                            Contact
                             <svg className={`w-4 h-4 transition-transform duration-200 ${contactOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>

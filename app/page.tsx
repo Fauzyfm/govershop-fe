@@ -111,44 +111,50 @@ export default async function Home() {
     <div className="space-y-8 max-w-6xl mx-auto text-left">
       {/* Server-rendered first carousel image for instant LCP */}
       {firstCarouselImageUrl && (
-        <section className="-mx-4 md:mx-0" id="server-carousel-section">
-          <div className="relative w-full py-4 md:py-10">
-            <div
-              className="relative mx-auto rounded-xl md:rounded-2xl overflow-hidden border border-white/10 bg-background"
-              id="server-carousel-placeholder"
-              style={{
-                maxWidth: "750px",
-                aspectRatio: "3110 / 1350",
-                boxShadow: "0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)",
-              }}
-            >
-              {firstCarouselLink ? (
-                <a href={firstCarouselLink} className="block w-full h-full relative">
-                  <Image
-                    src={firstCarouselImageUrl}
-                    alt={firstCarouselTitle}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 92vw, 750px"
-                    priority
-                    fetchPriority="high"
-                    unoptimized={!firstCarouselImageUrl.startsWith("/")}
-                  />
-                </a>
-              ) : (
-                <div className="relative w-full h-full">
-                  <Image
-                    src={firstCarouselImageUrl}
-                    alt={firstCarouselTitle}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 92vw, 750px"
-                    priority
-                    fetchPriority="high"
-                    unoptimized={!firstCarouselImageUrl.startsWith("/")}
-                  />
-                </div>
-              )}
+        <section
+          className="w-screen relative left-1/2 -translate-x-1/2 overflow-hidden -mt-8"
+          id="server-carousel-section"
+          style={{
+            backgroundImage: 'url(/wave-bg.png)',
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
+          <div className="max-w-6xl mx-auto px-4 pt-8 pb-[15%] md:pb-[12%] lg:pb-[10%] py-4 md:py-6">
+            <div className="relative w-full max-w-7xl mx-auto">
+              <div
+                className="relative w-full aspect-21/9 md:aspect-5/2 lg:aspect-21/9 rounded-2xl overflow-hidden bg-background"
+                id="server-carousel-placeholder"
+              >
+                {firstCarouselLink ? (
+                  <a href={firstCarouselLink} className="block w-full h-full relative">
+                    <Image
+                      src={firstCarouselImageUrl}
+                      alt={firstCarouselTitle}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 92vw, 750px"
+                      priority
+                      fetchPriority="high"
+                      unoptimized={!firstCarouselImageUrl.startsWith("/")}
+                    />
+                  </a>
+                ) : (
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={firstCarouselImageUrl}
+                      alt={firstCarouselTitle}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 92vw, 750px"
+                      priority
+                      fetchPriority="high"
+                      unoptimized={!firstCarouselImageUrl.startsWith("/")}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>

@@ -2,55 +2,20 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { CarouselItem } from "@/types/api";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-interface LayeredCarouselProps {
+interface CarouselProps {
     items: CarouselItem[];
     autoPlayInterval?: number;
 }
 
-// Position config type
-interface PositionConfig {
-    xPercent: number;
-    scale: number;
-    zIndex: number;
-    opacity: number;
-    rotateY: number;
-}
-
-// Desktop: wider spread, more subtle rotation
-const DESKTOP_CONFIGS: Record<number, PositionConfig> = {
-    [-2]: { xPercent: -55, scale: 0.65, zIndex: 1, opacity: 0.4, rotateY: 45 },
-    [-1]: { xPercent: -28, scale: 0.8, zIndex: 5, opacity: 0.7, rotateY: 30 },
-    [0]: { xPercent: 0, scale: 1, zIndex: 10, opacity: 1, rotateY: 0 },
-    [1]: { xPercent: 28, scale: 0.8, zIndex: 5, opacity: 0.7, rotateY: -30 },
-    [2]: { xPercent: 55, scale: 0.65, zIndex: 1, opacity: 0.4, rotateY: -45 },
-};
-
-// Mobile: symmetric centered layout, tighter overlap
-const MOBILE_CONFIGS: Record<number, PositionConfig> = {
-    [-2]: { xPercent: -40, scale: 0.6, zIndex: 1, opacity: 0.3, rotateY: 40 },
-    [-1]: { xPercent: -20, scale: 0.82, zIndex: 5, opacity: 0.6, rotateY: 25 },
-    [0]: { xPercent: 0, scale: 1, zIndex: 10, opacity: 1, rotateY: 0 },
-    [1]: { xPercent: 20, scale: 0.82, zIndex: 5, opacity: 0.6, rotateY: -25 },
-    [2]: { xPercent: 40, scale: 0.6, zIndex: 1, opacity: 0.3, rotateY: -40 },
-};
-
 export default function LayeredCarousel({
     items,
     autoPlayInterval = 5000,
-}: LayeredCarouselProps) {
+}: CarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isMobile, setIsMobile] = useState(false);
-
-    // Detect screen size
-    useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth < 768);
-        checkMobile();
-        window.addEventListener("resize", checkMobile);
-        return () => window.removeEventListener("resize", checkMobile);
-    }, []);
 
     const nextSlide = useCallback(() => {
         setCurrentIndex((prev) => (prev + 1) % items.length);
@@ -67,133 +32,93 @@ export default function LayeredCarousel({
         return () => clearInterval(interval);
     }, [items.length, nextSlide, autoPlayInterval]);
 
-    // Calculate the "diff" for a given index relative to currentIndex
-    const getDiff = (index: number): number => {
-        let diff = index - currentIndex;
-        if (diff > items.length / 2) diff -= items.length;
-        if (diff < -items.length / 2) diff += items.length;
-        return diff;
-    };
-
-    const configs = isMobile ? MOBILE_CONFIGS : DESKTOP_CONFIGS;
-    // Mobile: card takes nearly full width for bigger banners; Desktop: 65%
-    const cardWidth = isMobile ? 92 : 65;
-
     if (items.length === 0) return null;
 
     return (
-        <div className="relative w-full py-4 md:py-10">
+        <div className="relative w-full max-w-7xl mx-auto py-4 md:py-6">
             {/* Carousel Container */}
-            <div
-                className="relative mx-auto overflow-hidden"
-                style={{
-                    maxWidth: "1152px",
-                    // Container aspect ratio = 2.3037 * 100 / cardWidth 
-                    // so the card (cardWidth% of container) has exactly 3110:1350 ratio matching banner images
-                    aspectRatio: `${230.37 / cardWidth} / 1`,
-                }}
-            >
-                {items.map((item, index) => {
-                    const diff = getDiff(index);
+            <div className="relative w-full aspect-21/9 md:aspect-5/2 lg:aspect-21/9 rounded-2xl overflow-hidden group">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentIndex}
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                        className="absolute inset-0"
+                    >
+                        {items[currentIndex].link_url ? (
+                            <a href={items[currentIndex].link_url} className="block w-full h-full relative">
+                                <Image
+                                    src={items[currentIndex].image_url}
+                                    alt={items[currentIndex].title || "Banner"}
+                                    fill
+                                    className="object-cover"
+                                    sizes="100vw"
+                                    priority
+                                    unoptimized={!items[currentIndex].image_url?.startsWith("/")}
+                                />
+                                {items[currentIndex].title && (
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent flex items-end p-6 md:p-10">
+                                        <h3 className="text-xl md:text-3xl font-bold text-white drop-shadow-md">
+                                            {items[currentIndex].title}
+                                        </h3>
+                                    </div>
+                                )}
+                            </a>
+                        ) : (
+                            <div className="relative w-full h-full">
+                                <Image
+                                    src={items[currentIndex].image_url}
+                                    alt={items[currentIndex].title || "Banner"}
+                                    fill
+                                    className="object-cover"
+                                    sizes="100vw"
+                                    priority
+                                    unoptimized={!items[currentIndex].image_url?.startsWith("/")}
+                                />
+                                {items[currentIndex].title && (
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent flex items-end p-6 md:p-10">
+                                        <h3 className="text-xl md:text-3xl font-bold text-white drop-shadow-md">
+                                            {items[currentIndex].title}
+                                        </h3>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
 
-                    // Only render items within visible range
-                    if (Math.abs(diff) > 2) return null;
-
-                    const config = configs[diff] || configs[0];
-
-                    return (
-                        <motion.div
-                            key={item.id}
-                            animate={{
-                                x: `${config.xPercent}%`,
-                                scale: config.scale,
-                                opacity: config.opacity,
-                                rotateY: config.rotateY,
-                                zIndex: config.zIndex,
-                            }}
-                            transition={{
-                                duration: 0.6,
-                                ease: [0.32, 0.72, 0, 1],
-                            }}
-                            className="absolute rounded-xl md:rounded-2xl overflow-hidden border border-white/10 bg-background"
-                            style={{
-                                width: `${cardWidth}%`,
-                                height: "100%",
-                                left: "50%",
-                                top: 0,
-                                marginLeft: `${-cardWidth / 2}%`,
-                                transformStyle: "preserve-3d",
-                                boxShadow:
-                                    diff === 0
-                                        ? "0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)"
-                                        : "0 15px 35px rgba(0,0,0,0.3)",
-                            }}
+                {/* Navigation Arrows */}
+                {items.length > 1 && (
+                    <>
+                        <button
+                            onClick={prevSlide}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
                         >
-                            {item.link_url ? (
-                                <a href={item.link_url} className="block w-full h-full relative group">
-                                    <Image
-                                        src={item.image_url}
-                                        alt={item.title || "Banner"}
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 768px) 85vw, 750px"
-                                        priority={diff === 0}
-                                        unoptimized={!item.image_url?.startsWith("/")}
-                                    />
-                                    {/* Dark overlay for non-active slides */}
-                                    {diff !== 0 && (
-                                        <div className="absolute inset-0 bg-black/30" />
-                                    )}
-                                    {/* Shine on hover */}
-                                    <div className="absolute inset-0 bg-linear-to-tr from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                                    {/* Title */}
-                                    {item.title && diff === 0 && (
-                                        <div className="absolute bottom-0 left-0 right-0 p-3 md:p-6 bg-linear-to-t from-black/80 to-transparent">
-                                            <h3 className="text-sm md:text-2xl font-bold text-white drop-shadow-md">
-                                                {item.title}
-                                            </h3>
-                                        </div>
-                                    )}
-                                </a>
-                            ) : (
-                                <div className="relative w-full h-full">
-                                    <Image
-                                        src={item.image_url}
-                                        alt={item.title || "Banner"}
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 768px) 85vw, 750px"
-                                        priority={diff === 0}
-                                        unoptimized={!item.image_url?.startsWith("/")}
-                                    />
-                                    {diff !== 0 && (
-                                        <div className="absolute inset-0 bg-black/30" />
-                                    )}
-                                    {item.title && diff === 0 && (
-                                        <div className="absolute bottom-0 left-0 right-0 p-3 md:p-6 bg-linear-to-t from-black/80 to-transparent">
-                                            <h3 className="text-sm md:text-2xl font-bold text-white drop-shadow-md">
-                                                {item.title}
-                                            </h3>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </motion.div>
-                    );
-                })}
+                            <ChevronLeft className="w-6 h-6" />
+                        </button>
+                        <button
+                            onClick={nextSlide}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
+                        >
+                            <ChevronRight className="w-6 h-6" />
+                        </button>
+                    </>
+                )}
             </div>
 
             {/* Dot indicators */}
             {items.length > 1 && (
-                <div className="flex justify-center items-center mt-4 md:mt-6">
-                    <div className="flex gap-1.5 md:gap-2">
+                <div className="flex justify-center items-center mt-6">
+                    <div className="flex gap-2.5">
                         {items.map((_, index) => (
                             <button
                                 key={index}
                                 onClick={() => setCurrentIndex(index)}
-                                className={`h-2 md:h-2.5 rounded-full transition-all duration-300 ${index === currentIndex
-                                    ? "w-6 md:w-8 bg-primary shadow-[0_0_10px_rgba(230,80,27,0.5)]"
-                                    : "w-2 md:w-2.5 bg-white/20 hover:bg-white/40"
+                                className={`h-2.5 rounded-full transition-all duration-300 ${index === currentIndex
+                                    ? "w-8 bg-primary shadow-[0_0_10px_rgba(230,80,27,0.5)]"
+                                    : "w-2.5 bg-white/20 hover:bg-white/40"
                                     }`}
                                 aria-label={`Go to slide ${index + 1}`}
                             />

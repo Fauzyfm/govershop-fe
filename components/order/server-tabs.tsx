@@ -1,21 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Tag, Globe, Sparkles, ShoppingBag, Gamepad2 } from "lucide-react";
 
 // Server configuration with urlKey for clean URLs
 // urlKey: used in URL query param (lowercase, no special chars)
-// displayName: shown in tab
-// flagImage: path to flag PNG
-// types: product.type values that belong to this server
+// displayName: shown in chip
 // priority: sort order (lower = first)
+// icon: optional icon hint
 
 interface ServerConfig {
     urlKey: string;
     displayName: string;
-    flagImage: string;
+    flagImage: string;  // kept for backwards compatibility
     priority: number;
+    iconHint?: "region" | "promo" | "product" | "platform" | "generic";
 }
 
 // Known servers with their configurations
@@ -26,24 +26,28 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Indonesia",
         flagImage: "/flag-logos/indonesia-flag.png",
         priority: 1,
+        iconHint: "region",
     },
     "Indonesia": {
         urlKey: "indonesia",
         displayName: "Indonesia",
         flagImage: "/flag-logos/indonesia-flag.png",
         priority: 1,
+        iconHint: "region",
     },
     "Membership": {
         urlKey: "indonesia",
         displayName: "Indonesia",
         flagImage: "/flag-logos/indonesia-flag.png",
         priority: 1,
+        iconHint: "region",
     },
     "ID": {
         urlKey: "indonesia",
         displayName: "Indonesia",
         flagImage: "/flag-logos/indonesia-flag.png",
         priority: 1,
+        iconHint: "region",
     },
     // Malaysia
     "MY": {
@@ -51,12 +55,14 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Malaysia",
         flagImage: "/flag-logos/malaysia-flag.png",
         priority: 2,
+        iconHint: "region",
     },
     "Malaysia": {
         urlKey: "malaysia",
         displayName: "Malaysia",
         flagImage: "/flag-logos/malaysia-flag.png",
         priority: 2,
+        iconHint: "region",
     },
     // Philippines
     "PH": {
@@ -64,12 +70,14 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Philippines",
         flagImage: "/flag-logos/philippines-flag.png",
         priority: 3,
+        iconHint: "region",
     },
     "Philippines": {
         urlKey: "philippines",
         displayName: "Philippines",
         flagImage: "/flag-logos/philippines-flag.png",
         priority: 3,
+        iconHint: "region",
     },
     // Thailand
     "TH": {
@@ -77,12 +85,14 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Thailand",
         flagImage: "/flag-logos/thailand-flag.png",
         priority: 4,
+        iconHint: "region",
     },
     "Thailand": {
         urlKey: "thailand",
         displayName: "Thailand",
         flagImage: "/flag-logos/thailand-flag.png",
         priority: 4,
+        iconHint: "region",
     },
     // Brazil
     "BR": {
@@ -90,12 +100,14 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Brazil",
         flagImage: "/flag-logos/brazil-flag.png",
         priority: 5,
+        iconHint: "region",
     },
     "Brazil": {
         urlKey: "brazil",
         displayName: "Brazil",
         flagImage: "/flag-logos/brazil-flag.png",
         priority: 5,
+        iconHint: "region",
     },
     // Singapore
     "SG": {
@@ -103,12 +115,14 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Singapore",
         flagImage: "/flag-logos/singapore-flag.png",
         priority: 6,
+        iconHint: "region",
     },
     "Singapore": {
         urlKey: "singapore",
         displayName: "Singapore",
         flagImage: "/flag-logos/singapore-flag.png",
         priority: 6,
+        iconHint: "region",
     },
     // Global
     "Global": {
@@ -116,6 +130,7 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Global",
         flagImage: "/flag-logos/global-flag.png",
         priority: 7,
+        iconHint: "region",
     },
     // Vietnam
     "VN": {
@@ -123,12 +138,14 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Vietnam",
         flagImage: "/flag-logos/vietnam-flag.png",
         priority: 8,
+        iconHint: "region",
     },
     "Vietnam": {
         urlKey: "vietnam",
         displayName: "Vietnam",
         flagImage: "/flag-logos/vietnam-flag.png",
         priority: 8,
+        iconHint: "region",
     },
     // Taiwan
     "TW": {
@@ -136,12 +153,14 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
         displayName: "Taiwan",
         flagImage: "/flag-logos/taiwan-flag.png",
         priority: 9,
+        iconHint: "region",
     },
     "Taiwan": {
         urlKey: "taiwan",
         displayName: "Taiwan",
         flagImage: "/flag-logos/taiwan-flag.png",
         priority: 9,
+        iconHint: "region",
     },
 };
 
@@ -149,9 +168,10 @@ export const KNOWN_SERVERS: Record<string, ServerConfig> = {
 export type ServerTabInfo = {
     urlKey: string;          // For URL: ?server=indonesia
     displayName: string;     // For display: "Indonesia"
-    flagImage: string;       // For flag: /flag-logos/indonesia-flag.png
+    flagImage: string;       // For flag (kept for backwards compatibility)
     types: string[];         // Product types that belong to this tab
     priority: number;
+    iconHint?: "region" | "promo" | "product" | "platform" | "generic";
 };
 
 // Get server config for a product type
@@ -159,12 +179,23 @@ function getServerConfigForType(productType: string): ServerConfig {
     if (KNOWN_SERVERS[productType]) {
         return KNOWN_SERVERS[productType];
     }
-    // Unknown type - use type name as display, global flag
+    // Unknown type - determine icon hint from name
+    const lower = productType.toLowerCase();
+    let iconHint: ServerConfig["iconHint"] = "generic";
+    if (lower.includes("promo") || lower.includes("diskon") || lower.includes("special")) {
+        iconHint = "promo";
+    } else if (lower.includes("google") || lower.includes("play") || lower.includes("apple") || lower.includes("steam")) {
+        iconHint = "platform";
+    } else if (lower.includes("product") || lower.includes("item")) {
+        iconHint = "product";
+    }
+
     return {
         urlKey: productType.toLowerCase().replace(/\s+/g, '-'),
         displayName: productType,
         flagImage: "/flag-logos/global-flag.png",
         priority: 100,
+        iconHint,
     };
 }
 
@@ -193,6 +224,7 @@ export function buildServerTabs<T extends { type: string }>(products: T[]): Serv
                 flagImage: config.flagImage,
                 types: [type],
                 priority: config.priority,
+                iconHint: config.iconHint,
             });
         }
     });
@@ -216,6 +248,22 @@ export function filterProductsByTab<T extends { type: string }>(
 ): T[] {
     if (!selectedTab) return products;
     return products.filter(p => selectedTab.types.includes(p.type));
+}
+
+// Get icon component based on hint
+function getChipIcon(hint?: string) {
+    switch (hint) {
+        case "region":
+            return Globe;
+        case "promo":
+            return Sparkles;
+        case "product":
+            return ShoppingBag;
+        case "platform":
+            return Gamepad2;
+        default:
+            return Tag;
+    }
 }
 
 interface ServerTabsProps {
@@ -243,54 +291,46 @@ export default function ServerTabs({ tabs, activeTab, onTabChange, loading }: Se
                 </div>
             )}
 
-            {/* Tabs Container */}
-            <div className="flex gap-2 p-1 bg-secondary/30 rounded-xl overflow-x-auto scrollbar-hide">
+            {/* Chips Container */}
+            <div className="flex flex-wrap gap-2">
                 {tabs.map((tab) => {
                     const isActive = activeTab?.urlKey === tab.urlKey;
+                    const IconComponent = getChipIcon(tab.iconHint);
 
                     return (
-                        <button
+                        <motion.button
                             key={tab.urlKey}
                             onClick={() => onTabChange(tab)}
                             disabled={loading}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
                             className={cn(
-                                "relative flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
-                                "hover:text-white focus:outline-none focus:ring-2 focus:ring-primary/30",
+                                "relative flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200",
+                                "border focus:outline-none focus:ring-2 focus:ring-primary/30",
                                 "disabled:opacity-50 disabled:cursor-not-allowed",
-                                isActive ? "text-black" : "text-muted-foreground hover:bg-white/5"
+                                isActive
+                                    ? "bg-primary text-black border-primary shadow-lg shadow-primary/20"
+                                    : "bg-white/4 text-muted-foreground border-white/10 hover:border-white/20 hover:bg-white/8 hover:text-white"
                             )}
                         >
-                            {/* Active indicator with animation */}
+                            <IconComponent className={cn(
+                                "w-3.5 h-3.5 shrink-0",
+                                isActive ? "text-black/70" : "text-muted-foreground"
+                            )} />
+                            <span>{tab.displayName}</span>
+
+                            {/* Active dot indicator */}
                             {isActive && (
-                                <motion.div
-                                    layoutId="serverTabIndicator"
-                                    className="absolute inset-0 bg-primary rounded-lg shadow-lg shadow-primary/30"
-                                    transition={{
-                                        type: "spring",
-                                        stiffness: 500,
-                                        damping: 30,
-                                    }}
+                                <motion.span
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    className="w-1.5 h-1.5 rounded-full bg-black/30 ml-0.5"
                                 />
                             )}
-
-                            {/* Flag Image */}
-                            <Image
-                                src={tab.flagImage}
-                                alt={tab.displayName}
-                                width={20}
-                                height={14}
-                                className="relative z-10 rounded-sm object-cover"
-                            />
-
-                            {/* Tab Label - Hidden on mobile, visible on desktop */}
-                            <span className="relative z-10 hidden md:inline">{tab.displayName}</span>
-                        </button>
+                        </motion.button>
                     );
                 })}
             </div>
-
-            {/* Subtle border effect */}
-            <div className="absolute inset-0 rounded-xl border border-white/5 pointer-events-none" />
         </div>
     );
 }

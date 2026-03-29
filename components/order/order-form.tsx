@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, ChevronDown, ChevronUp, MapPin, AlertTriangle, MessageCircle, X } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Tag, AlertTriangle, MessageCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { getGameConfig, sanitizeUserId, buildCustomerNo } from "@/lib/game-input-config";
@@ -104,10 +104,12 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
         setShowAllProducts(false); // Reset pagination
         setSelectedSku(null); // Clear selection
 
-        // Update URL with server query parameter (using urlKey for clean URL)
+        // Update URL without triggering Next.js Server Component re-render
+        // Using history.replaceState instead of router.replace to avoid
+        // redundant API calls (payment-methods, brands, etc.) that cause 429 rate limit
         const params = new URLSearchParams(searchParams.toString());
         params.set("server", tab.urlKey);
-        router.replace(`?${params.toString()}`, { scroll: false });
+        window.history.replaceState(null, "", `?${params.toString()}`);
 
         // Simulate loading for smoother transition
         setTimeout(() => setServerLoading(false), 300);
@@ -290,7 +292,83 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
             {/* Left Column: Form Steps */}
             <div className="lg:col-span-2 space-y-6">
 
-                {/* Step 1: Select Product (Nominals) - Collapsible */}
+                {/* Step 1: User Data (Swapped to be first) */}
+                <section className="glass rounded-xl p-5 border border-white/5 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center text-sm">1</div>
+                        <h2 className="text-lg font-bold">Masukkan Data</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className={cn("space-y-2", (gameConfig.hasZoneId || gameConfig.hasServerList) ? "md:col-span-1" : "md:col-span-2")}>
+                            <label className="text-xs text-muted-foreground font-medium">
+                                {gameConfig.userIdLabel || "User ID"}
+                            </label>
+                            <input
+                                type="text"
+                                value={customerNo}
+                                onChange={e => setCustomerNo(sanitizeUserId(e.target.value))}
+                                onPaste={e => {
+                                    e.preventDefault();
+                                    const pastedText = e.clipboardData.getData('text');
+                                    setCustomerNo(sanitizeUserId(pastedText));
+                                }}
+                                placeholder={gameConfig.userIdPlaceholder || "Masukkan User ID"}
+                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
+                            />
+                        </div>
+                        {gameConfig.hasZoneId && (
+                            <ZoneIdInput
+                                value={zoneId}
+                                onChange={setZoneId}
+                                label={gameConfig.zoneIdLabel}
+                                placeholder={gameConfig.zoneIdPlaceholder}
+                            />
+                        )}
+                        {gameConfig.hasServerList && gameConfig.serverList && (
+                            <div className="space-y-2">
+                                <label className="text-xs text-muted-foreground font-medium">
+                                    {gameConfig.serverLabel || "Server"}
+                                </label>
+                                <select
+                                    value={server}
+                                    onChange={(e) => setServer(e.target.value)}
+                                    className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm appearance-none"
+                                >
+                                    <option value="" disabled>Pilih Server</option>
+                                    {gameConfig.serverList.map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-xs text-muted-foreground font-medium">Email (Opsional)</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                placeholder="email@contoh.com"
+                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs text-muted-foreground font-medium">No. WhatsApp <span className="text-red-400">*</span></label>
+                            <input
+                                type="tel"
+                                value={phone}
+                                onChange={e => setPhone(e.target.value)}
+                                placeholder="08xxxxxxxxxx"
+                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* Step 2: Select Product (Nominals) - Collapsible */}
                 <section className="glass rounded-xl border border-white/5 overflow-hidden">
                     {/* Collapsible Header */}
                     <button
@@ -298,7 +376,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                         className="w-full flex items-center justify-between p-5  hover:bg-white/5 transition-colors"
                     >
                         <div className="flex items-center gap-3 ">
-                            <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center text-sm">1</div>
+                            <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center text-sm">2</div>
                             <div className="text-left">
                                 <h2 className="text-lg font-bold">Pilih Nominal</h2>
                                 {selectedSku && !nominalExpanded && (
@@ -325,8 +403,8 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                 {serverTabs.length > 1 && activeServerTab && (
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="w-4 h-4 text-primary animate-bounce" />
-                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Pilih Server</span>
+                                            <Tag className="w-4 h-4 text-primary" />
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Pilih Kategori</span>
                                         </div>
                                         <ServerTabs
                                             tabs={serverTabs}
@@ -423,82 +501,6 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                     </motion.div>
                                 </AnimatePresence>
                             </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Step 2: User Data */}
-                <section className="glass rounded-xl p-5 border border-white/5 space-y-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary text-black font-bold flex items-center justify-center text-sm">2</div>
-                        <h2 className="text-lg font-bold">Masukkan Data</h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className={cn("space-y-2", (gameConfig.hasZoneId || gameConfig.hasServerList) ? "md:col-span-1" : "md:col-span-2")}>
-                            <label className="text-xs text-muted-foreground font-medium">
-                                {gameConfig.userIdLabel || "User ID"}
-                            </label>
-                            <input
-                                type="text"
-                                value={customerNo}
-                                onChange={e => setCustomerNo(sanitizeUserId(e.target.value))}
-                                onPaste={e => {
-                                    e.preventDefault();
-                                    const pastedText = e.clipboardData.getData('text');
-                                    setCustomerNo(sanitizeUserId(pastedText));
-                                }}
-                                placeholder={gameConfig.userIdPlaceholder || "Masukkan User ID"}
-                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
-                            />
-                        </div>
-                        {gameConfig.hasZoneId && (
-                            <ZoneIdInput
-                                value={zoneId}
-                                onChange={setZoneId}
-                                label={gameConfig.zoneIdLabel}
-                                placeholder={gameConfig.zoneIdPlaceholder}
-                            />
-                        )}
-                        {gameConfig.hasServerList && gameConfig.serverList && (
-                            <div className="space-y-2">
-                                <label className="text-xs text-muted-foreground font-medium">
-                                    {gameConfig.serverLabel || "Server"}
-                                </label>
-                                <select
-                                    value={server}
-                                    onChange={(e) => setServer(e.target.value)}
-                                    className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm appearance-none"
-                                >
-                                    <option value="" disabled>Pilih Server</option>
-                                    {gameConfig.serverList.map(s => (
-                                        <option key={s} value={s}>{s}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-xs text-muted-foreground font-medium">Email (Opsional)</label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
-                                placeholder="email@contoh.com"
-                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs text-muted-foreground font-medium">No. WhatsApp <span className="text-red-400">*</span></label>
-                            <input
-                                type="tel"
-                                value={phone}
-                                onChange={e => setPhone(e.target.value)}
-                                placeholder="08xxxxxxxxxx"
-                                className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
-                            />
                         </div>
                     </div>
                 </section>

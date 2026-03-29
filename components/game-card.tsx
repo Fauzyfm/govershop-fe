@@ -36,26 +36,26 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
 
     const Content = (
         <div className={`
-            arcade-card group relative w-full aspect-3/4 rounded-2xl overflow-hidden
+            arcade-card group relative w-full aspect-3/4 rounded-lg overflow-hidden shadow-xl
             ${isDisabled
                 ? "grayscale opacity-60 cursor-not-allowed"
-                : "cursor-pointer border border-white/8 shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_40px_rgba(195,17,12,0.25),0_0_30px_rgba(230,80,27,0.15)] hover:border-primary/30 transition-all duration-500"
+                : "cursor-pointer transition-all duration-500"
             }
         `}>
             {/* Image */}
-            <div className="absolute inset-0">
+            <div className="absolute inset-0 border-4 border-[#FFDAD7]">
                 <Image
                     src={image}
                     alt={`Top Up ${name} — Restopup`}
                     fill
-                    className={`object-cover transition-transform duration-700 ${isDisabled ? "" : "group-hover:scale-110"}`}
+                    className={`object-cover transition-transform duration-700 ${isDisabled ? "" : ""}`}
                     loading="lazy"
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                     unoptimized={isUnoptimized}
                 />
 
                 {/* Gradient Overlay */}
-                <div className={`absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent opacity-90 ${isDisabled ? "" : "group-hover:opacity-95 transition-opacity duration-500"}`} />
+                <div className={`absolute inset-0 bg-linear-to-t  from-background via-background/50 to-transparent opacity-90 w-full ${isDisabled ? "" : "group-hover:opacity-95 transition-opacity duration-500"}`} />
 
                 {/* Subtle glow on hover */}
                 {!isDisabled && (
@@ -65,9 +65,7 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
 
             {/* Bottom content */}
             <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4 z-20">
-                <h3 className="text-foreground font-bold text-sm sm:text-base md:text-lg drop-shadow-lg group-hover:text-white transition-colors leading-tight line-clamp-2">
-                    {name}
-                </h3>
+
 
                 {isDisabled ? (
                     <Badge
@@ -81,8 +79,11 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
                         )}
                     </Badge>
                 ) : (
-                    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                        <div className="w-full h-0.5 bg-linear-to-r from-accent to-primary rounded-full shadow-[0_0_8px_rgba(230,80,27,0.6)]" />
+                    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 flex-col">
+                        <h3 className="text-foreground font-bold text-sm sm:text-base md:text-lg drop-shadow-lg group-hover:text-white transition-colors leading-tight line-clamp-2">
+                            {name}
+                        </h3>
+                        <div className="w-full h-0.5 bg-linear-to-r from-accent to-primary rounded-full shadow-[0_0_8px_var(--primary-container)]" />
                     </div>
                 )}
             </div>

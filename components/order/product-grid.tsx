@@ -1,11 +1,34 @@
 import { Product } from "@/types/api";
 import { cn } from "@/lib/utils";
+import { Smartphone, Gamepad2, Coins, Ticket, Zap, CreditCard, Wallet, ShoppingBag } from "lucide-react";
 
 interface ProductGridProps {
     products: Product[];
     selectedSku: string | null;
     onSelect: (sku: string) => void;
 }
+
+const getFallbackIcon = (product: Product) => {
+    const brand = product.brand.toLowerCase();
+    const name = product.product_name.toLowerCase();
+    const cat = product.category ? product.category.toLowerCase() : "";
+
+    // Specific Games / Types
+    if (brand.includes("pulsa") || brand.includes("data") || cat.includes("pulsa")) return <Smartphone className="w-8 h-8 text-primary/40 group-hover:text-primary transition-colors duration-300" />;
+    if (brand.includes("pln") || cat.includes("token")) return <Zap className="w-8 h-8 text-primary/40 group-hover:text-primary transition-colors duration-300" />;
+    if (brand.includes("voucher") || cat.includes("voucher")) return <CreditCard className="w-8 h-8 text-primary/40 group-hover:text-primary transition-colors duration-300" />;
+    if (brand.includes("e-money") || cat.includes("e-money") || brand.includes("dana") || brand.includes("ovo") || brand.includes("gopay") || brand.includes("shopee")) return <Wallet className="w-8 h-8 text-primary/40 group-hover:text-primary transition-colors duration-300" />;
+
+    // Game specific sub-types
+    if (name.includes("pass") || name.includes("member") || name.includes("starlight") || name.includes("twilight") || name.includes("blessing")) return <Ticket className="w-8 h-8 text-primary/40 group-hover:text-primary transition-colors duration-300" />;
+    if (name.includes("uc") || name.includes("diamond") || name.includes("coin") || name.includes("cp") || name.includes("gem") || name.includes("genesis") || name.includes("koin")) return <Coins className="w-8 h-8 text-primary/40 group-hover:text-primary transition-colors duration-300" />;
+
+    // fallback for games
+    if (cat.includes("games") || brand.includes("mobile legends") || brand.includes("pubg") || brand.includes("free fire") || brand.includes("valorant") || brand.includes("genshin")) return <Gamepad2 className="w-8 h-8 text-primary/40 group-hover:text-primary transition-colors duration-300" />;
+
+    // ultimate fallback
+    return <ShoppingBag className="w-8 h-8 text-primary/40 group-hover:text-primary transition-colors duration-300" />;
+};
 
 export default function ProductGrid({ products, selectedSku, onSelect }: ProductGridProps) {
     // Sorting is handled by parent (OrderForm)
@@ -21,7 +44,7 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
                         key={product.buyer_sku_code}
                         onClick={() => onSelect(product.buyer_sku_code)}
                         className={cn(
-                            "relative p-4 rounded-xl text-left transition-all border group",
+                            "relative p-4 rounded-xl text-left transition-all border group flex flex-col items-center justify-between",
                             selectedSku === product.buyer_sku_code
                                 ? "bg-primary/10 border-primary shadow-[0_0_20px_rgba(230,80,27,0.15)] scale-[1.02]"
                                 : "bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10"
@@ -40,7 +63,7 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
                             </div>
                         )}
 
-                        <div className="flex flex-col h-full gap-2">
+                        <div className="flex flex-col h-full gap-2 w-full">
                             {/* Product Name at the Top */}
                             <span className="font-semibold text-[12px] sm:text-sm text-center leading-tight min-h-[36px] flex items-center justify-center">
                                 {displayName}
@@ -49,21 +72,25 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
                             {/* Divider line matching the image style */}
                             <hr className="border-white/10 mx-2" />
 
-                            {/* Middle section: Image and/or empty space to push price down */}
-                            <div className="grow flex flex-col items-center justify-center min-h-[80px] py-2">
-                                {/* Product Image */}
-                                {hasCustomImage && (
+                            {/* Middle section: Image or Fallback Icon */}
+                            <div className="grow flex flex-col items-center justify-center min-h-[80px] py-2 relative">
+                                {hasCustomImage ? (
                                     <img
                                         src={product.image_url}
                                         alt={displayName}
                                         className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
                                     />
+                                ) : (
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-300 shadow-inner group-hover:bg-primary/5 group-hover:border-primary/20">
+                                        {getFallbackIcon(product)}
+                                    </div>
                                 )}
+                                
                                 {/* Tags can go below the image if any */}
                                 {product.tags && product.tags.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 justify-center mt-2">
+                                    <div className="flex flex-wrap gap-1 justify-center mt-2 absolute -bottom-2">
                                         {product.tags.map(tag => (
-                                            <span key={tag} className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-white/70 uppercase">
+                                            <span key={tag} className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-white/70 uppercase border border-white/5 backdrop-blur-sm">
                                                 {tag}
                                             </span>
                                         ))}
@@ -72,7 +99,7 @@ export default function ProductGrid({ products, selectedSku, onSelect }: Product
                             </div>
 
                             {/* Price at the Bottom */}
-                            <div className="flex flex-col items-center w-full mt-auto">
+                            <div className="flex flex-col items-center w-full mt-auto pt-2">
                                 {product.is_promo && product.original_price && (
                                     <span className="text-[9px] sm:text-[10px] text-muted-foreground line-through mb-1">
                                         Rp {Math.ceil(product.original_price).toLocaleString("id-ID")}

@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import GameCard from "@/components/game-card";
-import SearchInput from "@/components/ui/search-input";
 import LayeredCarousel from "@/components/ui/layered-carousel";
 import { toSlug } from "@/lib/slug";
+import { useSearch } from "@/components/search-context";
 
 import { Brand, BrandPublicData, CarouselItem, PopupItem } from "@/types/api";
 import { ChevronDown, ChevronUp, X, Flame, Zap, Shield, Gamepad2, Headset, Search, Sparkles, Star, ArrowRight } from "lucide-react";
@@ -62,7 +62,7 @@ interface HomeContentProps {
 
 export default function HomeContent({ categoryData, carousel = [], brandImages = {}, popup, firstCarouselImageUrl }: HomeContentProps) {
     const [carouselReady, setCarouselReady] = useState(false);
-    const [search, setSearch] = useState("");
+    const { search, setSearch, setIsHomePage } = useSearch();
     const [categoryLimits, setCategoryLimits] = useState<Record<string, number>>({});
     const [showPopup, setShowPopup] = useState(false);
     const [isPopupClosing, setIsPopupClosing] = useState(false);
@@ -74,8 +74,14 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const isScrollingToSection = useRef(false);
 
-    const [initialLimit, setInitialLimit] = useState(10); // Default for SSR
+    const [initialLimit, setInitialLimit] = useState(10);
     const [loadMoreStep, setLoadMoreStep] = useState(10);
+
+    // Register as homepage for navbar search
+    useEffect(() => {
+        setIsHomePage(true);
+        return () => setIsHomePage(false);
+    }, [setIsHomePage]);
 
     // Dynamic grid limits
     useEffect(() => {
@@ -182,11 +188,8 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         return categoryData.flatMap(c => c.brands).find(b => getBrandName(b) === name)!;
     });
 
-    // Build sorted tab list: Populer first, then categories in admin-defined order
+    // Build sorted tab list: categories in admin-defined order (no Populer tab here, it's a separate section)
     const tabList: { id: string; label: string }[] = [];
-    if (bestSellerItems.length > 0) {
-        tabList.push({ id: "section-populer", label: "🔥 Populer" });
-    }
     // Categories are already in admin-defined order from backend
     filteredCategoryData.forEach(cat => {
         tabList.push({ id: `section-${cat.category.toLowerCase().replace(/\s+/g, '-')}`, label: cat.category });
@@ -201,7 +204,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
 
     // Scroll-spy: observe sections to highlight active tab
     useEffect(() => {
-        if (search) return; // Don't scroll-spy when searching
+        if (search) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -218,7 +221,6 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             }
         );
 
-        // Observe all section elements
         const currentRefs = sectionRefs.current;
         Object.values(currentRefs).forEach((el) => {
             if (el) observer.observe(el);
@@ -245,10 +247,9 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         const el = document.getElementById(sectionId);
         if (el) {
             isScrollingToSection.current = true;
-            const offset = 128; // Navbar (64px) + sticky tabs bar (~64px)
+            const offset = 128;
             const top = el.getBoundingClientRect().top + window.scrollY - offset;
             window.scrollTo({ top, behavior: "smooth" });
-            // Re-enable scroll spy after scroll settles
             setTimeout(() => {
                 isScrollingToSection.current = false;
             }, 800);
@@ -258,7 +259,6 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
     // Hide server-rendered placeholder once client carousel is ready
     useEffect(() => {
         if (firstCarouselImageUrl) {
-            // Small delay to ensure carousel has rendered before hiding placeholder
             const timer = setTimeout(() => {
                 const section = document.getElementById('server-carousel-section');
                 if (section) {
@@ -276,7 +276,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         }
     }, [firstCarouselImageUrl]);
 
-    // ── Render Brands Grid (shared by Best Sellers + Category sections) ──
+    // ── Render Brands Grid (for Category sections) ──
     const renderBrandsGrid = (
         brands: Brand[],
         categoryKey: string,
@@ -326,10 +326,10 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => loadMore(categoryKey)}
-                                className="group relative flex items-center gap-2 px-6 py-2.5 rounded-full bg-linear-to-r from-primary/20 to-accent/20 border border-primary/30 text-sm font-semibold text-white/90 hover:text-white hover:border-primary/60 hover:shadow-[0_0_25px_rgba(195,17,12,0.3)] transition-all duration-300"
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-secondary/30 border border-white/10 text-sm font-semibold text-muted-foreground hover:text-white hover:border-white/20 transition-all duration-300"
                             >
-                                <span>Lihat Lebih</span>
-                                <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                                <span>Tampilkan Lebih Banyak</span>
+                                <ChevronDown className="w-4 h-4" />
                             </motion.button>
                         )}
 
@@ -354,148 +354,257 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
         );
     };
 
-    // ── Section Header Component ──
-    const SectionHeader = ({ title, count, icon: Icon }: { title: string; count?: number; icon?: React.ElementType }) => (
-        <div className="flex items-center justify-between mb-6 px-1">
-            <div className="flex items-center gap-3">
-                <div className="relative">
-                    <div className="w-1 h-8 bg-linear-to-b from-primary via-accent to-primary/30 rounded-full" />
-                    <div className="absolute inset-0 w-1 h-8 bg-linear-to-b from-primary to-accent rounded-full blur-sm opacity-60" />
+    // ── Best Seller Card (horizontal layout with icon + name) ──
+    const BestSellerCard = ({ brand }: { brand: Brand }) => {
+        const name = getBrandName(brand);
+        const image = getBrandImage(brand);
+        const status = getBrandStatus(brand);
+        const isDisabled = status === 'coming_soon' || status === 'maintenance';
+
+        const cardContent = (
+            <div className={`
+                relative flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl
+                bg-[#FFDAD7] shadow-lg
+                transition-all duration-300 animate-bounce
+                ${isDisabled ? "opacity-60 cursor-not-allowed" : "hover:animate-shake hover:shadow-[0_8px_25px_rgba(255,218,215,0.3)] cursor-pointer group"}
+            `}>
+                {/* Best Seller Badge */}
+                <div className="absolute top-0 right-0 bg-linear-to-r from-[#921E04] to-[#521408] text-[#FFDAD7] text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-bl-xl rounded-tr-xl flex items-center gap-1.5 shadow-md z-10 border-b border-l border-[#220D0C]/20">
+                    <Flame className="w-3.5 h-3.5 text-[#FFB347] animate-pulse" />
+                    <span className="tracking-wider uppercase" style={{ fontFamily: 'var(--font-family-kodchasan)' }}>Best Seller</span>
                 </div>
-                <div className="flex items-center gap-2">
-                    {Icon && <Icon className="w-5 h-5 text-primary" />}
-                    <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">
-                        {title}
-                    </h2>
+
+                {/* Game Icon */}
+                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden shrink-0 bg-white/20">
+                    <Image
+                        src={image || `https://placehold.co/100x100/1e293b/ffffff?text=${encodeURIComponent(name.charAt(0))}`}
+                        alt={name}
+                        fill
+                        className={`object-cover ${!isDisabled ? "group-hover:scale-110 transition-transform duration-500" : ""}`}
+                        sizes="56px"
+                        unoptimized={!image?.startsWith('/')}
+                    />
                 </div>
+                {/* Name */}
+                <h3
+                    className="flex-1 font-semibold text-sm sm:text-2xl text-[#220D0C] line-clamp-2 pr-4 sm:pr-8"
+                    style={{ fontFamily: 'var(--font-family-mono-ibm)' }}
+                >
+                    {name}
+                </h3>
             </div>
-            {count !== undefined && (
-                <Badge variant="secondary" className="bg-secondary/60 text-muted-foreground border border-white/5 backdrop-blur-sm text-xs px-3 py-1">
-                    {count} Produk
-                </Badge>
-            )}
-        </div>
-    );
+        );
+
+        if (isDisabled) {
+            return <div>{cardContent}</div>;
+        }
+
+        return (
+            <a href={`/order/${toSlug(name)}`}>
+                {cardContent}
+            </a>
+        );
+    };
 
     return (
         <>
-            {/* Popup */}
+            {/* Promo Popup Overlay */}
             {showPopup && popup && (
                 <div
-                    className={`fixed inset-0 h-dvh w-screen z-50 flex items-center justify-center p-4 transition-all duration-300 ${isPopupClosing ? "bg-black/0" : "bg-black/70"
+                    className={`fixed inset-0 h-dvh w-screen z-9999 flex items-center justify-center p-4 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${isPopupClosing ? "bg-black/0 backdrop-blur-none" : "bg-background/80 backdrop-blur-md"
                         }`}
                     onClick={closePopup}
                 >
                     <div
-                        className={`relative max-w-md w-full rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(195,17,12,0.25)] border border-primary/30 bg-card transition-all duration-300 ${isPopupClosing
-                            ? "opacity-0 scale-95 translate-y-4"
-                            : "opacity-100 scale-100 translate-y-0 animate-in fade-in zoom-in-95"
+                        className={`relative w-full max-w-[420px] rounded-3xl overflow-hidden shadow-[0_0_80px_-20px_rgba(255,87,51,0.3)] bg-linear-to-b from-surface-low to-background border border-white/10 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col ${isPopupClosing
+                            ? "opacity-0 scale-[0.95] translate-y-8"
+                            : "opacity-100 scale-100 translate-y-0"
                             }`}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {/* Glowing Shimmer Accent Line */}
+                        <div className="absolute top-0 inset-x-0 h-1 bg-linear-to-r from-transparent via-primary to-transparent opacity-80" />
+                        
                         <button
                             onClick={closePopup}
-                            className="absolute top-3 right-3 z-10 p-2 bg-black/60 hover:bg-black/80 rounded-full text-white transition-all duration-200 hover:scale-110"
+                            className="absolute top-4 right-4 z-20 p-2 bg-black/40 backdrop-blur-md border border-white/10 hover:bg-black/60 hover:border-white/20 rounded-full text-white/80 hover:text-white transition-all duration-300 hover:scale-110"
                         >
-                            <X className="w-5 h-5" />
+                            <X className="w-4 h-4" />
                         </button>
-                        {popup.link_url ? (
-                            <a href={popup.link_url} onClick={closePopup}>
-                                <Image
-                                    src={popup.image_url}
-                                    alt={popup.title || "Promo Restopup"}
-                                    width={600}
-                                    height={400}
-                                    className="w-full h-auto"
-                                    sizes="(max-width: 448px) 100vw, 448px"
-                                    unoptimized={!popup.image_url?.startsWith('/')}
-                                />
-                            </a>
-                        ) : (
-                            <Image
-                                src={popup.image_url}
-                                alt={popup.title || "Promo Restopup"}
-                                width={600}
-                                height={400}
-                                className="w-full h-auto"
-                                sizes="(max-width: 448px) 100vw, 448px"
-                                unoptimized={!popup.image_url?.startsWith('/')}
-                            />
-                        )}
+                        
+                        {/* Image Container */}
+                        <div className="relative w-full aspect-4/3 bg-surface-high/50 overflow-hidden shrink-0">
+                            {popup.link_url ? (
+                                <a href={popup.link_url} onClick={closePopup} className="block w-full h-full relative group">
+                                    <Image
+                                        src={popup.image_url}
+                                        alt={popup.title || "Promo Restopup"}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                        sizes="(max-width: 448px) 100vw, 448px"
+                                        unoptimized={!popup.image_url?.startsWith('/')}
+                                    />
+                                    {/* Inner bottom shadow gradient */}
+                                    <div className="absolute inset-0 bg-linear-to-t from-background/90 via-transparent to-transparent pointer-events-none" />
+                                </a>
+                            ) : (
+                                <div className="w-full h-full relative group">
+                                    <Image
+                                        src={popup.image_url}
+                                        alt={popup.title || "Promo Restopup"}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                        sizes="(max-width: 448px) 100vw, 448px"
+                                        unoptimized={!popup.image_url?.startsWith('/')}
+                                    />
+                                    {/* Inner bottom shadow gradient */}
+                                    <div className="absolute inset-0 bg-linear-to-t from-background/90 via-background/10 to-transparent pointer-events-none" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Content Area */}
                         {(popup.title || popup.description) && (
-                            <div className="p-5 bg-linear-to-b from-card to-background">
-                                {popup.title && <h3 className="text-lg font-bold text-foreground">{popup.title}</h3>}
-                                {popup.description && <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{popup.description}</p>}
+                            <div className="p-6 md:p-8 relative shrink-0">
+                                {/* Decorative Blur */}
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-8 bg-primary/20 blur-[30px] -translate-y-1/2 rounded-full pointer-events-none" />
+                                
+                                {popup.title && (
+                                    <h3 
+                                        className="text-xl md:text-2xl font-bold text-white tracking-tight text-center leading-tight mb-3"
+                                        style={{ fontFamily: 'var(--font-family-kodchasan)' }}
+                                    >
+                                        {popup.title}
+                                    </h3>
+                                )}
+                                {popup.description && (
+                                    <p className="text-[15px] text-muted-foreground/80 text-center leading-relaxed">
+                                        {popup.description}
+                                    </p>
+                                )}
+                                
+                                {/* Call To Action Button (Shows if popup has a link) */}
+                                {popup.link_url && (
+                                    <div className="mt-7">
+                                        <a 
+                                            href={popup.link_url} 
+                                            onClick={closePopup}
+                                            className="flex justify-center items-center w-full py-3.5 rounded-xl bg-primary text-background font-bold text-sm tracking-wide shadow-[0_0_20px_rgba(255,87,51,0.2)] hover:shadow-[0_0_30px_rgba(255,87,51,0.4)] transition-all duration-300 hover:-translate-y-0.5"
+                                        >
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Klaim Promo Sekarang
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* Carousel — hidden until ready if server already rendered first image */}
+            {/* Carousel with Wave Background */}
             {carousel.length > 0 && (
                 <section
-                    className="-mx-4 md:mx-0"
+                    className="w-screen relative left-1/2 -translate-x-1/2 overflow-hidden -mt-8"
                     style={{
                         opacity: firstCarouselImageUrl && !carouselReady ? 0 : 1,
                         transition: 'opacity 0.3s ease-in',
+                        backgroundImage: 'url(/wave-bg.png)',
+                        backgroundSize: '100% 100%',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
                     }}
                 >
-                    <LayeredCarousel items={carousel} />
+                    <div className="max-w-6xl mx-auto px-4 pt-8 pb-[15%] md:pb-[12%] lg:pb-[10%]">
+                        <LayeredCarousel items={carousel} />
+                    </div>
                 </section>
             )}
 
-            {/* ═══════════════ Hero / Search Section ═══════════════ */}
-            <section className="relative flex flex-col items-center justify-center space-y-5 text-center py-2">
-                {/* Decorative glow orbs */}
-                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] max-w-full h-[200px] bg-primary/8 rounded-full blur-[100px] pointer-events-none" />
-
-                <div className="space-y-3 flex flex-col items-center relative z-10">
-                    <h1 className="sr-only">Restopup — Top Up Game Termurah dan Terpercaya</h1>
-                    <motion.p
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="text-muted-foreground/80 max-w-lg mx-auto font-medium text-sm md:text-base"
+            {/* ═══════════════ PALING BANYAK DIBELI ═══════════════ */}
+            {!search && bestSellerItems.length > 0 && (
+                <section className="w-full mt-4">
+                    {/* Section container with gradient background */}
+                    <div 
+                        className="rounded-2xl p-5 sm:p-8 overflow-hidden relative shadow-2xl"
+                        style={{
+                            background: 'linear-gradient(180deg, #690001 0%, #921E04 22%, #671707 60%, #521408 78%, #220D0C 100%)'
+                        }}
                     >
-                        Top up games favoritmu dengan harga termurah, proses instan, dan terpercaya 100%.
-                    </motion.p>
-                </div>
+                        {/* Heading */}
+                        <h2
+                            className="relative z-10 text-center text-xl sm:text-2xl md:text-3xl font-bold tracking-wider uppercase mb-6 sm:mb-8 text-[#E4BEB6]"
+                            style={{ fontFamily: 'var(--font-family-kodchasan)' }}
+                        >
+                            PALING BANYAK DIBELI
+                        </h2>
 
-                {/* Premium Search Bar */}
-                <motion.div
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15, duration: 0.5 }}
-                    className="relative w-full max-w-md z-10"
-                >
-                    <div className="absolute -inset-px bg-linear-to-r from-primary/40 via-accent/30 to-primary/40 rounded-full opacity-0 focus-within:opacity-100 transition-opacity duration-500 blur-sm pointer-events-none" style={{ zIndex: -1 }} />
-                    <SearchInput value={search} onChange={setSearch} />
-                </motion.div>
+                        {/* Best Sellers Grid — 2 cols */}
+                        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            {bestSellerItems
+                                .slice(0, categoryLimits["best-sellers"] || 4)
+                                .map((brand) => (
+                                    <BestSellerCard key={getBrandName(brand)} brand={brand} />
+                                ))}
+                        </div>
 
-                {/* Quick Stats */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                    className="flex items-center gap-4 md:gap-6 text-xs text-muted-foreground/60 pt-1"
-                >
-                    <span className="flex items-center gap-1.5">
-                        <Zap className="w-3.5 h-3.5 text-accent/70" />
-                        Proses Instan
-                    </span>
-                    <span className="w-1 h-1 rounded-full bg-white/10" />
-                    <span className="flex items-center gap-1.5">
-                        <Shield className="w-3.5 h-3.5 text-accent/70" />
-                        100% Aman
-                    </span>
-                    <span className="w-1 h-1 rounded-full bg-white/10" />
-                    <span className="flex items-center gap-1.5">
-                        <Headset className="w-3.5 h-3.5 text-accent/70" />
-                        24/7 Support
-                    </span>
-                </motion.div>
-            </section>
+                        {/* Tampilkan Lebih Banyak — only if more than 4 */}
+                        {bestSellerItems.length > 4 && (
+                            <div className="mt-6 flex justify-center">
+                                <AnimatePresence>
+                                    {bestSellerItems.length > (categoryLimits["best-sellers"] || 4) ? (
+                                        <motion.button
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            onClick={() => setCategoryLimits(prev => ({
+                                                ...prev,
+                                                "best-sellers": (prev["best-sellers"] || 4) + 4
+                                            }))}
+                                            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors"
+                                        >
+                                            Tampilkan Lebih Banyak
+                                            <ChevronDown className="w-4 h-4" />
+                                        </motion.button>
+                                    ) : (categoryLimits["best-sellers"] || 4) > 4 ? (
+                                        <motion.button
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            onClick={() => setCategoryLimits(prev => ({
+                                                ...prev,
+                                                "best-sellers": 4
+                                            }))}
+                                            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors"
+                                        >
+                                            Tampilkan Lebih Sedikit
+                                            <ChevronUp className="w-4 h-4" />
+                                        </motion.button>
+                                    ) : null}
+                                </AnimatePresence>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
+
+            {/* ═══════════════ TEMUKAN PRODUK FAVORIT ANDA ═══════════════ */}
+            {!search && (
+                <section className="w-full mt-12">
+                    {/* Section Heading */}
+                    <div className="mb-2">
+                        <h2
+                            className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight"
+                            style={{ fontFamily: 'var(--font-family-mono-ibm)' }}
+                        >
+                            Temukan Produk Favorit Anda
+                        </h2>
+                        <p className="text-sm text-muted-foreground/70 mt-2 max-w-lg">
+                            Berikut merupakan daftar 100+ produk dan harganya terbaru yang bisa anda nikmati, dengan harga terjangkau.
+                        </p>
+                    </div>
+                </section>
+            )}
 
             {/* ═══════════════ Sticky Category Tabs ═══════════════ */}
             {!search && tabList.length > 0 && (
@@ -512,9 +621,9 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                 key={tab.id}
                                 ref={(el) => { tabButtonRefs.current[tab.id] = el; }}
                                 onClick={() => handleTabClick(tab.id)}
-                                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shrink-0 ${activeTab === tab.id
-                                    ? "bg-linear-to-r from-primary to-primary/80 text-white shadow-[0_0_20px_rgba(195,17,12,0.35)] border border-primary/50"
-                                    : "bg-white/4 text-muted-foreground hover:bg-white/8 hover:text-white/90 border border-white/6"
+                                className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 shrink-0 ${activeTab === tab.id
+                                    ? "bg-foreground text-background shadow-md"
+                                    : "bg-surface-low text-muted-foreground hover:bg-surface-high hover:text-white/90"
                                     }`}
                             >
                                 {tab.label}
@@ -528,7 +637,14 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
             {search ? (
                 // ── Search Results ──
                 <section>
-                    <SectionHeader title={`Hasil Pencarian (${allFilteredBrands.length})`} icon={Search} />
+                    <div className="flex items-center gap-3 mb-6 px-1">
+                        <div className="relative">
+                            <div className="w-1 h-8 bg-linear-to-b from-primary via-accent to-primary/30 rounded-full" />
+                        </div>
+                        <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+                            Hasil Pencarian ({allFilteredBrands.length})
+                        </h2>
+                    </div>
 
                     {allFilteredBrands.length > 0 ? (
                         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -562,26 +678,8 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                 </section>
             ) : (
                 <>
-                    {/* ── Best Seller Section ── */}
-                    {bestSellerItems.length > 0 && (() => {
-                        const limit = categoryLimits["populer"] || initialLimit;
-                        const hasMore = bestSellerItems.length > limit;
-                        const isExpanded = limit > initialLimit;
-
-                        return (
-                            <section
-                                id="section-populer"
-                                ref={(el) => { sectionRefs.current["section-populer"] = el; }}
-                                className="w-full scroll-mt-32"
-                            >
-                                <SectionHeader title="Paling Laris" icon={Star} />
-                                {renderBrandsGrid(bestSellerItems, "populer", limit, hasMore, isExpanded)}
-                            </section>
-                        );
-                    })()}
-
                     {/* ── Category Sections (in admin-defined order) ── */}
-                    {filteredCategoryData.map((catData, categoryIdx) => {
+                    {filteredCategoryData.map((catData) => {
                         const limit = categoryLimits[catData.category] || initialLimit;
                         const hasMore = catData.brands.length > limit;
                         const isExpanded = limit > initialLimit;
@@ -592,9 +690,23 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                 key={catData.category}
                                 id={sectionId}
                                 ref={(el) => { sectionRefs.current[sectionId] = el; }}
-                                className="w-full scroll-mt-16"
+                                className="w-full scroll-mt-32"
                             >
-                                <SectionHeader title={catData.category} count={catData.brands.length} />
+                                {/* Section Header */}
+                                <div className="flex items-center justify-between mb-6 px-1">
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative">
+                                            <div className="w-1 h-8 bg-linear-to-b from-primary via-accent to-primary/30 rounded-full" />
+                                            <div className="absolute inset-0 w-1 h-8 bg-linear-to-b from-primary to-accent rounded-full blur-sm opacity-60" />
+                                        </div>
+                                        <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+                                            {catData.category}
+                                        </h2>
+                                    </div>
+                                    <Badge variant="secondary" className="bg-secondary/60 text-muted-foreground border border-white/5 backdrop-blur-sm text-xs px-3 py-1">
+                                        {catData.brands.length} Produk
+                                    </Badge>
+                                </div>
 
                                 {renderBrandsGrid(catData.brands, catData.category, limit, hasMore, isExpanded)}
                             </section>
@@ -609,7 +721,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                     {/* Gradient border top */}
                     <div className="h-px w-full bg-linear-to-r from-transparent via-primary/30 to-transparent" />
 
-                    <div className="bg-linear-to-b from-card/80 via-card/60 to-background pt-12 pb-16 px-4 md:px-10 relative">
+                    <div className="bg-[#301918] pt-12 pb-16 px-4 md:px-10 relative">
                         {/* Background decoration */}
                         <div className="absolute top-0 right-0 w-64 max-w-full h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2" />
                         <div className="absolute bottom-0 left-0 w-48 max-w-full h-48 bg-accent/5 rounded-full blur-[80px] pointer-events-none translate-y-1/2" />
@@ -639,7 +751,7 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
                                         <AccordionItem
                                             key={index}
                                             value={`faq-${index}`}
-                                            className="border border-white/6 rounded-xl bg-white/2 backdrop-blur-sm px-5 data-[state=open]:border-primary/30 data-[state=open]:bg-primary/3 data-[state=open]:shadow-[0_0_20px_rgba(195,17,12,0.08)] transition-all duration-300 hover:border-white/12"
+                                            className="border-none rounded-xl bg-surface-low backdrop-blur-sm px-5 data-[state=open]:bg-surface-high data-[state=open]:shadow-[0_0_20px_rgba(255,87,51,0.08)] transition-all duration-300"
                                         >
                                             <AccordionTrigger className="hover:no-underline py-4 text-sm md:text-base font-medium text-white/90 data-[state=open]:text-primary [&>svg]:text-primary/60 [&>svg]:data-[state=open]:text-primary">
                                                 <span className="flex items-center gap-3">

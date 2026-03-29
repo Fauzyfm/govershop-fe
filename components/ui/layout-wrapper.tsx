@@ -3,9 +3,11 @@
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/ui/navbar";
 import Footer from "@/components/ui/footer";
+import { SearchProvider, useSearch } from "@/components/search-context";
 
-export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
+function LayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { search, setSearch, isHomePage } = useSearch();
     const isAuthPage = pathname?.startsWith("/admin/login") || pathname?.startsWith("/member/login") || pathname?.startsWith("/member/forgot-password") || pathname?.startsWith("/member/reset-password");
     const isMemberDashboard = pathname?.startsWith("/member/dashboard") || pathname?.startsWith("/member/orders") || pathname?.startsWith("/member/history") || pathname?.startsWith("/member/settings") || pathname?.startsWith("/member/profile") || pathname?.startsWith("/member/products") || pathname?.startsWith("/member/topup");
     const isDashboard = pathname?.startsWith("/admin") || isMemberDashboard;
@@ -24,11 +26,19 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
                 <div className="particles" />
             </div>
 
-            <Navbar />
-            <main className="flex-1 container mx-auto px-4 md:px-8 lg:px-12 py-8 relative z-10">
+            <Navbar search={search} onSearchChange={setSearch} showSearch={isHomePage} />
+            <main className="flex-1 container mx-auto px-4 md:px-8 lg:px-12 py-8 relative">
                 {children}
             </main>
             <Footer />
         </div>
+    );
+}
+
+export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
+    return (
+        <SearchProvider>
+            <LayoutContent>{children}</LayoutContent>
+        </SearchProvider>
     );
 }

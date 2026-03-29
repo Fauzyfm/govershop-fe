@@ -1,11 +1,35 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk, IBM_Plex_Mono, Kodchasan } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/ui/layout-wrapper";
 import { JsonLd } from "@/components/seo/jsonld";
 import { MetaPixel } from "@/components/meta-pixel";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const spaceGrotesk = Space_Grotesk({ 
+  subsets: ["latin"],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: '--font-ibm-plex-mono',
+  display: 'swap',
+});
+
+const kodchasan = Kodchasan({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: '--font-kodchasan',
+  display: 'swap',
+});
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://restopup.com";
 
@@ -61,8 +85,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="dark">
-      <body className={`${inter.className} min-h-screen flex flex-col antialiased relative overflow-x-hidden`}>
+    <html lang="id" className={`dark ${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${kodchasan.variable}`}>
+      <body className="min-h-screen flex flex-col antialiased relative overflow-x-hidden">
         <JsonLd />
         <MetaPixel />
         <LayoutWrapper>
