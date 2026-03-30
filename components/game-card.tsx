@@ -79,8 +79,8 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
                         )}
                     </Badge>
                 ) : (
-                    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 flex-col">
-                        <h3 className="text-foreground font-bold text-sm sm:text-base md:text-lg drop-shadow-lg group-hover:text-white transition-colors leading-tight line-clamp-2">
+                    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 group-active:translate-y-0 flex-col">
+                        <h3 className="text-foreground font-bold text-sm sm:text-base md:text-lg drop-shadow-lg group-hover:text-white group-active:text-white transition-colors leading-tight line-clamp-2">
                             {name}
                         </h3>
                         <div className="w-full h-0.5 bg-linear-to-r from-accent to-primary rounded-full shadow-[0_0_8px_var(--primary-container)]" />

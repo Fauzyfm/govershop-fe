@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import Image from "next/image";
 import HomeContent from "@/components/home-content";
+import { MeteorBackground } from "@/components/ui/meteor-background";
 import { APIResponse, Brand, BrandPublicData, CarouselItem, PopupItem, DisplayCategoryWithBrands } from "@/types/api";
 
 export const revalidate = 60; // Revalidate every 60 seconds (ISR)
@@ -108,8 +109,10 @@ export default async function Home() {
   const firstCarouselTitle = carousel.length > 0 ? (carousel[0].title || "Banner") : "Banner";
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto text-left">
-      {/* Server-rendered first carousel image for instant LCP */}
+    <>
+      <MeteorBackground number={30} />
+      <div className="space-y-8 max-w-6xl mx-auto text-left">
+        {/* Server-rendered first carousel image for instant LCP */}
       {firstCarouselImageUrl && (
         <section
           className="w-screen relative left-1/2 -translate-x-1/2 overflow-hidden -mt-8"
@@ -167,5 +170,6 @@ export default async function Home() {
         firstCarouselImageUrl={firstCarouselImageUrl}
       />
     </div>
+    </>
   );
 }

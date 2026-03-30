@@ -5,6 +5,7 @@ import { toSlug, findBrandBySlug } from "@/lib/slug";
 import { APIResponse, Product, PaymentMethod } from "@/types/api";
 import OrderPageClient from "@/components/order/order-page-client";
 import { Suspense } from "react";
+import { MeteorBackground } from "@/components/ui/meteor-background";
 
 export const revalidate = 300; // Revalidate every 60s — short enough to recover from API failures quickly
 
@@ -212,16 +213,19 @@ export default async function OrderPage({ params }: OrderPageProps) {
     const brandPopup = brandDetails?.popup || null;
 
     return (
-        <Suspense fallback={null}>
-            <OrderPageClient
-                brand={brand}
-                products={products}
-                paymentMethods={paymentMethods}
-                brandImage={brandImage}
-                dynamicSteps={dynamicSteps}
-                description={description}
-                brandPopup={brandPopup}
-            />
-        </Suspense>
+        <>
+            <MeteorBackground number={30} />
+            <Suspense fallback={null}>
+                <OrderPageClient
+                    brand={brand}
+                    products={products}
+                    paymentMethods={paymentMethods}
+                    brandImage={brandImage}
+                    dynamicSteps={dynamicSteps}
+                    description={description}
+                    brandPopup={brandPopup}
+                />
+            </Suspense>
+        </>
     );
 }
