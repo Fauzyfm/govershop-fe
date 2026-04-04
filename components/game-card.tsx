@@ -83,20 +83,20 @@ export default function GameCard({ name, image, href, status = 'active' }: GameC
                         />
                     </div>
 
-                    {/* Dark gradient from bottom for readability */}
+                    {/* Subtle dark gradient from bottom just enough for base contrast if needed, but since name is hidden, we can make it minimal */}
                     <div className={`
                         absolute inset-0
-                        bg-gradient-to-t from-black/80 via-black/30 to-transparent
+                        bg-gradient-to-t from-black/40 via-black/10 to-transparent
                         transition-opacity duration-500
-                        ${isDisabled ? "opacity-70" : "opacity-60 group-hover:opacity-80"}
+                        ${isDisabled ? "opacity-70" : "opacity-0 group-hover:opacity-100"}
                     `} />
 
                     {/* Shimmer sweep effect — always active */}
                     {!isDisabled && <div className="crystal-shimmer" />}
 
-                    {/* Name overlay — always visible */}
+                    {/* Name overlay — visible on hover (Tailwind driven) */}
                     {!isDisabled && (
-                        <div className="crystal-name-overlay">
+                        <div className="absolute inset-x-0 bottom-0 p-3 pt-8 pb-3 px-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
                             <h3 className="text-white font-bold text-xs sm:text-sm md:text-base drop-shadow-lg leading-tight line-clamp-2">
                                 {name}
                             </h3>
