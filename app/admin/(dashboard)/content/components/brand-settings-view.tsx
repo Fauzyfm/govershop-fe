@@ -12,17 +12,28 @@ interface TopupStep {
     desc: string;
 }
 
+interface InputField {
+    key: string;
+    type: string;       // "text" | "select"
+    label: string;
+    placeholder: string;
+    required: boolean;
+    options?: string[];
+}
+
 interface BrandSetting {
     brand_name: string;
     slug: string;
     custom_image_url: string;
     is_best_seller: boolean;
     is_visible: boolean;
-    status: string; // 'active', 'coming_soon', 'maintenance'
+    status: string;
     topup_steps?: TopupStep[];
     description?: string;
     display_category?: string | null;
     display_sort_order?: number;
+    input_fields?: InputField[];
+    input_separator?: string;
 }
 
 interface DisplayCategory {
@@ -80,6 +91,8 @@ export default function BrandSettingsView() {
                     description: "",
                     display_category: null,
                     display_sort_order: 0,
+                    input_fields: [],
+                    input_separator: "",
                 };
             });
 
@@ -265,11 +278,23 @@ export default function BrandSettingsView() {
     );
 }
 
+// Separator options for admin to choose
+const SEPARATOR_OPTIONS = [
+    { value: "", label: "Tidak ada (gabung langsung)" },
+    { value: "|", label: "Pipe ( | )" },
+    { value: "#", label: "Hash ( # )" },
+    { value: "/", label: "Slash ( / )" },
+    { value: " ", label: "Spasi" },
+];
+
 // Modal Component Logic
 function EditContentModal({ brand, onClose, onSave }: { brand: BrandSetting, onClose: () => void, onSave: (data: any) => void }) {
     const [desc, setDesc] = useState(brand.description || "");
     const [steps, setSteps] = useState<TopupStep[]>(brand.topup_steps || []);
+    const [inputFields, setInputFields] = useState<InputField[]>(brand.input_fields || []);
+    const [inputSeparator, setInputSeparator] = useState(brand.input_separator || "");
 
+    // --- Topup Steps ---
     const addStep = () => {
         setSteps([...steps, { step: steps.length + 1, title: "", desc: "" }]);
     };
@@ -286,8 +311,63 @@ function EditContentModal({ brand, onClose, onSave }: { brand: BrandSetting, onC
         setSteps(newSteps);
     };
 
+    // --- Input Fields ---
+    const addInputField = () => {
+        setInputFields([...inputFields, {
+            key: `field_${Date.now()}`,
+            type: "text",
+            label: "",
+            placeholder: "",
+            required: true,
+            options: [],
+        }]);
+    };
+
+    const updateInputField = (index: number, updates: Partial<InputField>) => {
+        const newFields = [...inputFields];
+        newFields[index] = { ...newFields[index], ...updates };
+        setInputFields(newFields);
+    };
+
+    const removeInputField = (index: number) => {
+        setInputFields(inputFields.filter((_, i) => i !== index));
+    };
+
+    const addOption = (fieldIndex: number) => {
+        const field = inputFields[fieldIndex];
+        const newOptions = [...(field.options || []), ""];
+        updateInputField(fieldIndex, { options: newOptions });
+    };
+
+    const updateOption = (fieldIndex: number, optionIndex: number, value: string) => {
+        const field = inputFields[fieldIndex];
+        const newOptions = [...(field.options || [])];
+        newOptions[optionIndex] = value;
+        updateInputField(fieldIndex, { options: newOptions });
+    };
+
+    const removeOption = (fieldIndex: number, optionIndex: number) => {
+        const field = inputFields[fieldIndex];
+        const newOptions = (field.options || []).filter((_, i) => i !== optionIndex);
+        updateInputField(fieldIndex, { options: newOptions });
+    };
+
     const handleSave = () => {
-        onSave({ description: desc, topup_steps: steps });
+        // Clean up input fields: generate proper keys from labels
+        const cleanedFields = inputFields
+            .filter(f => f.label.trim() !== "") // Remove empty fields
+            .map((f, i) => ({
+                ...f,
+                key: f.key || `field_${i}`,
+                options: f.type === "select" ? (f.options || []).filter(o => o.trim() !== "") : undefined,
+            }));
+
+        onSave({
+            description: desc,
+            topup_steps: steps,
+            input_fields: cleanedFields,
+            input_separator: inputSeparator,
+        });
     };
 
     return (
@@ -356,6 +436,161 @@ function EditContentModal({ brand, onClose, onSave }: { brand: BrandSetting, onC
                                     </div>
                                 ))}
                             </div>
+                        )}
+                    </div>
+
+                    {/* =============== INPUT FIELDS BUILDER =============== */}
+                    <div className="space-y-4 border-t border-white/10 pt-6">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <label className="text-sm font-medium text-white/70">Input Fields Tambahan</label>
+                                <p className="text-[10px] text-white/30 mt-0.5">Tambahkan field input custom (selain User ID utama) untuk game ini</p>
+                            </div>
+                            <button onClick={addInputField} className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors font-medium shadow-lg shadow-blue-600/20">
+                                + Tambah Field
+                            </button>
+                        </div>
+
+                        {inputFields.length === 0 ? (
+                            <div className="text-sm text-white/30 text-center py-6 bg-black/40 rounded-xl border border-dashed border-white/10">
+                                Tidak ada field tambahan. Hanya User ID utama yang ditampilkan.
+                            </div>
+                        ) : (
+                            <>
+                                <div className="space-y-4">
+                                    {inputFields.map((field, idx) => (
+                                        <div key={idx} className="bg-black/40 p-4 rounded-xl border border-blue-500/20 space-y-3 group hover:border-blue-500/40 transition-all">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Field #{idx + 1}</span>
+                                                <button
+                                                    onClick={() => removeInputField(idx)}
+                                                    className="text-white/20 hover:text-red-400 transition-colors p-1"
+                                                    title="Hapus field"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c0 1 1 2 2 2v2" /></svg>
+                                                </button>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {/* Label */}
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] text-white/30 font-medium">Label</label>
+                                                    <input
+                                                        type="text"
+                                                        value={field.label}
+                                                        onChange={(e) => updateInputField(idx, { label: e.target.value })}
+                                                        placeholder="contoh: Zone ID, Server"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500/50"
+                                                    />
+                                                </div>
+
+                                                {/* Placeholder */}
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] text-white/30 font-medium">Placeholder</label>
+                                                    <input
+                                                        type="text"
+                                                        value={field.placeholder}
+                                                        onChange={(e) => updateInputField(idx, { placeholder: e.target.value })}
+                                                        placeholder="contoh: Masukkan Zone ID"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500/50"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {/* Type */}
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] text-white/30 font-medium">Tipe Input</label>
+                                                    <select
+                                                        value={field.type}
+                                                        onChange={(e) => updateInputField(idx, { type: e.target.value })}
+                                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500/50"
+                                                    >
+                                                        <option value="text">Text (input bebas)</option>
+                                                        <option value="select">Select (pilihan)</option>
+                                                    </select>
+                                                </div>
+
+                                                {/* Required */}
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] text-white/30 font-medium">Wajib Diisi</label>
+                                                    <div className="flex items-center gap-2 py-2">
+                                                        <button
+                                                            onClick={() => updateInputField(idx, { required: !field.required })}
+                                                            className={`w-10 h-5 rounded-full transition-colors relative ${
+                                                                field.required ? "bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" : "bg-white/10"
+                                                            }`}
+                                                        >
+                                                            <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-transform shadow-sm ${
+                                                                field.required ? "left-6" : "left-1"
+                                                            }`} />
+                                                        </button>
+                                                        <span className="text-xs text-white/50">{field.required ? "Ya" : "Tidak"}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Options (only for select type) */}
+                                            {field.type === "select" && (
+                                                <div className="space-y-2 border-t border-white/5 pt-3">
+                                                    <div className="flex justify-between items-center">
+                                                        <label className="text-[10px] text-white/30 font-medium">Opsi Pilihan</label>
+                                                        <button
+                                                            onClick={() => addOption(idx)}
+                                                            className="text-[10px] text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                                                        >
+                                                            + Tambah Opsi
+                                                        </button>
+                                                    </div>
+                                                    {(!field.options || field.options.length === 0) ? (
+                                                        <p className="text-[10px] text-white/20 italic">Belum ada opsi</p>
+                                                    ) : (
+                                                        <div className="space-y-1.5">
+                                                            {field.options.map((opt, optIdx) => (
+                                                                <div key={optIdx} className="flex gap-2 items-center">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={opt}
+                                                                        onChange={(e) => updateOption(idx, optIdx, e.target.value)}
+                                                                        placeholder={`Opsi ${optIdx + 1}`}
+                                                                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500/50"
+                                                                    />
+                                                                    <button
+                                                                        onClick={() => removeOption(idx, optIdx)}
+                                                                        className="text-white/20 hover:text-red-400 transition-colors p-1"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Separator Config */}
+                                <div className="space-y-2 bg-black/40 p-4 rounded-xl border border-white/10">
+                                    <label className="text-[10px] text-white/30 uppercase font-bold tracking-wider">Separator (Pemisah Antar Field)</label>
+                                    <p className="text-[10px] text-white/20">Karakter yang digunakan untuk menggabungkan User ID + field tambahan saat dikirim ke provider</p>
+                                    <select
+                                        value={inputSeparator}
+                                        onChange={(e) => setInputSeparator(e.target.value)}
+                                        className="w-full bg-black/60 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500/50"
+                                    >
+                                        {SEPARATOR_OPTIONS.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                    {inputSeparator && (
+                                        <p className="text-[10px] text-blue-400">
+                                            Preview: UserID<span className="text-white font-bold">{inputSeparator}</span>Field1<span className="text-white font-bold">{inputSeparator}</span>Field2
+                                        </p>
+                                    )}
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>

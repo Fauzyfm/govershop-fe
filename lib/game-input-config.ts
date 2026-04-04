@@ -1,9 +1,20 @@
 /**
  * Game Input Configuration
  * 
- * Konfigurasi berbasis data untuk menentukan format input per game.
- * Mudah ditambahkan game baru tanpa perlu edit komponen order-form.
+ * Konfigurasi untuk menentukan format input per game.
+ * Sekarang support 2 mode:
+ * 1. Dynamic dari API (input_fields dari brand_settings) — prioritas utama
+ * 2. Fallback hardcoded — jika API belum punya data
  */
+
+export interface InputFieldConfig {
+  key: string;           // Unique identifier (e.g. "user_id", "zone_id", "server")
+  type: string;          // "text" | "select"
+  label: string;         // Display label
+  placeholder: string;   // Input placeholder
+  required: boolean;     // Whether field is mandatory
+  options?: string[];    // Options for "select" type
+}
 
 export interface GameInputConfig {
   brand: string;                // Nama brand (uppercase untuk matching)
@@ -13,15 +24,19 @@ export interface GameInputConfig {
   userIdLabel?: string;         // Label untuk User ID (default: "User ID")
   userIdPlaceholder?: string;   // Placeholder input User ID
   
-  // New: Server List Dropdown
+  // Server List Dropdown
   hasServerList?: boolean;      // Apakah menggunakan dropdown server
   serverLabel?: string;         // Label untuk dropdown server
   serverList?: string[];        // List opsi server
+
+  // Dynamic fields from API
+  dynamicFields?: InputFieldConfig[];  // Additional custom fields from admin
+  inputSeparator?: string;             // Separator for combining fields ("|", "#", " ", etc.)
 }
 
 /**
- * Daftar game dengan konfigurasi input khusus.
- * Tambahkan game baru di sini tanpa perlu edit komponen.
+ * Daftar game dengan konfigurasi input khusus (FALLBACK only).
+ * Akan digunakan jika brand belum punya input_fields di database.
  */
 const GAME_CONFIGS: GameInputConfig[] = [
   {
@@ -55,7 +70,37 @@ const DEFAULT_CONFIG: GameInputConfig = {
 };
 
 /**
- * Mendapatkan konfigurasi input untuk game tertentu.
+ * Build GameInputConfig dari data API (input_fields dari brand_settings).
+ * Jika input_fields tersedia dan tidak kosong, gunakan data API.
+ * Jika tidak, fallback ke hardcoded config.
+ */
+export function buildGameConfigFromAPI(
+  brand: string,
+  inputFields?: InputFieldConfig[],
+  inputSeparator?: string
+): GameInputConfig {
+  // Jika tidak ada input_fields dari API, fallback ke hardcoded
+  if (!inputFields || inputFields.length === 0) {
+    return getGameConfig(brand);
+  }
+
+  const baseConfig = getGameConfig(brand);
+
+  const config: GameInputConfig = {
+    brand: brand.toUpperCase().trim(),
+    hasZoneId: false,
+    hasServerList: false,
+    userIdLabel: baseConfig.userIdLabel || "User ID",
+    userIdPlaceholder: baseConfig.userIdPlaceholder || "Masukkan User ID",
+    inputSeparator: inputSeparator || "",
+    dynamicFields: inputFields,
+  };
+
+  return config;
+}
+
+/**
+ * Mendapatkan konfigurasi input untuk game tertentu (fallback hardcoded).
  * @param brand - Nama brand game
  * @returns GameInputConfig untuk game tersebut atau default config
  */
@@ -89,25 +134,53 @@ export function sanitizeZoneId(value: string): string {
 }
 
 /**
- * Gabungkan dan sanitize User ID + Zone ID menjadi Customer No.
+ * Gabungkan dan sanitize semua input fields menjadi Customer No.
+ * Support both legacy format dan dynamic fields dari API.
+ * 
  * @param brand - Nama brand game
- * @param userId - Raw User ID input
- * @param zoneId - Raw Zone ID input (optional)
- * @param server - Selected Server (optional)
+ * @param userId - Raw User ID input (primary field)
+ * @param zoneId - Raw Zone ID input (legacy Mobile Legends)
+ * @param server - Selected Server (legacy Genshin)
+ * @param dynamicValues - Key-value map of dynamic field values
+ * @param inputSeparator - Separator from API config
  * @returns Sanitized, combined Customer No
  */
-export function buildCustomerNo(brand: string, userId: string, zoneId?: string, server?: string): string {
+export function buildCustomerNo(
+  brand: string,
+  userId: string,
+  zoneId?: string,
+  server?: string,
+  dynamicValues?: Record<string, string>,
+  inputSeparator?: string
+): string {
   const config = getGameConfig(brand);
   const cleanUserId = sanitizeUserId(userId);
-  
-  if (config.hasZoneId && zoneId) {
+
+  // Legacy mode: Use hardcoded config (Mobile Legends Zone ID)
+  if (config.hasZoneId && zoneId && (!dynamicValues || Object.keys(dynamicValues).length === 0)) {
     const cleanZoneId = sanitizeZoneId(zoneId);
     return `${cleanUserId}${cleanZoneId}`;
   }
 
-  if (config.hasServerList && server) {
+  // Legacy mode: Use hardcoded config (Genshin server list)
+  if (config.hasServerList && server && (!dynamicValues || Object.keys(dynamicValues).length === 0)) {
     return `${cleanUserId}|${server}`;
   }
-  
+
+  // Dynamic mode: Use dynamic fields with separator
+  if (dynamicValues && Object.keys(dynamicValues).length > 0) {
+    const separator = inputSeparator || "";
+    const parts = [cleanUserId];
+    
+    // Add dynamic field values in order
+    Object.values(dynamicValues).forEach(val => {
+      if (val) {
+        parts.push(val.trim());
+      }
+    });
+
+    return parts.join(separator);
+  }
+
   return cleanUserId;
 }

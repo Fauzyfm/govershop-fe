@@ -22,6 +22,15 @@ interface BrandPopup {
     link_url?: string;
 }
 
+interface InputFieldConfig {
+    key: string;
+    type: string;
+    label: string;
+    placeholder: string;
+    required: boolean;
+    options?: string[];
+}
+
 interface OrderPageClientProps {
     brand: string;
     products: Product[];
@@ -30,6 +39,8 @@ interface OrderPageClientProps {
     dynamicSteps?: TopupStep[];
     description?: string;
     brandPopup?: BrandPopup | null;
+    inputFields?: InputFieldConfig[];
+    inputSeparator?: string;
 }
 
 // Default fallback logic using hardcoded data
@@ -63,7 +74,7 @@ const getDefaultTopUpSteps = (brand: string): TopupStep[] => {
     ];
 };
 
-export default function OrderPageClient({ brand, products: ssrProducts, paymentMethods: ssrPaymentMethods, brandImage, dynamicSteps, description, brandPopup }: OrderPageClientProps) {
+export default function OrderPageClient({ brand, products: ssrProducts, paymentMethods: ssrPaymentMethods, brandImage, dynamicSteps, description, brandPopup, inputFields, inputSeparator }: OrderPageClientProps) {
     const [showSteps, setShowSteps] = useState(description ? true : false);
     const [showPopup, setShowPopup] = useState(false);
 
@@ -373,6 +384,8 @@ export default function OrderPageClient({ brand, products: ssrProducts, paymentM
                         brand={brand}
                         initialProducts={sortedProducts}
                         paymentMethods={paymentMethods}
+                        inputFields={inputFields}
+                        inputSeparator={inputSeparator}
                     />
                 )}
             </div>

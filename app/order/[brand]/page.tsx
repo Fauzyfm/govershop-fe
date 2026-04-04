@@ -119,6 +119,17 @@ interface BrandDetails {
     topup_steps?: TopupStep[];
     description?: string;
     popup?: BrandPopup | null;
+    input_fields?: InputFieldConfig[];
+    input_separator?: string;
+}
+
+interface InputFieldConfig {
+    key: string;
+    type: string;       // "text" | "select"
+    label: string;
+    placeholder: string;
+    required: boolean;
+    options?: string[];  // for "select" type
 }
 
 async function getBrandImages(): Promise<Record<string, BrandPublicData>> {
@@ -211,10 +222,12 @@ export default async function OrderPage({ params }: OrderPageProps) {
     const dynamicSteps = brandDetails?.topup_steps || [];
     const description = brandDetails?.description || "";
     const brandPopup = brandDetails?.popup || null;
+    const inputFields = brandDetails?.input_fields || [];
+    const inputSeparator = brandDetails?.input_separator || "";
 
     return (
         <>
-            <MeteorBackground number={30} />
+            <MeteorBackground number={60} />
             <Suspense fallback={null}>
                 <OrderPageClient
                     brand={brand}
@@ -224,6 +237,8 @@ export default async function OrderPage({ params }: OrderPageProps) {
                     dynamicSteps={dynamicSteps}
                     description={description}
                     brandPopup={brandPopup}
+                    inputFields={inputFields}
+                    inputSeparator={inputSeparator}
                 />
             </Suspense>
         </>

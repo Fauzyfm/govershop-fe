@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, ChevronDown, ChevronUp, Tag, AlertTriangle, MessageCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
-import { getGameConfig, sanitizeUserId, buildCustomerNo } from "@/lib/game-input-config";
+import { getGameConfig, buildGameConfigFromAPI, sanitizeUserId, buildCustomerNo, InputFieldConfig } from "@/lib/game-input-config";
 import {
     Product,
     PaymentMethod,
@@ -25,11 +25,13 @@ interface OrderFormProps {
     brand: string;
     initialProducts: Product[];
     paymentMethods: PaymentMethod[];
+    inputFields?: InputFieldConfig[];
+    inputSeparator?: string;
 }
 
 const INITIAL_PRODUCT_LIMIT = 15;
 
-export default function OrderForm({ brand, initialProducts, paymentMethods }: OrderFormProps) {
+export default function OrderForm({ brand, initialProducts, paymentMethods, inputFields, inputSeparator }: OrderFormProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -40,6 +42,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     const [customerNo, setCustomerNo] = useState("");
     const [zoneId, setZoneId] = useState(""); // Only for some games like ML
     const [server, setServer] = useState(""); // For games with server list like Genshin Impact
+    const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, string>>({}); // Dynamic fields from API
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
 
@@ -66,13 +69,21 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     const [nominalExpanded, setNominalExpanded] = useState(true);
     const [showAllProducts, setShowAllProducts] = useState(false);
 
-    // Game-specific config (flexible untuk game apapun)
-    const gameConfig = useMemo(() => getGameConfig(brand), [brand]);
+    // Game-specific config — prioritize API data, fallback to hardcoded
+    const gameConfig = useMemo(() => {
+        if (inputFields && inputFields.length > 0) {
+            return buildGameConfigFromAPI(brand, inputFields, inputSeparator);
+        }
+        return getGameConfig(brand);
+    }, [brand, inputFields, inputSeparator]);
+
+    // Check if using dynamic mode (API fields)
+    const hasDynamicFields = !!(gameConfig.dynamicFields && gameConfig.dynamicFields.length > 0);
 
     // Build sanitized customer number
     const fullCustomerNo = useMemo(
-        () => buildCustomerNo(brand, customerNo, zoneId, server),
-        [brand, customerNo, zoneId, server]
+        () => buildCustomerNo(brand, customerNo, zoneId, server, hasDynamicFields ? dynamicFieldValues : undefined, inputSeparator),
+        [brand, customerNo, zoneId, server, dynamicFieldValues, hasDynamicFields, inputSeparator]
     );
 
     // Build dynamic server tabs from products
@@ -229,10 +240,19 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
     };
 
     const handlePreSubmit = () => {
-        // Validation check including server if needed
-        const isGameDataComplete = gameConfig.hasServerList
-            ? (customerNo && server)
-            : (customerNo);
+        // Validation check including dynamic fields
+        let isGameDataComplete = !!customerNo;
+
+        if (hasDynamicFields) {
+            // Check all required dynamic fields
+            const allRequiredFilled = gameConfig.dynamicFields!.every(field => {
+                if (!field.required) return true;
+                return !!dynamicFieldValues[field.key];
+            });
+            isGameDataComplete = isGameDataComplete && allRequiredFilled;
+        } else if (gameConfig.hasServerList) {
+            isGameDataComplete = isGameDataComplete && !!server;
+        }
 
         if (!selectedSku || !selectedPayment || !isGameDataComplete || !phone) {
             alert("Harap lengkapi semua data (ID, Server, Item, No HP, Pembayaran)");
@@ -300,7 +320,7 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className={cn("space-y-2", (gameConfig.hasZoneId || gameConfig.hasServerList) ? "md:col-span-1" : "md:col-span-2")}>
+                        <div className={cn("space-y-2", (gameConfig.hasZoneId || gameConfig.hasServerList || hasDynamicFields) ? "md:col-span-1" : "md:col-span-2")}>
                             <label className="text-xs text-muted-foreground font-medium">
                                 {gameConfig.userIdLabel || "User ID"}
                             </label>
@@ -317,7 +337,8 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                 className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
                             />
                         </div>
-                        {gameConfig.hasZoneId && (
+                        {/* Legacy: Zone ID (Mobile Legends) */}
+                        {!hasDynamicFields && gameConfig.hasZoneId && (
                             <ZoneIdInput
                                 value={zoneId}
                                 onChange={setZoneId}
@@ -325,7 +346,8 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                 placeholder={gameConfig.zoneIdPlaceholder}
                             />
                         )}
-                        {gameConfig.hasServerList && gameConfig.serverList && (
+                        {/* Legacy: Server List Dropdown (Genshin) */}
+                        {!hasDynamicFields && gameConfig.hasServerList && gameConfig.serverList && (
                             <div className="space-y-2">
                                 <label className="text-xs text-muted-foreground font-medium">
                                     {gameConfig.serverLabel || "Server"}
@@ -342,6 +364,35 @@ export default function OrderForm({ brand, initialProducts, paymentMethods }: Or
                                 </select>
                             </div>
                         )}
+                        {/* Dynamic fields from API */}
+                        {hasDynamicFields && gameConfig.dynamicFields!.map(field => (
+                            <div key={field.key} className="space-y-2">
+                                <label className="text-xs text-muted-foreground font-medium">
+                                    {field.label}
+                                    {field.required && <span className="text-red-400 ml-0.5">*</span>}
+                                </label>
+                                {field.type === "select" ? (
+                                    <select
+                                        value={dynamicFieldValues[field.key] || ""}
+                                        onChange={(e) => setDynamicFieldValues(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                        className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm appearance-none"
+                                    >
+                                        <option value="" disabled>{field.placeholder || "Pilih..."}</option>
+                                        {field.options?.map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={dynamicFieldValues[field.key] || ""}
+                                        onChange={(e) => setDynamicFieldValues(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                        placeholder={field.placeholder}
+                                        className="w-full bg-background border border-border p-3 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all text-sm"
+                                    />
+                                )}
+                            </div>
+                        ))}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

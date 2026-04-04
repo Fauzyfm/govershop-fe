@@ -265,36 +265,233 @@ h1, h2, h3, h4, h5, h6, .display-font {
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
-/* Meteor Animation */
+/* ═══════════════ Floating Crystal Card ═══════════════ */
+
+/* Gem/octagonal clip-path — dramatic angled corners like a badge/gem shape */
+/* Mobile: slightly smaller cuts */
+.crystal-clip {
+  clip-path: polygon(
+    0% 12%,
+    12% 0%,
+    88% 0%,
+    100% 12%,
+    100% 88%,
+    88% 100%,
+    12% 100%,
+    0% 88%
+  );
+}
+
+/* Desktop: larger cuts for more dramatic effect */
+@media (min-width: 640px) {
+  .crystal-clip {
+    clip-path: polygon(
+      0% 10%,
+      10% 0%,
+      90% 0%,
+      100% 10%,
+      100% 90%,
+      90% 100%,
+      10% 100%,
+      0% 90%
+    );
+  }
+}
+
+/* Outer wrapper — handles floating + shadow + glow */
+.crystal-wrapper {
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))
+         drop-shadow(0 0 8px rgba(255, 255, 255, 0.15))
+         drop-shadow(0 0 20px rgba(200, 220, 255, 0.08));
+}
+
+.crystal-wrapper:hover {
+  transform: translateY(-10px) scale(1.03);
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5))
+         drop-shadow(0 0 25px rgba(255, 255, 255, 0.45))
+         drop-shadow(0 0 60px rgba(200, 220, 255, 0.25))
+         drop-shadow(0 0 90px rgba(180, 210, 255, 0.12));
+}
+
+/* Glowing crystal border — bright by default, brighter on hover */
+.crystal-border {
+  position: relative;
+  padding: 3px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(210, 235, 255, 0.75),
+    rgba(255, 255, 255, 0.5),
+    rgba(190, 225, 255, 0.7),
+    rgba(255, 255, 255, 0.6)
+  );
+  background-size: 400% 400%;
+  animation: crystal-border-glow 4s ease-in-out infinite;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.crystal-wrapper:hover .crystal-border {
+  padding: 3px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(200, 230, 255, 1),
+    rgba(255, 255, 255, 0.85),
+    rgba(210, 235, 255, 1),
+    rgba(255, 255, 255, 0.95)
+  );
+  background-size: 400% 400%;
+  animation: crystal-border-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes crystal-border-glow {
+  0%, 100% { background-position: 0% 0%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+}
+
+
+/* Inner card */
+.crystal-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-low);
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Shimmer sweep — always active, brighter on hover */
+.crystal-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.6;
+  transition: opacity 0.4s ease;
+}
+
+.crystal-wrapper:hover .crystal-shimmer {
+  opacity: 1;
+}
+
+.crystal-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  transform: skewX(-15deg);
+  animation: crystal-sweep 3s ease-in-out infinite;
+}
+
+.crystal-wrapper:hover .crystal-shimmer::after {
+  animation: crystal-sweep 1.8s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.12),
+    transparent
+  );
+}
+
+@keyframes crystal-sweep {
+  0% { left: -80%; }
+  100% { left: 130%; }
+}
+
+/* Name overlay at bottom — always visible */
+.crystal-name-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 12px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.35), transparent);
+  z-index: 20;
+  transform: translateY(0);
+  opacity: 1;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.crystal-wrapper:hover .crystal-name-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.5), transparent);
+}
+
+
+/* Meteor / Comet Animation */
 @keyframes meteor {
   0% {
     transform: rotate(215deg) translateX(0);
     opacity: 0;
   }
-  10% {
+  5% {
+    opacity: 0.9;
+  }
+  15% {
     opacity: 1;
   }
-  20% {
-    transform: rotate(215deg) translateX(-1500px);
+  30% {
+    transform: rotate(215deg) translateX(-800px);
     opacity: 0;
   }
   100% {
-    transform: rotate(215deg) translateX(-1500px);
+    transform: rotate(215deg) translateX(-800px);
+    opacity: 0;
+  }
+}
+
+@keyframes meteor-long {
+  0% {
+    transform: rotate(215deg) translateX(0);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.8;
+  }
+  12% {
+    opacity: 1;
+  }
+  25% {
+    transform: rotate(215deg) translateX(-1200px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(215deg) translateX(-1200px);
     opacity: 0;
   }
 }
 
 .meteor-effect {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 150px;
+  /* width is set inline from component */
   height: 2px;
-  background: linear-gradient(90deg, var(--primary), transparent);
+  background: linear-gradient(90deg, #ffffff, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1), transparent);
   border-radius: 999px;
-  filter: drop-shadow(0 0 10px var(--primary));
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
   animation: meteor 8s linear infinite;
   opacity: 0;
+}
+
+/* Alternate every other meteor with longer travel */
+.meteor-effect:nth-child(even) {
+  animation-name: meteor-long;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4), transparent);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
 }
 
 .meteor-effect::before {
@@ -306,6 +503,6 @@ h1, h2, h3, h4, h5, h6, .display-font {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--foreground);
-  box-shadow: 0 0 15px 3px var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.9), 0 0 20px 6px rgba(255, 255, 255, 0.4);
 }

@@ -110,7 +110,7 @@ export default async function Home() {
 
   return (
     <>
-      <MeteorBackground number={30} />
+      <MeteorBackground number={60} />
       <div className="space-y-8 max-w-6xl mx-auto text-left">
         {/* Server-rendered first carousel image for instant LCP */}
       {firstCarouselImageUrl && (
