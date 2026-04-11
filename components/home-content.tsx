@@ -10,6 +10,7 @@ import { useSearch } from "@/components/search-context";
 import { Brand, BrandPublicData, CarouselItem, PopupItem } from "@/types/api";
 import { ChevronDown, ChevronUp, X, Flame, Zap, Shield, Gamepad2, Headset, Search, Sparkles, Star, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import AffiliateTracker from "@/components/affiliate-tracker";
 import {
     Accordion,
     AccordionContent,
@@ -408,6 +409,9 @@ export default function HomeContent({ categoryData, carousel = [], brandImages =
 
     return (
         <>
+            {/* Affiliate Link Tracker — captures ?ref= from URL */}
+            <AffiliateTracker />
+
             {/* Promo Popup Overlay */}
             {showPopup && popup && (
                 <div

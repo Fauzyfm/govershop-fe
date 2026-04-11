@@ -20,6 +20,7 @@ import MobileOrderSummary from "./mobile-order-summary";
 import ServerTabs, { ServerTabInfo, buildServerTabs, filterProductsByTab, findTabByUrlKey } from "./server-tabs";
 import ZoneIdInput from "./zone-id-input";
 import { cn } from "@/lib/utils";
+import { getAffiliateRef } from "@/components/affiliate-tracker";
 
 interface OrderFormProps {
     brand: string;
@@ -270,12 +271,17 @@ export default function OrderForm({ brand, initialProducts, paymentMethods, inpu
         setSubmitting(true);
         try {
             // 1. Create Order
+            const affiliateRef = getAffiliateRef();
             const orderRes = await api.post<any, APIResponse<any>>('/orders', {
                 buyer_sku_code: selectedSku,
                 customer_no: fullCustomerNo,
                 customer_name: validationResult?.account_name || "-",
                 customer_email: email,
-                customer_phone: phone
+                customer_phone: phone,
+                ...(affiliateRef ? {
+                    affiliate_code: affiliateRef.code,
+                    affiliate_channel: affiliateRef.channel,
+                } : {}),
             });
 
             if (orderRes.success && orderRes.data) {

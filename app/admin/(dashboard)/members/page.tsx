@@ -62,7 +62,9 @@ export default function MembersPage() {
         whatsapp: "",
         password: "",
         full_name: "",
-        role: "member" // Not used by backend currently (hardcoded to member), but kept for future
+        affiliate_code: "",
+        commission_percent: 2,
+        role: "member"
     });
 
     const [editForm, setEditForm] = useState({
@@ -122,7 +124,7 @@ export default function MembersPage() {
             showNotification("Member berhasil ditambahkan", "success");
             setIsAddModalOpen(false);
             setIsAddModalOpen(false);
-            setAddForm({ username: "", email: "", whatsapp: "", password: "", full_name: "", role: "member" }); // Reset
+            setAddForm({ username: "", email: "", whatsapp: "", password: "", full_name: "", affiliate_code: "", commission_percent: 2, role: "member" });
             fetchMembers();
         } catch (error: any) {
             showNotification(error.message || "Gagal menambahkan member", "error");
@@ -455,7 +457,32 @@ export default function MembersPage() {
                             className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         />
                     </div>
-                    {/* Role input removed as it is not supported by backend create endpoint */}
+                    <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">Kode Affiliate *</label>
+                        <input
+                            type="text"
+                            required
+                            value={addForm.affiliate_code}
+                            onChange={e => setAddForm({ ...addForm, affiliate_code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '') })}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-primary/50 transition-colors font-mono uppercase tracking-wider"
+                            placeholder="e.g. WINDAH, JESS"
+                        />
+                        <p className="text-xs text-white/30 mt-1">Kode unik untuk link referral. Hanya huruf dan angka.</p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">Komisi (%)</label>
+                        <input
+                            type="number"
+                            value={addForm.commission_percent}
+                            onChange={e => setAddForm({ ...addForm, commission_percent: parseFloat(e.target.value) || 0 })}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                            min="0"
+                            max="100"
+                            step="0.5"
+                            placeholder="2"
+                        />
+                        <p className="text-xs text-white/30 mt-1">Persentase komisi dari profit setiap transaksi. Default: 2%</p>
+                    </div>
                     <button
                         type="submit"
                         disabled={processing}

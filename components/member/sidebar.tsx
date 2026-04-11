@@ -13,7 +13,8 @@ import {
     ChevronLeft,
     ChevronRight,
     CreditCard,
-    Package
+    Package,
+    Link2
 } from "lucide-react";
 import api from "@/lib/api";
 
@@ -81,6 +82,11 @@ export default function MemberSidebar({ isCollapsed, toggleSidebar }: MemberSide
                     label: "Riwayat Transaksi",
                     icon: History,
                     href: "/member/history",
+                },
+                {
+                    label: "Affiliate",
+                    icon: Link2,
+                    href: "/member/affiliate",
                 },
             ]
         },

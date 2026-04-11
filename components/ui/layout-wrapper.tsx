@@ -9,7 +9,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { search, setSearch, isHomePage } = useSearch();
     const isAuthPage = pathname?.startsWith("/admin/login") || pathname?.startsWith("/member/login") || pathname?.startsWith("/member/forgot-password") || pathname?.startsWith("/member/reset-password");
-    const isMemberDashboard = pathname?.startsWith("/member/dashboard") || pathname?.startsWith("/member/orders") || pathname?.startsWith("/member/history") || pathname?.startsWith("/member/settings") || pathname?.startsWith("/member/profile") || pathname?.startsWith("/member/products") || pathname?.startsWith("/member/topup");
+    const isMemberDashboard = pathname?.startsWith("/member/dashboard") || pathname?.startsWith("/member/orders") || pathname?.startsWith("/member/history") || pathname?.startsWith("/member/settings") || pathname?.startsWith("/member/profile") || pathname?.startsWith("/member/products") || pathname?.startsWith("/member/topup") || pathname?.startsWith("/member/affiliate");
     const isDashboard = pathname?.startsWith("/admin") || isMemberDashboard;
 
     // Don't show public layout (Navbar, Footer, 3D BG) for auth pages or dashboards
