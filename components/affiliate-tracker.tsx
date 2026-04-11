@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 /**
@@ -16,7 +16,7 @@ import { useSearchParams } from "next/navigation";
  * 3. Stored in localStorage as `affiliate_ref`
  * 4. When customer checks out, order-form reads localStorage and sends to backend
  */
-export default function AffiliateTracker() {
+function AffiliateTrackerInner() {
     const searchParams = useSearchParams();
 
     useEffect(() => {
@@ -33,8 +33,15 @@ export default function AffiliateTracker() {
         }
     }, [searchParams]);
 
-    // This component renders nothing
     return null;
+}
+
+export default function AffiliateTracker() {
+    return (
+        <Suspense fallback={null}>
+            <AffiliateTrackerInner />
+        </Suspense>
+    );
 }
 
 /**
